@@ -2,7 +2,6 @@ hirom
 
 ; ###############################################
 ; Synchysi's ASM
-; TODO Remove header directive from each asm below
 
 incsrc abort.asm
 incsrc assassin_a-z_rage.asm
@@ -112,16 +111,3 @@ incsrc wor_music.asm
 incsrc wpn_effects.asm
 incsrc x-magic_counter.asm
 incsrc zantetsuken.asm
-
-; ###############################################
-; Bropedio's ASM (BNW 2.0)
-incsrc bropedio-2.0/RC-33.asm
-
-; ###############################################
-; Bropedio's ASM (BNW 2.1)
-incsrc bropedio-2.1/RC-18.asm
-
-; ##############################################
-; TODO Handle checksum, as most recent builds
-; used a standalone tool to update the checksum
-
