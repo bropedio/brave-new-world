@@ -75,10 +75,10 @@ MPCost:
   LDA $AA
   LSR
   BCC .unknown
-.known:
+.known
   PLA
   JMP Known         ; print a checkmark
-.unknown:
+.unknown
   PLA
   JSR $04E0         ; Turns A into displayable digits
   JMP SPCost        ; go back to where we sliced in and output SP cost
