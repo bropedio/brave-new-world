@@ -1,12 +1,13 @@
 #!/bin/bash
 
-ROM_PATH=../../roms/test.sfc
-WINE_PATH="$1"
-XKAS_PATH="$2"
+rom_path="$1"
+
+# Load in environment variables
+source "./settings.sh"
 
 # Helpers
 assemble () {
-  "$WINE_PATH" "$XKAS_PATH" $1 $ROM_PATH
+  "${XKAS_PATH[@]}" $1 ../$rom_path
 }
 assemble_master () {
   cd ../asm/$1
