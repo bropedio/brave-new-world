@@ -11,11 +11,17 @@ hirom
 !freespace = $C26591
 
 ;Enable Leap everywhere (unchanged)
+; TODO: Bropedio note: This code is commented out because it is not
+; present in the current 2.1 version of BNW. Unsure why it was not
+; assembled correctly. We should probably uncomment this code for a
+; bugfix release
 org $C25432
-C25432:	BNE .exit		;Dance and Leap jumps here
-        LDA #$FF
-		STA $03,S		;Replace current command with empty
-.exit	RTS 
+C25432:
+  ;BNE .exit		;Dance and Leap jumps here
+  ;LDA #$FF
+	;STA $03,S		;Replace current command with empty
+;.exit
+  ;RTS 
 
 ;Leap availability check
 org $C2543E
