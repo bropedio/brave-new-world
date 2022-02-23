@@ -1,5 +1,5 @@
 hirom   ; Don't change this
-header  ; Comment out if your ROM has no header
+;header  ; Comment out if your ROM has no header
 
 ; Uses event command $66 to set a character's level equal to 18, unless they're over that level
 

@@ -1,5 +1,5 @@
 hirom   ; Don't change this
-header  ; Comment out if your ROM has no header
+;header  ; Comment out if your ROM has no header
 
 ; Changes the delay on some combat abilities to put them more in line with their comparitive strengths
 ; All data is found in a table at $C2067B

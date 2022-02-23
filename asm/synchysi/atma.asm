@@ -1,5 +1,5 @@
 hirom   ; Don't change this
-header  ; Comment out if your ROM has no header
+;header  ; Comment out if your ROM has no header
 
 ; Changes the Atma Weapon's damage formula to now use stamina instead of vigor
 ; Changes the HP modification done to Atma strikes

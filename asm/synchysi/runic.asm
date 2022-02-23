@@ -1,5 +1,5 @@
 hirom   ; Don't change this
-header  ; Comment out if your ROM has no header
+;header  ; Comment out if your ROM has no header
 
 ; Allows Runic to always absorb MP even if the Runicker is immune to or absorbs
 ; the casted element.

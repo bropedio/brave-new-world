@@ -1,5 +1,5 @@
 hirom   ; Don't change this
-header  ; Comment out if your ROM has no header
+;header  ; Comment out if your ROM has no header
 
 ; Forces magic attacks to take defending targets into consideration
 ; Changes the back row defense boost from 50% damage reduction to 25%

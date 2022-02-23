@@ -1,5 +1,5 @@
 hirom   ; Don't change this
-header  ; Comment out if your ROM has no header
+;header  ; Comment out if your ROM has no header
 
 ; Changes the internal header name to something to keep BNW from opening in the FF3usME editor, as it is
 ; overwriting custom event scripting.

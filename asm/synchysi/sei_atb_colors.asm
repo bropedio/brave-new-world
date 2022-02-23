@@ -20,7 +20,7 @@
 ; $2EAF31: Palette #7: $39 - Green Morph gauge
 ; $2EAF39: Palette #8: $3D - Red Condemned gauge (unused)
 	hirom
-header
+;header
 	!freespace = $EEB15F
 	; Add checks for statuses to ATB drawing routine
 org $C16872

@@ -1,5 +1,5 @@
 hirom   ; Don't change this
-header  ; Comment out if your ROM has no header
+;header  ; Comment out if your ROM has no header
 
 ; Modifies three of Sabin's blitzes in the following ways
 ; Mantra - Amount healed is now modified by stamina

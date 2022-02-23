@@ -1,5 +1,5 @@
 hirom
-header
+;header
 
 ; Collection of Think's BNW hacks that are unfortunately poorly commented, so I have no idea what they do or how they do it
 

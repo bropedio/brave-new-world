@@ -1,5 +1,5 @@
 hirom   ; Don't change this
-header  ; Comment out if your ROM has no header
+;header  ; Comment out if your ROM has no header
 
 ; A (hopefully) working Gau status fix
 ; It should probably clear him of statuses when he dies/loses Rage status

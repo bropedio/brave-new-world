@@ -1,6 +1,6 @@
 ;xkas 0.06
 hirom
-header
+;header
 	; Index of Optimize-excluded gear
 org $ED82E4
 db $66      ; 102 Hero Shield (cursed)

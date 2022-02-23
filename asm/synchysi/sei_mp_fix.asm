@@ -1,5 +1,5 @@
 hirom
-header
+;header
 
 ;Lineup Menu doesn't restore MP fix
 

@@ -1,5 +1,5 @@
 hirom   ; Don't change this
-header  ; Comment out if your ROM has no header
+;header  ; Comment out if your ROM has no header
 
 ; Checks the user for the gauntlet flag and hard sets it if it's present, using much of the space formerly used by the now-deprecated Retort
 ; Changes Cyan's Retort ability from a reactive counter-strike to a proactive ability like his other SwdTechs

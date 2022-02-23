@@ -8,7 +8,7 @@
 
 ;xkas 0.06
 hirom         ;don't change this
-header       ;uncomment if headered ROM
+;header       ;uncomment if headered ROM
 
 ;ATB multipliers
 !slow = 60

@@ -1,7 +1,7 @@
 ; Disable Reflect timer and randomly remove Reflect when triggered
 ; by Seibaby (2018-12-01)
 hirom
-header
+;header
 !freespace = $C20AE6    ; Requires 9 bytes of free space in C2
 	; The hook offset for the new code depends on whether you have Terii's
 ; Vanish/Doom patch applied or not.

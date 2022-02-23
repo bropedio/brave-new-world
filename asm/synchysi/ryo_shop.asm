@@ -1,5 +1,5 @@
 hirom
-header
+;header
 
 table menu.tbl,ltr
 	

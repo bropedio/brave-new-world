@@ -1,5 +1,5 @@
 hirom   ; Don't change this
-header  ; Comment out if your ROM has no header
+;header  ; Comment out if your ROM has no header
 
 ; Alters Throw to include the weapon's properties in the attack
 ; Patch by Think0028 - need to come through and properly comment this patch later

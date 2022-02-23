@@ -1,5 +1,5 @@
 hirom   ; Don't change this.
-header  ; Comment out if your ROM has no header.
+;header  ; Comment out if your ROM has no header.
 
 ; Restricts espers to be equippable only by certain characters set in the tables at the bottom.
 ; All locations have only been tested in FF3us ROM version 1.0, although it should work in version 1.1.

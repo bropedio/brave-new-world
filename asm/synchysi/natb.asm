@@ -1,5 +1,5 @@
 hirom   ; Don't change this
-header  ; Comment out if your ROM has no header
+;header  ; Comment out if your ROM has no header
 
 ; Think's nATB hack
 ; Also alters speed multipliers for slow/normal/haste and status timers

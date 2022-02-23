@@ -5,7 +5,7 @@
 ; FC 05 00 01 = counterattack ONLY damage that's both physical and row-respecting
 ; FC 05 00 02 = counterattack ONLY MP damage
 	hirom
-header
+;header
 !freespace = $C21BD1        ; Requires 5 bytes of free space in C2
 !freespacelong = $C3F577    ; Requires 67 bytes of free space anywhere
 	; Preparation:

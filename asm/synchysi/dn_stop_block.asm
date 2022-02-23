@@ -1,5 +1,5 @@
 hirom
-header
+;header
 
 org $c2265b
 jsr $3c04 ; old rippler space

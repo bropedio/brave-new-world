@@ -1,5 +1,5 @@
 hirom   ; Don't change this
-header  ; Comment out if your ROM has no header
+;header  ; Comment out if your ROM has no header
 
 ; Makes the Blind status apply to physical specials in addition to Fight
 ; Sets the accuracy penalty to a flat 50% rather than half of the original hit rate

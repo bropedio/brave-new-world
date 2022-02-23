@@ -1,5 +1,5 @@
 hirom
-header
+;header
 
 ; Adds blitz names to the Blitz menu
 ; Original hack by DN

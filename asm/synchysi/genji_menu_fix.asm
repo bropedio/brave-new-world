@@ -1,5 +1,5 @@
 hirom   ; Don't change this
-header  ; Comment out if your ROM has no header
+;header  ; Comment out if your ROM has no header
 
 ; Makes the equip screen render properly when dealing with dual wield-enabled equipment
 ; All locations have only been tested in FF3US ROM version 1.0

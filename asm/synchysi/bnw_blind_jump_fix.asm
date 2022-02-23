@@ -1,5 +1,5 @@
 hirom
-header
+;header
 
 ; Written by dn
 ; Modified by Synchysi to allow the attack to ignore attacker row regardless of blind status

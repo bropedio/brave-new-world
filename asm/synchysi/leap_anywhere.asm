@@ -7,7 +7,7 @@
 
 ;xkas 0.06
 hirom
-header
+;header
 !freespace = $C26591
 
 ;Enable Leap everywhere (unchanged)

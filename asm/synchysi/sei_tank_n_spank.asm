@@ -29,7 +29,7 @@
     
 ;xkas 0.06
 hirom
-header
+;header
 !smartCover = $C2FAD0       ;Requires 114 bytes of free space
 ;!halveEvade = ;Requires 20 bytes of free space
 ;!noDogBlock = ;Requires 9 bytes of free space

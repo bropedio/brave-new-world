@@ -1,5 +1,5 @@
 hirom   ; Don't change this
-header  ; Comment out if your ROM has no header
+;header  ; Comment out if your ROM has no header
 
 ; Removes the two bytes that divide periodic damage/healing by four
 ; Also slows the poison effect's incremental damage

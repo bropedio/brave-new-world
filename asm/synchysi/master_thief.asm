@@ -1,5 +1,5 @@
 hirom
-header
+;header
 
 ;BNW Steal Function
 ;mod: Speed affects rare steal chance (Speed / 256)

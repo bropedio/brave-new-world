@@ -1,5 +1,5 @@
 hirom   ; Don't change this
-header  ; Comment out if your ROM has no header
+;header  ; Comment out if your ROM has no header
 
 ; Enables Leo's Crest to replace Runic with Shock
 ; Also modifies the Shock command to behave more like Cecil's Dark Wave from FF4

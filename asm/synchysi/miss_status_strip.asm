@@ -1,5 +1,5 @@
 hirom   ; Don't change this
-header  ; Comment out if your ROM has no header
+;header  ; Comment out if your ROM has no header
 
 ; Alters some hit determination function to strip all statuses when an attack misses due to float
 ; Also removes the random target part of the suplex effect

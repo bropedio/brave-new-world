@@ -1,5 +1,5 @@
 hirom   ; Don't change this
-header  ; Comment out if your ROM has no header
+;header  ; Comment out if your ROM has no header
 
 ; Modifies the double exp code to grant zero exp for some reason.
 ; Also enables a "No Exp." option in the menu, removing the need for No Exp. Eggs

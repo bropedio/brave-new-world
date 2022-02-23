@@ -4,7 +4,7 @@
 ; FC command $07 (MP low counter) checks MP versus <param> only. This makes it so that
 ; MP is compared to <param> * 128 as well.
 hirom
-header
+;header
 	; FC command $06 (HP low counter)
 org $C21D61
 dw mpLowCounter

@@ -1,5 +1,5 @@
 hirom   ; Don't change this
-header  ; Comment out if your ROM has no header
+;header  ; Comment out if your ROM has no header
 
 ; Alters four tools:
 ; Drill - sets seizure, and forces it to consider attacker's row

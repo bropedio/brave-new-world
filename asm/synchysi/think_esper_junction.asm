@@ -1,7 +1,7 @@
 ; unfinished and untested
 
 hirom
-header
+;header
 !newCode     = $C0D79E
 !esperStruct = $C0D690
 

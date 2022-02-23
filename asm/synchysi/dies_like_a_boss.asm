@@ -1,5 +1,5 @@
 hirom   ; Don't change this
-header  ; Comment out if your ROM has no header
+;header  ; Comment out if your ROM has no header
 
 ; If a certain bit is enabled, prevents enemies from dying at 0 HP to avoid improper deaths
 ; Utilizes bit 6 of $3C95, formerly "Auto crit if imp"

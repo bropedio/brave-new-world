@@ -1,5 +1,5 @@
 hirom
-header
+;header
 
 ; The following contains minor tweaks or optimizations to
 ; code Synchysi wrote in restrict-espers.asm and esper-

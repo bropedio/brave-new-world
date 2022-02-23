@@ -1,5 +1,5 @@
 hirom   ; Don't change this
-header  ; Comment out if your ROM has no header
+;header  ; Comment out if your ROM has no header
 
 ; Alters the fuck out of esper bonuses
 ; Shifts around the checks for learning skills at level up (Celes, Terra, Cyan, Sabin)

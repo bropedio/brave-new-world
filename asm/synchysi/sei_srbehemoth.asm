@@ -1,7 +1,7 @@
 	; Animation script $025C: Misc. Monster Animation $06: Characters Run Right to Left (bg1)
 ; Include a change to boss battle music
 hirom
-header
+;header
 !freespace = $D0CF4A    ; Requires 18 bytes in bank D0
 	; Relocate animation script
 org !freespace

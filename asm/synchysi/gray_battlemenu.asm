@@ -1,5 +1,5 @@
 hirom
-header
+;header
 
 ; Lore menu length
 org $C18336

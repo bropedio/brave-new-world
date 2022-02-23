@@ -1,5 +1,5 @@
 hirom
-header
+;header
 
 ;Set Golem's Defense to 128
 

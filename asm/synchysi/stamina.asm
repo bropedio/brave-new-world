@@ -1,5 +1,5 @@
 hirom   ; Don't change this
-header  ; Comment out if your ROM has no header
+;header  ; Comment out if your ROM has no header
 
 ; Changes the enemy stamina value to 1-32
 ; Utilizes an unused bit for stamina-based attacks (bit 3 of special effect byte 3)

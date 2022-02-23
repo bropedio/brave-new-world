@@ -1,5 +1,5 @@
 hirom   ; Don't change this
-header  ; Comment out if your ROM has no header
+;header  ; Comment out if your ROM has no header
 
 ; Alters dog block so Shadow uses one spell and Relm uses the other
 ; Shadow = spell ID 252

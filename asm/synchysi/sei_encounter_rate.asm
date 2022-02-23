@@ -3,7 +3,7 @@
 ;v2 - should actually work now 
 	;Should raise the minimum number of steps for a random encounter to 10, while still maintaining the overall rate
 hirom
-header
+;header
 	!freespaceC2 = $C2FBEA
 !freespaceC0 = $C0FF90
 	; Overworld encounters

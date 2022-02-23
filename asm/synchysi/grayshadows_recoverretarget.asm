@@ -1,5 +1,5 @@
 hirom
-header
+;header
 
 
 org $C22A44

@@ -1,5 +1,5 @@
 hirom
-header
+;header
 
 ;Seibaby's Life Hack and Blow Fish Mod
 ;Life heals rand(250..500) HP, regardless of Spell Power or caster's stats

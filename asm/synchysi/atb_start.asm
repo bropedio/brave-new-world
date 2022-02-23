@@ -11,7 +11,7 @@
 	;The new formula is:
 ;([(Speed * 2)..(Speed * 3 + 29)] + [(0..9) * 4] + G) * 256 / 65535
 	hirom
-header
+;header
 !freespace = $C2FAA4    ;requires 16 bytes of free space in C2
 	;Initialize ATB Timers
 org $C22575

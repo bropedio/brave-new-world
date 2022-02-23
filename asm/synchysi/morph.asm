@@ -1,5 +1,5 @@
 hirom   ; Don't change this
-header  ; Comment out if your ROM has no header
+;header  ; Comment out if your ROM has no header
 
 ; Changes Morph from a charge ability to a toggled ability.
 ; The Morph toggle will increase Terra's damage dealt by 50% and damage received by 100%.

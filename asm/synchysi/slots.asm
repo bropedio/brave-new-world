@@ -1,5 +1,5 @@
 hirom   ; Don't change this
-header  ; Comment out if your ROM has no header
+;header  ; Comment out if your ROM has no header
 
 ; Further manipulates Setzer's slots, while de-rigging them
 ; Moves the pointer for Joker Doom's animation

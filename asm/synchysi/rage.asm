@@ -1,5 +1,5 @@
 hirom   ; Don't change this
-header  ; Comment out if your ROM has no header
+;header  ; Comment out if your ROM has no header
 
 ; Changes the odds Rage will select a certain attack from 50/50 to any desired split (examples in comments)
 ; All locations have only been tested in FF3US ROM version 1.0

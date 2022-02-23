@@ -1,5 +1,5 @@
 hirom
-header
+;header
 
 !freeC3_A = $C33BDE   ; 18 bytes, we'll use 17 :)
 !freeC3_B = $C38777   ; 29 bytes, we'll use 24 >.>

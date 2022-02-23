@@ -1,5 +1,5 @@
 hirom   ; Don't change this
-header  ; Comment out if your ROM has no header
+;header  ; Comment out if your ROM has no header
 
 ; Hijacks the old L? spell targeting bit to create an "abort on enemies" flag
 ; Hard-codes it into Item (with an exception for HappyFunBalls)

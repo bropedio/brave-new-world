@@ -1,5 +1,5 @@
 hirom
-header
+;header
 
 ;Change Narshe three-party battle to a two-party battle
 

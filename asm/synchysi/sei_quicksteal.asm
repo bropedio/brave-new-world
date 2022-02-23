@@ -9,7 +9,7 @@
 ; Modified by Synchysi to split and move code around.
 
 hirom
-header
+;header
 !freespaceSet = $C23CB8            ;Requires 12 bytes in C2
 !freespaceChk = $C267B0            ;Requires 21 bytes in C2
 

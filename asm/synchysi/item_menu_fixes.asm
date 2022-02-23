@@ -1,5 +1,5 @@
 hirom   ; Don't change this
-header  ; Comment out if your ROM has no header
+;header  ; Comment out if your ROM has no header
 
 ; Allows Remedy to cure Imp on the status screen
 ; Allows Slim Jims and Red Bull to be used from the field menu screen

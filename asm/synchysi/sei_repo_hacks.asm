@@ -1,5 +1,5 @@
 hirom
-header
+;header
 
 ; A collection of the smaller of Seibaby's hacks posted in the repo thread for 2.0
 

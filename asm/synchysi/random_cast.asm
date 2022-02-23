@@ -1,5 +1,5 @@
 hirom   ; Don't change this
-header  ; Comment out if your ROM has no header
+;header  ; Comment out if your ROM has no header
 
 ; Utilizes an unused bit to increase the odds of a random weapon cast activating
 ; All locations have only been tested in FF3US ROM version 1.0

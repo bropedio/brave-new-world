@@ -1,5 +1,5 @@
 hirom   ; Don't change this
-header  ; Comment out if your ROM has no header
+;header  ; Comment out if your ROM has no header
 
 ; Lowers the gauntlet battle power bonus to +50%
 ; Drastically alters the physical damage formula used by PCs and re-writes the enemy's formula to save space.

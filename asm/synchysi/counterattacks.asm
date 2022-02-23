@@ -1,5 +1,5 @@
 hirom   ; Don't change this
-header  ; Comment out if your ROM has no header
+;header  ; Comment out if your ROM has no header
 
 ; Allows characters to counter attacks that missed them.
 ; Also changes counter chance from 75% to 50%.

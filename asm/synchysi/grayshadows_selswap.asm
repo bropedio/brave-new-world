@@ -1,5 +1,5 @@
 hirom
-header
+;header
 
 !freespace_swapHP =  $C3F444
 

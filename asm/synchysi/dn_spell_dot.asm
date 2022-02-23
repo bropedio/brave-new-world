@@ -1,5 +1,5 @@
 hirom
-header
+;header
 
 org $c1602e
     nop #3

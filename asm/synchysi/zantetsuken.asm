@@ -1,5 +1,5 @@
 hirom   ; Don't change this
-header  ; Comment out if your ROM has no header
+;header  ; Comment out if your ROM has no header
 
 ; Modifies the cleave effect for the Zantetsuken to deal critical damage to enemies
 ; with the "Can't suplex" flag set.

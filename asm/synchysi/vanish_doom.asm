@@ -1,5 +1,5 @@
 hirom   ; Don't change this
-header  ; Comment out if your ROM has no header
+;header  ; Comment out if your ROM has no header
 
 ; Converts Terii Senshi's Vanish/Doom fix to assembly for modification purposes.
 ; Probably need to come back and try to comment this at some point.

@@ -1,5 +1,5 @@
 hirom   ; Don't change this
-header  ; Comment out if your ROM has no header
+;header  ; Comment out if your ROM has no header
 
 ; Alters the random variance formula to consider the target's vig/stam (phys/mag damage)
 ; in calculating the variance range

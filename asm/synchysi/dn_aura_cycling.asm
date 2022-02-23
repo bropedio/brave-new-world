@@ -1,7 +1,7 @@
 ; Modified by GrayShadows
 
 hirom  ; don't change this
-header
+;header
 
 org $C12E4F  ; location in v1.0
 C12E4F:    BRA reset_rotation ; $2B
