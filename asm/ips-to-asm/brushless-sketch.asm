@@ -4,7 +4,7 @@ hirom
 ; author: Assassin
 ; edited: Bropedio
 
-; REQUIRES: swordless-runic.asm
+incsrc swordless-runic.asm
 
 !freespace = $C2FBFD
 !warnspace = $C2FC10+1
@@ -206,7 +206,7 @@ CommandConversions:
   CPY #$04          ; have we done four slots
   BNE .menu_loop    ; loop if not ^
   LSR $F8           ; C: at least one command uses MP
-  BCS .exit         ; exit if ^
+  BCS .exit         ; exit if ^ (BRA)
   LDA $02,S         ; retrieve character slot index
   TAX               ; index it
   REP #$20          ; 16-bit A
