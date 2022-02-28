@@ -8,4 +8,5 @@ source "./settings.sh"
 
 ./patch.sh "$rom_path"
 ./assemble.sh "$rom_path"
+node ./checksum.js "$rom_path"
 ./create_patches.sh "$rom_path" "$version"
