@@ -22,8 +22,9 @@ NOP
 ; The following changes the Morph menu entry so it will never be unavailable.
 ; This change is actually handled by the swordless runic patch, since it adjusts
 ; the location of this table. The code remains here for documentation purposes.
-;org $C204E8
-;DB $19,$05			; Jumps to an RTS
+; NOTE: No longer included in swordless runic patch
+org $C204E8
+  DB $19,$05			; Jumps to an RTS
 
 ;;;;;;;;;;;;;;; Old Morph code - retained in case the new one breaks it ;;;;;;;;;;;;;;;;
 ; The following makes Morph permanent once it's activated.

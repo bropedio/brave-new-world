@@ -4,8 +4,6 @@ hirom
 ; author: Assassin
 ; edited: Bropedio
 
-incsrc swordless-runic.asm
-
 !freespace = $C2FBFD
 !warnspace = $C2FC10+1
 
@@ -54,17 +52,17 @@ DisableCommands:
   TXA                ; command ID *2
   ROR                ; restore command ID (LSR would be fine)
   LDX #$0008         ; initialize command loop
+.loop
   CMP ModifyCmds,X   ; current command matches special case
   BNE .next          ; branch if not ^
   TXA                ; matched command index
-.loop
   ASL                ; matched command index *2
   TAX                ; index it
   JSR (CmdModify,X)  ; call special function for command
   BRA .finish        ; break out of loop
 .next
   DEX                ; decrement command to check
-  BPL .loop          ; loop till all checked
+  BPL .loop          ; loop till all checked TODO: EF or F6 mismatch
   CLC                ; default to enable command
   BRA .finish        ; skip disabling
 .disable
@@ -186,7 +184,7 @@ CommandConversions:
   TXA               ; index to blankable command
   ASL               ; x2 for jump table
   TAX               ; index it
-  JSR ($BlankCmd,X) ; run special function
+  JSR (BlankCmd,X)  ; run special function
   BRA .done         ; break out of loop
 .next
   DEX               ; next blankable command index
@@ -237,7 +235,7 @@ BrushHand:
   XBA               ; put back in B
   LDA $D2B300,X     ; first character [icon] of item name
   PLP               ; restore flags (x)
-  CMP #$DD          ; brush icon
+  CMP #$E2          ; brush icon
   BNE .nope         ; branch if not ^
   CLC               ; clear carry
   BRA .exit         ; and exit
@@ -341,4 +339,99 @@ Brushless:
   RTS
 
 warnpc !warnspace
+
+; C3 ========================================================
+
+org $C35ED7
+CmdListA:
+  PHA                ; store command ID
+  JSR $3519          ; prepare name drawing
+  PLA                ; restore command ID
+  BMI CmdListB_blank ; branch if null
+  BRA CmdListB_skip  ; else, continue
+  NOP
+org $C35EE1
+CmdListB:
+  JSR $612C          ; check blanked commands (Magic/Morph/Leap/etc)
+  BMI .blank         ; branch if ^
+.skip
+  JSR $5F11          ; [?][?] Wrong TODO
+  STA $E2            ; save command number
+  ASL                ; x2
+  CLC : ADC $E2      ; x3
+  ASL                ; x6
+  CLC : ADC $E2      ; x7
+  TAX                ; index it
+  CLC                ; clear carry (indicates non-null cmd)
+.init_loop
+  LDY #$0007         ; prep loop through command name
+.loop     
+  BCS .set           ; skip loading letter if null cmd
+  LDA $D8CEA0,X      ; else, load next letter
+.set
+  STA $2180          ; write to WRAM
+  INX                ; increment source
+  DEY                ; decrement remaining
+  BNE .loop          ; loop till done
+  STZ $2180          ; write EOL byte
+  CLC                ; clear carry
+  JMP $7FD9          ; TODO: New routine???
+.blank
+  LDA #$FF           ; space character
+  SEC                ; set carry (indicates null-cmd)
+  BRA .init_loop     ; write 7 spaces
+
+  PHA                ; store command ID
+  CMP #$0B           ; "Runic"
+  BNE .bushido       ; branch if not ^
+  LDA $11DA          ; right hand properties
+  ORA $11DB          ; left hand properties
+  BPL .gray          ; branch if no Runic support
+  BRA .white         ; display the command lit up
+.bushido
+  CMP #$07           ; "Bushido"
+  BNE .sketch        ; branch if not ^
+  LDA $11DA          ; right hand properties
+  ORA $11DB          ; left hand properties
+  BIT #$02           ; "Bushido Allowed"
+  BEQ .gray          ; branch to disable if no ^
+  BRA .white         ; else branch to show
+.sketch
+  CMP #$0D           ; Sketch
+  BNE .white         ; enable if not ^ (or other previous)
+  LDA $11C6          ; right hand equipment slot
+  JSL $C2FBFD        ; C: Not a brush
+  BCC .white         ; branch if is brush
+  LDA $11C7          ; left hand equipment slot
+  JSL $C2FBFD        ; C: Not a brush
+  BCS .gray          ; branch if ^
+.white
+  LDA #$20           ; user color palette (white)
+  BRA .palette       ; branch to finish
+.gray
+  LDA #$24           ; gray color
+.palette
+  STA $29            ; update palette
+  PLA                ; restore command ID
+  RTS
+
+; Status Screen Commands ==================================
+
+org $C36102
+StatusCmdOpt:
+  LDY #$7BF1
+  JSR $4598
+  LDY #$7C71
+  JSR $459E
+  LDY #$7CF1
+  JSR $45A5
+  LDY #$7D71
+  JSR $45AD
+  RTS
+
+padbyte $EA : pad $C36128
+
+Long6172:
+  JSR $6172      ; Access to existing relic cmd changes (from C2)
+  RTL
 

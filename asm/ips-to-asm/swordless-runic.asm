@@ -73,7 +73,7 @@ UncontrollableCmds:
   ASL                ; x2
   TAX                ; index to special command function
   LDA $01,S          ; get current command (again, for safety)
-  JSR ($CmdFuncs,X)  ; run special routine (returns attack/spell #)
+  JSR (CmdFuncs,X)  ; run special routine (returns attack/spell #)
   XBA                ; B: attack/spell number [?]
   BRA .continue      ; exit loop
 .next
@@ -165,4 +165,4 @@ RunicCheck:
   RTS 
 warnpc !warnspace+1
 
-namespace end
+namespace off

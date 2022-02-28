@@ -1,0 +1,24 @@
+hirom
+
+; Master Patch for (newly converted) ips to asm files
+; Preserves alphabetical order of original file names,
+; which have been changed for these new asm files.
+
+incsrc swordless-runic.asm
+incsrc brushless-sketch.asm    ; requires swordless-runic
+incsrc gogo-mp.asm             ; requires brushless-sketch
+incsrc unequipium.asm
+incsrc scan-status.asm
+incsrc wrexsoul-fix.asm
+incsrc equip-overview-espers.asm
+incsrc no-percents.asm
+incsrc remove-equip-icons.asm
+incsrc y-screen-swap.asm
+incsrc no-coral-for-you.asm
+incsrc fancy-walking.asm
+incsrc genjiglv.asm
+incsrc mp-colors.asm
+incsrc overcast-fix.asm
+incsrc sketch.asm
+incsrc tritoch-animation-fix.asm
+incsrc yellow-streak.asm
