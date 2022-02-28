@@ -4,8 +4,7 @@ hirom
 ; author: dn
 ; editor: Bropedio
 
-; TODO: Patch still includes battle message binaries, not included here
-; TODO: Patch also includes this C2 and C4 code as well
+; Battle message binaries stored in separate ips file, named similarly
 
 ; Modify Scan special effect hooks
 org $C23C5B
@@ -21,7 +20,7 @@ org $C25138
   JSL ScanStatus
   RTS
 padbyte $FF
-pad $C25160
+pad $C25161
 
 org $C2A708 : db $46 ; Modify an unrelated battle message ID
 
