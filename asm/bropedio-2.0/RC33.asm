@@ -47,7 +47,6 @@ incsrc rage-dance-descriptions.asm
 incsrc skip-criticals-flag.asm
 incsrc xkill-anim.asm               ; requires "chainsaw-fix", uses freespace from "skip-criticals-flag"
 incsrc brush-retarget-4.asm         ; uses freespace from "x-fight-crits"
-incsrc mystery-egg.asm
 incsrc item-save.asm
 incsrc quartrstaff-boss-fix.asm
 incsrc rod-break-clear.asm
