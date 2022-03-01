@@ -161,6 +161,37 @@ CmdFuncs:
 warnpc $C204F6+1
 
 ; #########################################################################
+; Scan Special Effect (per-target)
+;
+; Modified by dn's "Scan Status" patch to skip the "Cannot Scan" check and
+; message preparation. This is done so the new "Status" and "Weakness" scan
+; results are available during boss fights. "Cannot Scan" flag means "Boss".
+
+org $C23C5B
+ScanEffect:
+  TYX
+  LDA #$27
+  JMP $4E91
+padbyte $FF
+pad $C23C6E
+warnpc $C23C6E+1
+
+; #########################################################################
+; Scan Command (partial)
+;
+; Modified by dn's "Scan Status" patch to add support for Status messages.
+; The "Scan Weakness" code is now displaced into C4 along with the new
+; "Scan Status" code.
+
+org $C25138
+  JSL ScanWeakness
+  JSL ScanStatus
+  RTS
+padbyte $FF
+pad $C25161
+warnpc $C25161+1
+
+; #########################################################################
 ; Determine which menu commands are disabled
 ;
 ; Largely rewritten as part of Assassin's "Brushless Sketch" patch to
@@ -486,6 +517,14 @@ CmdBlanks:
   db $17 ; X-Magic
   db $0C ; Lore
 warnpc $C2546E+1
+
+; #########################################################################
+; Esper Level and Experience Messages
+;
+; This patch has not been integrated into banks yet, but dn's "Scan Status"
+; patch appears to modify the message ID for one of the new battle messages.
+
+org $C2A708 : db $46 ; Modify battle message ID
 
 ; #########################################################################
 ; Freespace used for various helper functions
