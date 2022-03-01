@@ -1,5 +1,5 @@
 hirom
-table c3.tbl,rtl
+table vwf.tbl,rtl
 
 ; D1 Bank (data)
 
