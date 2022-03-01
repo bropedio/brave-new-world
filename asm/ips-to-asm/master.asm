@@ -4,7 +4,6 @@ hirom
 ; Preserves alphabetical order of original file names,
 ; which have been changed for these new asm files.
 
-incsrc brushless-sketch.asm    ; requires swordless-runic
 incsrc gogo-mp.asm             ; requires brushless-sketch
 incsrc unequipium.asm
 incsrc scan-status.asm
