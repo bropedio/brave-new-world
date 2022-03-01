@@ -14,26 +14,24 @@ assemble_master () {
   assemble $2
   cd ../../scripts
 }
+assemble_batch () {
+  cd ../asm/$1
+  for file in *.asm
+  do
+    assemble $file
+  done
+  cd ../../scripts
+}
 
 # Assemble ips-to-asm directory using master file
 assemble_master ips-to-asm master.asm
 
 # Assemble asm files in synchysi directory one at a time
-cd ../asm/synchysi
-for file in *.asm
-do
-  assemble $file
-done
-cd ../../scripts
+assemble_batch synchysi
 
 # Assemble bropedio asm using master files
 assemble_master bropedio-2.0 RC33.asm
 assemble_master bropedio-2.1 RC-18.asm
 
 # Assemble private (hidden) assembly
-cd ../asm/private
-for private_file in *.asm
-do
-  assemble $private_file
-done
-cd ../../scripts
+assemble_batch private
