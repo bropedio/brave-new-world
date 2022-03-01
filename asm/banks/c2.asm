@@ -260,6 +260,9 @@ warnpc $C25301+1
 ; Convert or hide commands based on relics or event bits
 ;
 ; Largely rewritten as part of Assasin's "Brushless Sketch" patch
+; Modified by "Gogo MP" patch, which ensures MP is never zeroed,
+; even when no MP-using commands are possessed. This change allows
+; Gogo to wield MP Crit weapons successfully.
 
 org $C2532C
 CommandConversions:
@@ -359,7 +362,7 @@ CommandConversions:
   CPY #$04          ; have we done four slots
   BNE .menu_loop    ; loop if not ^
   LSR $F8           ; C: at least one command uses MP
-  BCS .exit         ; exit if ^ (BRA)
+  BRA .exit         ; never zero MP (so MP crit weapons work)
   LDA $02,S         ; retrieve character slot index
   TAX               ; index it
   REP #$20          ; 16-bit A
