@@ -4,7 +4,6 @@ hirom
 ; Preserves alphabetical order of original file names,
 ; which have been changed for these new asm files.
 
-incsrc equip-overview-espers.asm
 incsrc no-percents.asm
 incsrc remove-equip-icons.asm
 incsrc y-screen-swap.asm

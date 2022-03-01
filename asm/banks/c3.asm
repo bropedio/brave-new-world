@@ -108,3 +108,31 @@ Long6172:
   RTL
 warnpc $C3612C+1
 
+; #########################################################################
+; Review Screen Draw Routines
+;
+; Modified by dn's "Equip Overview Espers" patch to include equipped esper
+; names immediately to the right of the character's name.
+
+org $C38F2B : JSR DrawEsperName
+org $C38F45 : JSR DrawEsperName
+org $C38F61 : JSR DrawEsperName
+org $C38F7D : JSR DrawEsperName
+
+; #########################################################################
+; Freespace Helpers
+
+org $C3F480
+DrawEsperName:
+  PHY           ; store actor name position
+  LDA #$24      ; gray color
+  STA $29       ; set palette
+  JSR $34CF     ; draw actor name
+  PLY           ; restore actor name position
+  INY #32       ; add 0x20 (leaves space for character name)
+  JSR $34E6     ; draw equipped esper
+  LDA #$20      ; user color
+  STA $29       ; set palette
+  RTS
+warnpc $C3F4B1+1
+
