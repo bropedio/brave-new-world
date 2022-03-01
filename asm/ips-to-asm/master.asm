@@ -4,7 +4,6 @@ hirom
 ; Preserves alphabetical order of original file names,
 ; which have been changed for these new asm files.
 
-incsrc unequipium.asm
 incsrc scan-status.asm
 incsrc wrexsoul-fix.asm
 incsrc equip-overview-espers.asm
