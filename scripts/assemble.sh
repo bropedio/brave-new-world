@@ -24,7 +24,14 @@ assemble_batch () {
 }
 
 # Assemble asm by bank
-assemble_batch banks
+# Instead of using a master asm with incsrc, we concatenate all banks
+# together to ensure cross-bank labels are functional
+allbanks="all.asm"
+cd ../asm/banks
+cat *.asm > "$allbanks"
+assemble "$allbanks"
+rm "$allbanks"
+cd ../../scripts
 
 # Assemble ips-to-asm directory using master file
 assemble_master ips-to-asm master.asm
