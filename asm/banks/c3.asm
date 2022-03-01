@@ -109,6 +109,18 @@ Long6172:
 warnpc $C3612C+1
 
 ; #########################################################################
+; Menu Label Changes (part 1)
+;
+; Percent symbols (%) overwritten with spaces by dn's "No Percents" patch
+
+org $C36482 : db $FF ; replace '%' with ' '
+org $C36486 : db $FF ; replace '%' with ' '
+org $C364BB : db $FF ; replace '%' with ' '
+org $C364C5 : db $FF ; replace '%' with ' '
+org $C38D9B : db $FF ; replace '%' with ' '
+org $C38DA5 : db $FF ; replace '%' with ' '
+
+; #########################################################################
 ; Review Screen Draw Routines
 ;
 ; Modified by dn's "Equip Overview Espers" patch to include equipped esper
@@ -118,6 +130,14 @@ org $C38F2B : JSR DrawEsperName
 org $C38F45 : JSR DrawEsperName
 org $C38F61 : JSR DrawEsperName
 org $C38F7D : JSR DrawEsperName
+
+; #########################################################################
+; Menu Label Changes (part 2)
+;
+; Percent symbols (%) overwritten with spaces by dn's "No Percents" patch
+
+org $C3A395 : db $FF ; replace '%' with ' '
+org $C3A39F : db $FF ; replace '%' with ' '
 
 ; #########################################################################
 ; Freespace Helpers
