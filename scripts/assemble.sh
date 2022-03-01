@@ -23,6 +23,9 @@ assemble_batch () {
   cd ../../scripts
 }
 
+# Assemble asm by bank
+assemble_batch banks
+
 # Assemble ips-to-asm directory using master file
 assemble_master ips-to-asm master.asm
 
