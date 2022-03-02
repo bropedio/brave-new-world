@@ -4,7 +4,6 @@ hirom
 ; Preserves alphabetical order of original file names,
 ; which have been changed for these new asm files.
 
-incsrc remove-equip-icons.asm
 incsrc y-screen-swap.asm
 incsrc no-coral-for-you.asm
 incsrc fancy-walking.asm

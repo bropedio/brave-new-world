@@ -140,6 +140,11 @@ org $C3A395 : db $FF ; replace '%' with ' '
 org $C3A39F : db $FF ; replace '%' with ' '
 
 ; #########################################################################
+; Shop Menu equippability UI
+
+org $C3C29C : BRA $3F ; Never show equipped/up/down/equal icons
+
+; #########################################################################
 ; Freespace Helpers
 
 org $C3F480
