@@ -601,12 +601,59 @@ CmdBlanks:
 warnpc $C2546E+1
 
 ; #########################################################################
+; Damage Number Processing and Queuing Animation(s)
+;
+; Part of "MP Colors" patch, Fork which battle dynamics command ID
+; based on MP flag
+
+org $C263A9 : JSR DmgCmdAlias
+org $C263BB : JSR DmgCmdAliasMass
+
+; #########################################################################
 ; Esper Level and Experience Messages
 ;
 ; This patch has not been integrated into banks yet, but dn's "Scan Status"
 ; patch appears to modify the message ID for one of the new battle messages.
 
 org $C2A708 : db $46 ; Modify battle message ID
+
+; #########################################################################
+; Helpers in Freespace
+
+org $C2A7DD
+DmgCmdAlias:
+  PHA                ; store target data
+  SEP #$20           ; 8-bit A
+  LDA $11A3          ; N: "MP Dmg"
+  REP #$20           ; 16-bit A
+  BPL .hp_dmg        ; branch if not ^
+  PLA                ; restore target data
+  ORA #$0005         ; set "MP Dmg" alias cmd
+  RTS
+.hp_dmg
+  PLA                ; restore target data
+  ORA #$000B         ; set "HP Dmg" dynamics command
+  RTS
+
+DmgCmdAliasMass:
+  PHA                ; store battle dynamics command ($03)
+  LDA $11A3          ; N: "MP Dmg"
+  BPL .done          ; branch if not ^
+  PLA                ; clean up stack
+  LDA #$08           ; battle dynamics command for MP
+  BRA .exit          ; branch to exit
+.done
+  PLA                ; restore battle dynamics command
+.exit
+  JMP $629B          ; finish up
+warnpc $C2A800+1
+
+; #########################################################################
+; Palette Data for Various Animations
+;
+; Modify palette for MP damage, part of "MP Colors" patch
+
+org $C2C6A1 : db $63,$14,$41,$7F,$E0,$03,$00,$7F
 
 ; #########################################################################
 ; Freespace used for various helper functions

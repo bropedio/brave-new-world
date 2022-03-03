@@ -76,3 +76,59 @@ Advance:
 
 padbyte $EA : pad $C0A07C
 warnpc $C0A07C+1
+
+; #########################################################################
+; Freespace
+
+org $C0DE5E
+SetMPDmgFlag:
+  ORA #$01           ; [moved] Add "enable dmg numeral" flag
+  PHA                ; store flags so far
+  LDA ($76)          ; battle dynamics command ID
+  CMP #$0B           ; is this the non-alias cmd (for cascade)
+  BEQ .done          ; branch if ^
+  PLA                ; else, get flags
+  ORA #$40           ; add "MP Dmg" flag
+  BRA .set           ; branch to exit
+.done
+  PLA                ; get flags
+.set
+  STA $631A,X        ; set animation thread flags
+  RTL
+
+SetMPDmgFlagMass:
+  ORA #$01           ; [moved] Add "enable dmg numeral" flag
+  PHA                ; store flags so far
+  LDA ($76)          ; battle dynamics command ID
+  CMP #$03           ; is this the non-alias cmd (for mass)
+  BEQ .done          ; branch if ^
+  PLA                ; else, get flags
+  ORA #$40           ; add "MP Dmg" flag
+  BRA .set           ; branch to exit
+.done
+  PLA                ; get flags
+.set
+  STA $7B3F,X        ; set animation thread flags
+  RTL
+
+PaletteMP:
+  PHA                ; store palette
+  LDA $631A,X        ; regular damage numerals
+  BRA .check_mp      ; branch to check mp flag
+.mass
+  PHA                ; store palette
+  LDA $7B3F,X        ; mass damage numerals
+.check_mp
+  AND #$40           ; "MP dmg" flag
+  BEQ .normal        ; branch if not ^
+  PLA                ; else, get palette
+  CLC : ADC #$04     ; and advance to next palette
+  BRA .set_palette   ; set palette
+.normal
+  PLA                ; get hp palette color
+.set_palette
+  STA $0303,Y        ; store palette [?]
+  STA $0307,Y        ; store palette [?]
+  RTL
+warnpc $C0DEA0+1
+
