@@ -4,7 +4,6 @@ hirom
 ; Preserves alphabetical order of original file names,
 ; which have been changed for these new asm files.
 
-incsrc fancy-walking.asm
 incsrc genjiglv.asm
 incsrc mp-colors.asm
 incsrc overcast-fix.asm

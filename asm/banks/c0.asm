@@ -3,6 +3,22 @@ hirom
 ; C0 Bank
 
 ; #########################################################################
+; Diagonal Movement Handlers
+;
+; Modified to add various handling to diagonal movement (eg on stairs)
+; Original patch by Lenophis
+
+org $C0496A
+FancyWalking:
+  JSR $4A03 ; add to step count, deal with poison damage, save point use, etc
+  LDA #$01
+  STA $57
+  STZ $078E
+  RTS
+padbyte $FF : pad $C04978
+warnpc $C04978+1
+
+; #########################################################################
 ; General Actions pointer updates
 ;
 ; Action $7F (Change Character Name) is optimized and shifted to make
