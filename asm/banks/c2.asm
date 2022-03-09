@@ -243,6 +243,14 @@ WeapChk:
   RTS
 
 ; #########################################################################
+; Load Item Properties
+;
+; Modified as part of "Abort on Enemies" patch to prevent most items and
+; rods from being targeted at enemies. (Synchysi)
+
+org $C22A78 : JSR ItemAbortEnemy ; Set "abort-on-enemies" flag for many items
+
+; #########################################################################
 ; Scan Special Effect (per-target)
 ;
 ; Modified by dn's "Scan Status" patch to skip the "Cannot Scan" check and
@@ -667,6 +675,14 @@ CmdBlanks:
 warnpc $C2546E+1
 
 ; #########################################################################
+; Big Ass Targeting Function (and friends)
+;
+; Interrupt routine near "Abort on Characters" check to implement
+; new "Abort on Enemies" helper routine. (Synchysi)
+
+org $C25902 : JSR EnemyAbort ; Add "abort-on-enemies" support
+
+; #########################################################################
 ; Damage Number Processing and Queuing Animation(s)
 ;
 ; Part of "MP Colors" patch, Fork which battle dynamics command ID
@@ -774,7 +790,6 @@ org $C2FBFD
 C2_BrushHand:
   JSR BrushHand
   RTL
-
 Brushless:
   LDA $3CA8,Y     ; right hand equipment ID
   JSR BrushHand   ; C: Not a brush
@@ -785,4 +800,30 @@ Brushless:
   RTS
 warnpc $C2FC10+1
 
+org $C2FC17
+EnemyAbort:
+  LDA $11A4      ; attack flags
+  ASL #2         ; C: "Abort on Enemies" (new BNW flag)
+  BCC .exit      ; exit if not ^
+  STZ $B9        ; else, clear enemy targets
+.exit
+  JMP $5917      ; [moved]
+
+ItemAbortEnemy:
+  TRB $11A2      ; [moved]
+  LDA $03,S      ; item ID
+  CMP #$E7       ; start of consumable items range
+  BCC .abort     ; branch if before ^ (all equipment, esp. breakable rods)
+  CMP #$F0       ; "Phoenix Down"
+  BEQ .abort     ; branch if ^
+  CMP #$F1       ; "Holy Water"
+  BEQ .abort     ; branch if ^
+  CMP #$F9       ; "Phoenix Tear"
+  BEQ .abort     ; branch if ^
+  RTS
+.abort
+  LDA #$40       ; "Abort on Enemies" (replaces L? Spell flag)
+  TSB $11A4      ; set ^
+  RTS
+warnpc $C2FC3F+1
 
