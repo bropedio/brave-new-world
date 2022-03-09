@@ -722,6 +722,41 @@ warnpc $C2A800+1
 org $C2C6A1 : db $63,$14,$41,$7F,$E0,$03,$00,$7F
 
 ; #########################################################################
+; Sketch Animation Helper
+;
+; Modified by Assassin's "Sketch Fix" patch, which is actually only half
+; complete. However, the change here is enough to avoid the dangerous
+; aspects of the Sketch Bug. For complete fix, requires C1 changes, too
+
+org $C2F592 : BraToHere:
+org $C2F5C6
+SketchFix:
+  BRA BraToHere    ; branch to duplicate code to make room
+  NOP #7
+.done
+  JMP $F809
+.starthere
+  LDY #$2800       ; [?]
+  JSL $C1B109      ; [?]
+  LDA #$01         ; [?]
+  TRB $898D        ; [?]
+  LDY #$0003       ; target arg
+  LDA ($76),Y      ; get sketch target (could be null)
+  ASL              ; x2, C: null target
+  TAX              ; index it
+  REP #$20         ; 16-bit A
+  LDA $2001,X      ; enemy ID
+  BCC .safe        ; branch if not null
+  TDC              ; zero A/B
+  DEC              ; $FFFF (null)
+.safe
+  TAX              ; index enemy ID
+  TDC              ; zero A/B
+  SEP #$20         ; 8-bit A
+  JSL $C124D1
+  BRA .done
+
+; #########################################################################
 ; Freespace used for various helper functions
 
 org $C2FAC0
