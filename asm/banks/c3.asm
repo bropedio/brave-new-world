@@ -3,6 +3,92 @@ hirom
 ; C3 Bank
 
 ; #########################################################################
+; Initialize Rage Menu
+;
+; Modified by dn's patch to handle BNW's reduced rage set (64)
+
+org $C321AD : LDA #$03f0 ; fix arrow (scrollbar speed)
+org $C321C3 : LDA #$18   ; set scroll limit (8 onscreen + 24 scroll * 2 = 64)
+
+; #########################################################################
+; Build Rage List
+;
+; Rewritten by Assassin for "Alphabetical Rage" patch. Included notes:
+;   Generates alphabetical Rage list under the Skills menu.  Loops for all 256 enemies.
+;   Function C3/5418 still needs to process this list to display the names.  I tweaked that
+;   routine to make sure it preserves the ordering established here.
+
+org $C353C1
+BuildRageList:
+  LDX #$9D89       ; WRAM buffer address
+  STX $2181        ; set ^
+  SEP #$10         ; 8-bit X/Y
+  LDX $00          ; zero iterator
+.loop
+  LDA RageList,X   ; next sorted rage ID
+  TAY              ; index it
+  PHX              ; store iterator
+  CLC              ; $C25217 treats carry as bit 9 of A
+  JSL LongByteMod  ; X: byte index, A: bitmask for this rage bit
+  BIT $1D2C,X      ; compare to known rages
+  BEQ .null        ; branch if not learned yet
+  TYA              ; else, get rage ID
+  BRA .save        ; and branch to save it
+.null
+  LDA #$FF         ; "null" entry
+.save
+  STA $2180        ; store rage in menu
+  PLX              ; restore iterator
+  INX              ; next sorted rage index
+  BNE .loop        ; loop until 256 rollover TODO: Update this for BNW
+  REP #$10         ; 16-bit X/Y
+  RTS
+  NOP #3           ; [fill empty space]
+  RTS              ; [fill empty space]
+warnpc $C353EE+1
+
+; #########################################################################
+; Draw Rage Name
+;
+; Largely rewritten as part of Assassin's "Alphabetical Rage" patch. See notes:
+;   - If a given menu slot holds FFh, display a blank string in place of the enemy's name.
+;   - If the slot holds 0-FEh, display the name of the enemy whose number matches the current
+;     menu slot's *contents*.  This is a change from the original code, which used the
+;     enemy number equal to the slot's position.  The home of that rowdy second "LDA $E5" is
+;     now inhabited by peaceful NOPs.
+
+org $C35418
+DrawRageName:
+  LDA $E6         ; current row
+  INC             ; one row below
+  JSR $809F       ; X: tile position
+  REP #$20        ; 16-bit A
+  TXA             ; tile position in A
+  STA $7E9E89     ; save to buffer
+  SEP #$20        ; 8-bit A
+  TDC             ; zero A/B
+  LDA $E5         ; rage slot index
+  TAX             ; index it
+  LDA $7E9D89,X   ; rage ID in this slot
+  CMP #$FF        ; "null" (unlearned rage)
+  BEQ .null       ; branch if ^
+  NOP #2          ; [unused space]
+  JSR $8467       ; load enemy name
+  JMP $7FD9       ; draw enemy name
+.null
+  LDY #$000A      ; length of enemy names
+  LDX #$9E8B      ; WRAM address
+  STX $2181       ; set ^
+  LDA #$FF        ; " " (space)
+.space_loop
+  STA $2180       ; write space
+  DEY             ; next character
+  BNE .space_loop ; loop for full length
+  STZ $2180       ; EOL
+  JMP $7FD9       ; draw empty name
+warnpc $C35452+1
+
+; #########################################################################
 ; Draw command names based on availability
 ;
 ; Rewritten as part of Assassin's "Brushless Sketch" patch to save space

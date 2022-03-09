@@ -674,6 +674,70 @@ CmdBlanks:
   db $0C ; Lore
 warnpc $C2546E+1
 
+; ########################################################################
+; Construct Dance and Rage Menus
+;
+; Modified by Assassin's "Alphabetical Rage" hack. Included with that hack
+; are the following notes:
+;   Generates alphabetical in-battle Rage menu. Much like the original,
+;   enemies with undiscovered rages and enemy #255 are skipped entirely.
+;   While it may seem harmless enough to just go and output the null entry
+;   for Pugs, this would lead to two bad things:
+;   - If you've found all 256 rages, the $3A9A counter overflows, which
+;     prevents the game from being able to correctly choose a random Rage
+;     when a character's muddled.
+;   - The code that chooses a random Rage dislikes null entries in the
+;     middle of the list for some reason, and will deliberately seek them
+;     out. If you had a blank spot corresponding to Pugs in an alphabetical
+;     Guard [enemy #0] taking their place.
+
+org $C2580C
+  TDC              ; [unchanged]
+  LDA $1CF7        ; [unchanged]
+  JSR $520E        ; [unchanged]
+  DEX              ; [unchanged]
+  STX $2020        ; [unchanged]
+  TDC              ; [unchanged]
+  LDA $1D28        ; [unchanged]
+  JSR $520E        ; [unchanged]
+  STX $3A80        ; [unchanged]
+  LDA $1D4C        ; [unchanged]
+  STA $EE          ; [unchanged]
+  LDX #$07         ; [unchanged]
+.dance_loop
+  ASL $EE          ; [unchanged]
+  LDA #$FF         ; [unchanged]
+  BCC .next_dance  ; [unchanged]
+  TXA              ; [unchanged]
+.next_dance
+  STA $267E,X      ; [unchanged]
+  DEX              ; [unchanged]
+  BPL .dance_loop  ; [unchanged]
+  REP #$20         ; [unchanged]
+  LDA #$257E       ; [unchanged]
+  STA $002181      ; [unchanged]
+  SEP #$20         ; [unchanged]
+  TDC              ; [unchanged]
+  TAX              ; [unchanged] zero loop iterator
+  STA $002183      ; set WRAM bank to 7E
+.rage_loop
+  LDA RageList,X   ; get next sorted rage ID
+  TAY              ; index it
+  PHX              ; store iterator
+  CLC              ; $5217 below uses carry as 9th bit of A
+  JSR $5217        ; X: byte index, A: bitmask for bit in byte
+  BIT $1D2C,X      ; compare to current rage byte
+  BEQ .next_rage   ; branch if rage not learned
+  TYA              ; rage ID
+  INC $3A9A        ; increment known rages
+  STA $002180      ; store rage ID in menu
+.next_rage
+  PLX              ; restore iterator
+  INX              ; next rage index
+  CPX #$40         ; 64 rages total (BNW)
+  BNE .rage_loop   ; check all 64 rages
+  RTS 
+
 ; #########################################################################
 ; Big Ass Targeting Function (and friends)
 ;
@@ -826,4 +890,11 @@ ItemAbortEnemy:
   TSB $11A4      ; set ^
   RTS
 warnpc $C2FC3F+1
+
+org $C2FCCD
+LongByteMod:
+  JSR $5217      ; X: byte index, A: bitmask for bit in byte
+  RTL
+warnpc $C2FCD1+1
+
 

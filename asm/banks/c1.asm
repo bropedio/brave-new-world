@@ -3,6 +3,13 @@ hirom
 ; C1 Bank
 
 ; ########################################################################
+; Rage Battle Menu
+;
+; Modify max scroll value for shortened rage battle menu (dn)
+
+org $C184F9 : CMP #$1C ; (64 rages / 2) - 4(onscreen)
+
+; ########################################################################
 ; Damage number color palette routine
 ;
 ; Intercept to check for new MP dmg flag at bit6, part of Imzogelmo's 
