@@ -33,9 +33,6 @@ assemble "$allbanks"
 rm "$allbanks"
 cd ../../scripts
 
-# Assemble ips-to-asm directory using master file
-assemble_master ips-to-asm master.asm
-
 # Assemble asm files in synchysi directory one at a time
 assemble_batch synchysi
 
