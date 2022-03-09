@@ -4,5 +4,4 @@ hirom
 ; Preserves alphabetical order of original file names,
 ; which have been changed for these new asm files.
 
-incsrc tritoch-animation-fix.asm
 incsrc yellow-streak.asm

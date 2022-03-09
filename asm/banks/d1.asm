@@ -4,6 +4,11 @@ table vwf.tbl,rtl
 ; D1 Bank (data)
 
 ; #########################################################################
+; Battle Animation Frame Data
+
+org $D1C649 : db $35,$07 ; Fixes Tritoch animation
+
+; #########################################################################
 ; Battle Message Pointers
 ;
 ; From dn's "Wrexsoul Fix" patch, which appears to have been added to
