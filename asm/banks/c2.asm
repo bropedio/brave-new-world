@@ -243,6 +243,108 @@ WeapChk:
   RTS
 
 ; #########################################################################
+; Initialize ATB Timers
+;
+; Partially rewritten by Seibaby's "ATB Start" patch, which alters the starting
+; ATB formula. See included notes:
+;   It reduces randomness and increases Speed's contribution to how
+;   quickly characters (and enemies) get their first turn.
+;   The original formula was:
+;     ([Speed..(Speed * 2 - 1)] + [(0..9) * 8] + [G * 16]) * 256 / 65535
+;   Where G = (10 - Number of entities in battle)
+;   The new formula is:
+;     ([(Speed * 2)..(Speed * 3 + 29)] + [(0..9) * 4] + G) * 256 / 65535
+
+org $C22575
+InitializeATBTimers:
+  PHP            ; store flags
+  STZ $F3        ; zero General Incrementor
+  LDY #$12       ; entity loop
+.ent_loop
+  LDA $3AA0,Y    ; entity state flags
+  LSR            ; C: "Present and Alive"
+  BCS .next_ent  ; branch if ^
+  CLC            ; clear carry (prep addition)
+  LDA #$01       ; lowered from vanilla
+  ADC $F3        ; add to general incrementor
+  STA $F3        ; update ^ for missing entities
+.next_ent
+  DEY #2         ; next entity
+  BPL .ent_loop  ; loop for all 10 characters and monsters
+  REP #$20       ; 16-bit A
+  LDA #$03FF     ; 10 bits set, 10 possible entities in battle
+  STA $F0        ; save bitmask ^
+  LDY #$12       ; entity loop
+.loop
+  LDA $F0        ; entity bitmask
+  JSR $522A      ; randomly choose one entity
+  TRB $F0        ; clear from remaining bitmask
+  JSR $51F0      ; X: bit number of chosen bit
+  SEP #$20       ; 8-bit A
+  TXA            ; chosen bit number
+  ASL #2         ; x4
+  NOP            ; [unused space]
+  STA $F2        ; save [0..9] * 4 in our Specific Incrementor
+                 ; the result is that each entity is randomly
+                 ; assigned a different value for $F2:
+                 ; 0, 4, 8, 12, 16, 20, 24, 28, 32, 36
+  LDA $3219,Y    ; ATB Timer high byte
+  INC            ; check for null (FF)
+  BNE .next      ; skip to next entity if not ^
+  LDA $3EE1      ; FF in every case, except for final 4-tier battle
+  INC            ; check for null
+  BNE .next      ; skip to next entity if not ^
+  LDX $201F      ; encounter type.  0=front, 1=back, 2=pincer, 3=side
+  LDA $3018,Y    ; entity unique bit
+  BIT $3A40      ; character acting as enemy?
+  BNE .enemy     ; branch if ^
+  CPY #$08       ; in monster range
+  BCS .enemy     ; branch if ^
+  LDA $B0        ; battle flags
+  ASL            ; N: "Preemptive"
+  BMI .next      ; branch if ^
+  DEX            ; decrement encounter type
+  BMI .front     ; branch if front attack
+  DEX #2         ; decrement encounter type
+  BEQ .next      ; branch if side attack
+  LDA #$80       ; fixed starting ATB for "Pincer"
+  BRA .set_atb   ; branch to set ^
+.enemy
+  LDA $B0        ; battle flags
+  ASL            ; N: "Preemptive"
+  BMI .min_atb   ; branch if ^
+  CPX #$03       ; check "Side Attack" encounter type
+  BNE .front     ; branch if not ^
+.min_atb
+  LDA #$01       ; minimum ATB value
+  BRA .set_inc   ; set top byte of ATB timer to 2
+.front
+  LDA $3B19,Y    ; speed
+  ADC #$1E       ; add 30
+  JSR $4B65      ; random(speed + 30)
+  JMP ATBInitHelp
+.after_help
+  ADC $F2        ; add entity's Specific Incrementor, a
+  BCS .max_atb   ; branch if exceeded 255
+  ADC $F3        ; add General Incrementor (10 - number of valid entities)
+  BCC .set_inc   ; branch if byte didn't exceed 255
+.max_atb
+  LDA #$FF       ; max ATB (prior to pending turn)
+.set_inc
+  INC            ; increment ATB + 1
+  BNE .set_atb   ; branch if no overflow
+  DEC            ; else, decrement
+.set_atb
+  STA $3219,Y    ; save top byte of ATB timer
+.next
+  REP #$20       ; 16-bit A
+  DEY #2         ; next entity index
+  BPL .loop      ; loop for all 10 possible entities
+  PLP            ; restore flags
+  RTS
+warnpc $C22602+1
+
+; #########################################################################
 ; Load Item Properties
 ;
 ; Modified as part of "Abort on Enemies" patch to prevent most items and
@@ -838,6 +940,17 @@ SketchFix:
 
 ; #########################################################################
 ; Freespace used for various helper functions
+
+org $C2FAA4
+ATBInitHelp:
+  ADC $3B19,Y     ; A = random: Speed to (2 * Speed + 29)
+  BCS .cap        ; branch if exceeded 255
+  ADC $3B19,Y     ; A = random: (2 * Speed) to (3 * Speed + 29)
+  BCS .cap        ; branch if exceeded 255
+  JMP InitializeATBTimers_after_help
+.cap
+  JMP InitializeATBTimers_max_atb
+warnpc $C2FAB4+1
 
 org $C2FAC0
 RunicCheck:
