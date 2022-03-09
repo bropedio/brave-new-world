@@ -83,6 +83,11 @@ CmdPalette:
 warnpc $C35F50+1
 
 ; #########################################################################
+; Yellow Streak Fix (Gogo's Menu)
+
+org $C35f50 : LDX #$620A ; nudge mask around Gogo portrait
+
+; #########################################################################
 ; Status Screen Commands
 ; 
 ; Rewritten as part of Assassin's "Brushless Sketch" patch to make room
