@@ -284,7 +284,15 @@ WeapChk:
   RTS
 
 ; #########################################################################
-; GP Rain (special effect)
+; Jump (command)
+;
+; Modified by dn's "Blind Jump Fix" patch to make "Blind" affect Jump
+; command. Further modified by Synchysi so ensure row is ignored still.
+
+org $C2180B : JSL C3_BlindJump : NOP ; helper routine in C3
+
+; #########################################################################
+; GP Rain (command)
 ;
 ; Modified by Synchysi's Blind patch
 

@@ -394,3 +394,20 @@ EquipSubSwap:
   LDA $26           ; menu mode
   CLC : ADC #$29    ; "Swap Actor in Equip Menu" (retain Equip or Remove mode)
   BRA HandleLR      ; branch
+warnpc $C3F570+1
+
+org $C3F723
+C3_BlindJump:
+  STZ $11A9         ; omit special effect (if any)
+  LDA $3EE4,x       ; status byte 1
+  LSR               ; C: "Blind"
+  LDA #$20          ; "Cannot Miss"
+  BCS .blind        ; branch if "Blind"
+  STA $11A4         ; set "Cannot Miss"
+  BRA .exit         ; branch to exit
+.blind
+  STZ $11A4         ; clear "Cannot Miss" [TODO: Why?]
+.exit
+  RTL
+warnpc $C3F737+1
+
