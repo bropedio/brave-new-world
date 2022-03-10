@@ -509,6 +509,69 @@ pad $C23C6E
 warnpc $C23C6E+1
 
 ; #########################################################################
+; Spiraler (per-strike special effect)
+;
+; Rewritten by Synchysi's "Blitz" patch to convert to "Chakra", which
+; restores MP based on caster's level and stamina:
+;   HealMP = (Level + Stamina) / 2 * RandomVariance
+
+org $C24234
+Chakra:
+  LDA #$60       ; "No Split Dmg", "Ignore Defense"
+  TSB $11A2      ; set ^
+  REP #$20       ; 16-bit A
+  LDA $3018,Y    ; attacker bitmask
+  TRB $A4        ; always miss the caster
+  SEP #$20       ; 8-bit A
+  LDA $3B40,Y    ; attacker stamina
+  JMP ChakraHelp ; jump to helper
+  NOP #2         ; [unused space]
+  RTS            ; preserved in case it's branched to from elsewhere
+warnpc $C2424B+1
+
+; #########################################################################
+; Mantra (per-strike special effect)
+;
+; Rewritten by Synchysi's "Blitz" patch to take stamina into account:
+;   HealHP = (CurrHP / 64 + Level) * Stamina / 4
+
+org $C24263
+Mantra:
+  LDA #$60       ; "No Split Dmg", "Ignore Defense"
+  TSB $11A2      ; set ^
+  STZ $3414      ; "No Damage Modification"
+  JSR MantraHelp ; do most of formula
+  LDA $E8        ; (CurrHP / 64 + Level) * Stamina
+  LSR #2         ; / 4
+  STA $11B0      ; set heal amount (per target)
+  LDA $3018,Y    ; attacker bitmask
+  TRB $A4        ; miss caster
+  RTS
+
+; #########################################################################
+; End of Suplex + Reflect ??? (special effects) -- used as freespace
+
+org $C242A4
+MantraHelp:
+  LDA $3B40,Y    ; attacker stamina
+  STA $E8        ; save multiplier
+  REP #$20       ; 16-bit A
+  LDA $3BF4,Y    ; attacker current HP
+  LDX #$40       ; 64
+  JSR $4792      ; CurrHP / 64 [TODO: LSR #6]
+  SEP #$20       ; 8-bit A
+  ADC $3B18,Y    ; CurrHP / 64 + Level [NOTE: No chance of carry]
+  REP #$20       ; 16-bit A [TODO: Could do A*B routine -- both 8-bits]
+  JMP $47B7      ; (CurrHP / 64 + Level) * Stamina
+ChakraHelp:
+  CLC            ; prep addition
+  ADC $3B18,Y    ; add attacker level
+  LSR            ; / 2
+  STA $11B0      ; set MP heal amount
+  RTS
+warnpc $C242C6+1
+
+; #########################################################################
 ; Status Setting/Clearing Routine
 ;
 ; Largely rewritten by Assassin's "Overcast Fix" patch, which ensures
