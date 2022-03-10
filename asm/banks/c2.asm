@@ -284,6 +284,34 @@ WeapChk:
   RTS
 
 ; #########################################################################
+; GP Rain (special effect)
+;
+; Modified by Synchysi's Blind patch
+
+org $C21908 : JSR CoinHelp
+
+; #########################################################################
+; Hit Determination
+;
+; Modified by Synchysi's "Blind" patch
+;   Have Blind status apply on skills with 255 hit rate and sets the
+;   accuracy of a blinded attacker to 50%
+
+org $C22306
+BlindPatch:
+  JSR BlindHelp
+  BRA .skip_ahead
+org $C22315
+.skip_ahead
+
+org $C2234A
+BlindPatch2:
+  BRA .skip_ahead
+org $C22358
+.skip_ahead
+  LDA $3C58,Y       ; [moved] relic effects
+
+; #########################################################################
 ; Initialize ATB Timers
 ;
 ; Partially rewritten by Seibaby's "ATB Start" patch, which alters the starting
@@ -389,8 +417,61 @@ warnpc $C22602+1
 ; Load Weapon Properties
 ;
 ; Synchysi's Atma Weapon patch modifies the special effect handling
+; Synchysi's Blind patch changes how "Cannot Miss" effect is handled
 
-org $C229FB : JSR AtmaStat
+org $C2299F
+LoadWeaponProperties:
+  PHP               ; store flags
+  LDA $3B2C,X       ; attacker vigor (x2)
+  STA $11AE         ; save attack stat ^
+  JSR $2C21         ; put attacker level (or sketcher) in $11AF
+  LDA $B6           ; attack type
+  CMP #$EF          ; "Monster Special"
+  BNE .get_hand     ; branch if not ^
+  LDA #$06          ; message ID to display special attack name
+  STA $3412         ; set message ID ^
+.get_hand
+  PLP               ; restore flags
+  PHX               ; store attacker index
+  ROR $B6           ; N: "Left Handed" (from carry at start of routine)
+  BPL .weapon_fx    ; branch if not ^
+  INX               ; else, point to left hand data
+.weapon_fx
+  JSR SketchChk     ; get battle power (handles sketched monsters)
+  STA $11A6         ; save ^
+  LDA #$62          ; "Always Crit", "Gauntlet", "Respect Row"
+  TSB $B3           ; turn off ^
+  LDA $3BA4,X       ; weapon flags
+  AND #$60          ; "Ignore Row", "Gauntlet"
+  EOR #$20          ; "Ignore Row" -> "Respect Row"
+  TRB $B3           ; set attack flags ^
+  LDA $3B90,X       ; weapon element
+  STA $11A1         ; set ^
+  LDA $3B7C,X       ; weapon hitrate
+  STA $11A8         ; set ^
+  LDA $3D34,X       ; weapon spellcast
+  STA $3A89         ; set ^
+  LDA $3CBC,X       ; "Special Effect"
+  AND #$F0          ; isolate ^
+  LSR #3            ; shift down to x2 index
+  JSR AtmaStat      ; set special effect and handle Atma damage stat
+  LDA $3CA8,X       ; weapon ID
+  INC               ; +1
+  STA $B7           ; set graphic index
+  PLX               ; restore attacker index (no more hand-based inc)
+  LDA $3C45,X       ; relic effects
+  BIT #$10          ; "Cannot Miss"
+  BEQ .chk_offering ; branch if no ^
+  LDA #$FF          ; max
+  STA $11A8         ; set hit rate to max (can be affected by blind now)
+.chk_offering
+  LDA $3C58,X       ; relic effects
+  LSR               ; C: "X-Fight" (Daryl's Soul)
+  BCC .exit         ; branch if no ^
+  LDA #$02          ; "No Critical nor True Knight"
+  TSB $B2           ; set ^
+.exit
+  RTS
 
 ; #########################################################################
 ; Load Item Properties
@@ -399,6 +480,17 @@ org $C229FB : JSR AtmaStat
 ; rods from being targeted at enemies. (Synchysi)
 
 org $C22A78 : JSR ItemAbortEnemy ; Set "abort-on-enemies" flag for many items
+
+; #########################################################################
+; Rippler Effect (now freespace)
+
+org $C23C3D
+CoinHelp:
+  JSR $298A       ; [moved] load command data
+  STZ $11A4       ; clear "Cannot Miss" (no others set)
+  LDA #$FF        ; max
+  STA $11A8       ; set max hitrate (now affected by blind)
+  RTS
 
 ; #########################################################################
 ; Scan Special Effect (per-target)
@@ -519,7 +611,7 @@ DisableCommands:
   EOR #$FF           ; invert ^
   AND #$82           ; "Runic","Bushido" invalid
   STA $EF            ; set flags for later ^
-  JSR SketchChk      ; set bit 0 if "Sketch" invalid
+  JSR SketchBrshChk  ; set bit 0 if "Sketch" invalid
 
   LDA #$04           ; menu slot iterator
   STA $EE            ; save ^
@@ -710,7 +802,7 @@ CommandConversions:
   PLX               ; restore X (character slot)
   RTS 
 
-SketchChk:
+SketchBrshChk:
   JSR Brushless     ; C: No brush equipped
   TDC               ; zero A/B
   ROL               ; bit0: No brush
@@ -904,6 +996,39 @@ org $C25902 : JSR EnemyAbort ; Add "abort-on-enemies" support
 
 org $C263A9 : JSR DmgCmdAlias
 org $C263BB : JSR DmgCmdAliasMass
+
+; #########################################################################
+; Freespace (C26469-C26800)
+
+org $C26642
+SketchChk:         ; function defined in sketch_fix.asm [?]
+
+org $C26719
+BlindHelp:
+  LDA $3EE4,X      ; attacker status byte 1
+  LSR              ; C: "Blind"
+  BCC .not_blind   ; branch if not ^
+  LDA $11A7        ; attack flags
+  BIT #$04         ; "Stamina-Based" (BNW flag)
+  BNE .low_hit     ; branch if ^ (blind affects)
+  LDA $11A2        ; attack flags
+  LSR              ; C: "Physical"
+  BCC .normal      ; branch if not ^ (blind does not affect)
+.low_hit
+  LDA #$32         ; set hitrate to 50% (for blind)
+  RTS              ; skip "Hit in Back" check when blind
+.not_blind
+  REP #$20         ; 16-bit A
+  LDA $3018,Y      ; target bitmask
+  BIT $3A54        ; "Hit in Back"
+  SEP #$20         ; 8-bit A
+  BEQ .normal      ; branch if not ^
+  LDA #$FF         ; max hitrate
+  BRA .exit        ; branch to exit
+.normal
+  LDA $11A8        ; hit rate
+.exit
+  RTS
 
 ; #########################################################################
 ; Esper Level and Experience Messages
