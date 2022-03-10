@@ -89,6 +89,13 @@ DrawRageName:
 warnpc $C35452+1
 
 ; #########################################################################
+; Draw Blitz Inputs
+;
+; Jump added by dn's "Blitz Menu" patch, to draw Blitz names as well
+
+org $C3565D : JSR BlitzNames
+
+; #########################################################################
 ; Draw command names based on availability
 ;
 ; Rewritten as part of Assassin's "Brushless Sketch" patch to save space
@@ -309,7 +316,43 @@ EquipSubSwap:
   LDA $26
   CLC : ADC #$29
   BRA HandleLR
+warnpc $C3F4ED+1
 namespace off
+
+org $C3F4F0
+BlitzNames:
+  PHA               ; store blitz ID
+  PHY               ; store Y [TODO: unnecessary]
+  ASL               ; x2
+  PHA               ; store blitz ID x2
+  ASL #2            ; x4 (now x8)
+  ADC $01,s         ; add x2 (now x10)
+  TAX               ; index to Blitz name
+  LDY #$9E8B        ; WRAM buffer address
+  STY $2181         ; set ^
+  LDA #$20          ; user color (white)
+  STA $29           ; set palette
+  LDY #$000A        ; 10 (length of blitz name)
+.loop
+  LDA $E6F831,X     ; blitz name byte
+  STA $2180         ; write letter to buffer
+  INX               ; increment name index
+  DEY               ; decrement buffer size
+  CPY #$0000        ; at zero [TODO: unnecessary CPY]
+  BNE .loop         ; loop through all 10 tiles
+  STZ $2180         ; EOL
+  PLY               ; clean up stack some [TODO: unnecessary, and broken]
+  JSR $7FD9         ; draw name from buffer
+  REP #$21          ; 16-bit A, set carry
+  LDA $7E9E89       ; tilemap address
+  ADC #$0084        ; increment to next Blitz name location
+  STA $7E9E89       ; update tilemap address
+  TDC               ; zero A/B
+  SEP #$20          ; 8-bit A
+  PLA               ; clean up stack (hi byte of PHY earlier)
+  PLA               ; get Blitz ID back
+  JMP $5683         ; [moved] build tilemap
+warnpc $C3F530+1
 
 org $C3F530
 EquipSwap:
