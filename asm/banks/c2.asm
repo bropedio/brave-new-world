@@ -3,6 +3,20 @@ hirom
 ; C2 Bank
 
 ; #########################################################################
+; Part of Attack Prep (Imp command disabling used as Freespace)
+;
+; Note, assumes no more than 1 overflow in $EA from multiplication
+
+org $C202AD
+AtmaOver:
+  TDC : DEC         ; $FFFF
+  JSR $4792         ; 65535 / (maxHP / 256 + 1)
+  CLC : ADC $F0     ; add to final damage
+  STA $F0           ; update final damage
+  RTS
+warnpc $C202B8+1
+
+; #########################################################################
 ; Select actions/commands for uncontrollable characters
 ; 
 ; Rewritten as part of Assassin's "Swordless Runic" patch, to fix a bug
@@ -159,6 +173,33 @@ CmdFuncs:
   dw $FFFF        ; Currently unused
   dw $FFFF        ; Currently unused
 warnpc $C204F6+1
+
+; ########################################################################
+; Atma Weapon Damage (special effect)
+;
+; Partially rewritten as part of Synchysi's Atma Weapon changes.
+
+org $C20E41
+AtmaWpn:
+  STA $E8         ; save (currHP / 256) + 1
+  LDA $F0         ; damage so far
+  JSR $47B7       ; 24-bit $E8 = damage * (former $E8)
+  LDX $3C1D,Y     ; maxHP / 256
+  INX             ; +1
+  PHX             ; save (maxHP / 256 + 1)
+  REP #$20        ; 16-bit A
+  LDA $E8         ; damage * (currHP / 256 + 1)
+  JSR $4792       ; divide by (maxHP / 256 + 1)
+  STA $F0         ; update damage so far
+  PLX             ; maxHP / 256 + 1
+  PHY             ; save attacker index
+  LDY $EA         ; overflow
+  BEQ .exit       ; branch if no ^
+  JSR AtmaOver    ; else, handle overlow
+  NOP             ; [unused space]
+.exit
+  PLY             ; restore attacker index
+warnpc $C20E61+1
 
 ; ########################################################################
 ; Equipment Check Function
@@ -343,6 +384,13 @@ InitializeATBTimers:
   PLP            ; restore flags
   RTS
 warnpc $C22602+1
+
+; #########################################################################
+; Load Weapon Properties
+;
+; Synchysi's Atma Weapon patch modifies the special effect handling
+
+org $C229FB : JSR AtmaStat
 
 ; #########################################################################
 ; Load Item Properties
@@ -963,10 +1011,21 @@ RunicCheck:
   RTS 
 warnpc $C2FACD+1
 
-org $C2FBFD
+org $C2FBEE
+AtmaStat:
+  STA $11A9      ; [moved] Set special effect
+  CMP #$04       ; "Atma Weapon"
+  BNE .exit      ; exit if not ^
+  LDA $3B40,X    ; attacker's stamina
+  ASL            ; x2
+  STA $11AE      ; set damage stat (Vigor is also x2 normally)
+.exit
+  RTS
+
 C2_BrushHand:
   JSR BrushHand
   RTL
+
 Brushless:
   LDA $3CA8,Y     ; right hand equipment ID
   JSR BrushHand   ; C: Not a brush
