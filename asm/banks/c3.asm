@@ -1,4 +1,5 @@
 hirom
+table vwf.tbl,rtl
 
 ; C3 Bank
 
@@ -9,6 +10,173 @@ hirom
 
 org $C321AD : LDA #$03f0 ; fix arrow (scrollbar speed)
 org $C321C3 : LDA #$18   ; set scroll limit (8 onscreen + 24 scroll * 2 = 64)
+
+; #########################################################################
+; Sustain Config Menu
+;
+; Modified by dn's "Battle Speed Remove" patch, to adjust "Controller"
+; option index.
+
+org $C322D0 : CMP #$07     ; "Controller" option ID (was 8 in vanilla)
+
+; #########################################################################
+; Game Options Pressing A Handlers
+;
+; Modified by dn's "Remove Battle Speed" patch.
+
+org $C3234A
+OptionPressA:
+  dw .rts     ; Bat.Mode
+  dw .rts     ; Msg.Speed
+  dw $2368    ; Cmd.Set
+  dw .rts     ; Gauge
+  dw .rts     ; Sound
+  dw .rts     ; Cursor
+  dw .rts     ; Reequip
+  dw $2379    ; Controller
+  dw .rts     ; [unused]
+org $C3235C
+  dw .rts     ; Mag.Order
+  dw .rts     ; Window
+  dw $2388    ; Color
+  dw $2388    ; R
+  dw $2388    ; G
+  dw $2388    ; B
+org $C32341
+.rts
+
+; #########################################################################
+; Config Menu Initialize
+
+org $C33867
+ConfigMenuNav:
+  db $81      ; never wraps
+  db $00      ; initial column
+  db $00      ; initial row
+  db $01      ; 1 column
+  db $08      ; 8 rows (from 9)
+
+org $C3386C
+ConfigCursorPositions:
+  dw $3560    ; Exp Mode
+  dw $4960    ; Msg.Speed
+  dw $5960    ; Cmd.Set
+  dw $6960    ; Gauge
+  dw $7960    ; Sound
+  dw $8960    ; Cursor
+  dw $9960    ; Reequip
+  dw $A960    ; Controller
+
+org $C338C9
+DrawConfigMenu:
+  LDA #$2C      ; "Blue" palette
+  STA $29       ; set ^
+  LDY #BNWText  ; "BNW" title text data offset
+
+org $C339E6
+ConfigMenuWindowLayout:
+  dw $588D     ; title window position on screen
+  db $1A       ; title window width+1(left)+1(right)
+  db $02       ; title window height+1(top)+1(bottom)
+
+org $C33A40 : LDA #$07     ; "Controller" config option ID (was 8 in vanilla)
+
+; Old "Battle Speed" drawing routine [now freespace]
+org $C33BB7
+  RTS           ; automatically return from battle speed jump
+BNWText:   dw $78CF : db "   ",$81,"rave New World 2.1b18 ",$00 ; Issue w/ "B" char
+BattleTxt: dw $3A4F : db $81,"attle","$00
+warnpc $C33BF2+1
+padbyte $FF
+pad $C33BF2
+
+; #########################################################################
+; Game Options Update Handlers
+;
+; Modified by dn's "Remove Battle Speed" patch.
+
+org $C33D43
+OptionJumpPage1:
+  dw $3D61     ; Bat.Mode
+  dw $3DAB     ; Msg.Speed
+  dw $3DE8     ; Cmd.Set
+  dw $3E01     ; Gauge
+  dw $3E1A     ; Sound
+  dw $3E4E     ; Cursor
+  dw $3E6D     ; Reequip
+  dw $3E86     ; Controller
+  dw $FFFF     ; [unused]
+
+org $C33D55
+OptionJumpPage2:
+  dw $3E9F     ; Mag.Order
+  dw $3ECD     ; Window
+  dw $3F01     ; Viewed color
+  dw $3F3C     ; R
+  dw $3F5B     ; G
+  dw $3F7A     ; B
+
+;org $C33D7A
+;padbyte $FF    ; remove "Battle Speed" handler code
+;pad $C33DAB
+
+; #########################################################################
+; Positioned Text for Config Menu (page 1)
+;
+; Much of this code is unchanged from vanilla, but included here for context.
+; Modified by dn's "Remove Battle Speed" patch. The following was commented
+; out:
+;   org $c349f2
+;   dw $39e5
+;   db "Off",$00
+;    The above is handled by necessity in dash.asm
+
+org $C34903
+ConfigTxt1: dw ControllerTxt
+ConfigTxt2: dw CursorTxt
+ConfigTxt3: dw FastTxt
+ConfigTxt4: dw SlowTxt
+
+ControllerTxt: dw $3D8F : db "Controller",$00
+OnTxt2:        dw $39F5 : db "On",$00
+                          db $AD,$00          ; fill empty space from "Wait"
+FastTxt:       dw $3A65 : db "Fast",$00
+SlowTxt:       dw $3A75 : db "Slow",$00
+ShortTxt:      dw $3B35 : db "Short",$00
+OnTxt:         dw $3BA5 : db "On",$00
+OffTxt:        dw $3BB5 : db "Off",$00
+StereoTxt:     dw $3C25 : db "Stereo",$00
+MonoTxt:       dw $3C35 : db "Mono",$00
+MemoryTxt:     dw $3CB5 : db "Memory",$00
+OptimumTxt:    dw $3D25 : db "Optimum",$00
+MultipleTxt:   dw $3DB5 : db "Multiple",$00
+Scale1Txt:     dw $3A25 : db "1 2 3 4 5 6",$00
+Scale2Txt:     dw $3AA5 : db "1 2 3 4 5 6",$00
+CursorTxt:     dw $3C8F : db "Cursor",$00
+warnpc $C34993+1
+
+org $C34993
+ConfigTxt5: dw ExpGainTxt
+ConfigTxt6: dw BattleTxt
+ConfigTxt7: dw MsgSpeedTxt
+ConfigTxt8: dw CmdSetTxt
+ConfigTxt9: dw GaugeTxt
+ConfigTxtA: dw SoundTxt
+ConfigTxtB: dw DashTxt
+
+ConfigTitleTxt: dw $78F9 : db "Config",$00 ; TODO: No longer used
+ExpGainTxt:     dw $39CF : db "Exp.Gain",$00
+BatSpeedTxt:    dw $3A0F : db "Bat.Speed",$00
+MsgSpeedTxt:    dw $3A8F : db "Msg.Speed",$00
+CmdSetTxt:      dw $3B0F : db "Cmd.Set",$00
+GaugeTxt:       dw $3B8F : db "Gauge",$00
+SoundTxt:       dw $3C0F : db "Sound",$00
+DashTxt:        dw $3D0F : db "Reequip",$00
+ActiveTxt:      dw $39A5 : db "Active",$00
+WindowTxt:      dw $3B25 : db "Window",$00
+ResetTxt:       dw $3CA5 : db "Reset",$00
+EmptyTxt:       dw $3D35 : db "Empty",$00
+SingleTxt:      dw $3DA5 : db "Single",$00
 
 ; #########################################################################
 ; Build Rage List
