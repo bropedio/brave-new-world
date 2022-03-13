@@ -387,6 +387,33 @@ org $C38D9B : db $FF ; replace '%' with ' '
 org $C38DA5 : db $FF ; replace '%' with ' '
 
 ; #########################################################################
+; Equip Menu Tabs Navigation
+;
+; Modified by dn's "Equip Fix" hack to reduce columns from 4 to 3 and
+; remove "Optimum" cursor position
+
+org $C38E5F
+EquipMenuTabsNavigation:
+  db $01          ; wraps horizontally
+  db $00          ; initial column
+  db $00          ; initial row
+  db $03          ; 3 columns
+  db $01          ; 1 row
+
+org $C38E64
+  dw $1018        ; "EQUIP" cursor position
+  dw $1058        ; "REMOVE" cursor position
+  dw $10A0        ; "RMOVE" cursor position
+  dw $FFFF        ; [now unused]
+
+; #########################################################################
+; Relic Menu Navigation Data
+
+org $C38ED1
+  dw $1028  ; "EQUIP" cursor position
+  dw $1088  ; "REMOVE" cursor position
+
+; #########################################################################
 ; Review Screen Draw Routines
 ;
 ; Modified by dn's "Equip Overview Espers" patch to include equipped esper
@@ -398,18 +425,58 @@ org $C38F61 : JSR DrawEsperName
 org $C38F7D : JSR DrawEsperName
 
 ; #########################################################################
+; Draw Equip Menu
+;
+; Reduce options loop from 4 to 3, now that "Optimize" is removed. (dn)
+
+org $C39055 : LDY #$0006 ; 3 loops 
+
+; #########################################################################
 ; Sustain Relic and Sustain Equip Menus
 ;
 ; Modifictions to button press handlers to handle Y button presses to
 ; swap between relic and equip menus. Part of dn's "Y Screen Swap" patch
+; Modify jump table pointers for Equip menu option
 
 org $C39648 : JMP EquipSwap : NOP #4
+
+org $C3966C
+EquipOptionJumpTable:
+  dw $9674     ; "Equip" option
+  dw $968E     ; "Remove" option
+  dw $969F     ; "Empty" option
+  dw $969F     ; [NOTE: Unused]
+
 org $C398C8 : JMP EquipSubSwap : NOP #4
 org $C39908 : JMP EquipSubSwap : NOP #4
 
 org $C39EDC : JSR RelicSwap
 org $C3A047 : JSR RelicSwap
 org $C3A146 : JSR RelicSwap
+
+; #########################################################################
+; Equip and Relic Menu Text Data
+
+org $C3A2A6
+  dw EquipTxt
+  dw RemoveTxt
+  dw EmptyTxt2
+  dw $A334     ; [NOTE: Unused, Unchanged]
+warnpc $C3A2AE+1
+
+org $C3A31A
+EquipTxt:
+  dw $7913 : db "EQUIP",$00
+RemoveTxt:
+  dw $7923 : db "REMOVE",$00
+EmptyTxt2:
+  dw $7935 : db "EMPTY",$00
+org $C3A33C
+EquipTxt2:
+  dw $7917 : db "EQUIP",$00
+RemoveTxt2:
+  dw $792F : db "REMOVE",$00
+warnpc $C3A34D+1
 
 ; #########################################################################
 ; Menu Label Changes (part 2)
