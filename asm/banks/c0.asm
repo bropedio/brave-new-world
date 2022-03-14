@@ -132,3 +132,11 @@ PaletteMP:
   RTL
 warnpc $C0DEA0+1
 
+; #########################################################################
+; ROM Data for SNES
+;
+; Note, internal title is set in part to ensure BNW cannot be opened up
+; inside of FF3usME, since it overwrites custom event scripting.
+
+org $C0FFC0 : db "FF6: BRAVE NEW WORLD " ; set internal title (ASCII)
+
