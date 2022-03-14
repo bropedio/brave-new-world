@@ -4,6 +4,16 @@ table vwf.tbl,rtl
 ; C3 Bank
 
 ; #########################################################################
+; Variable definitions for reuse
+
+!_ellipsis = #$C7
+
+; #########################################################################
+; Initialize Magic Menu
+
+org $C32125 : NOP #3 ; skip drawing MP Cost in Magic Menu
+
+; #########################################################################
 ; Initialize Rage Menu
 ;
 ; Modified by dn's patch to handle BNW's reduced rage set (64)
@@ -44,6 +54,16 @@ org $C3235C
   dw $2388    ; B
 org $C32341
 .rts
+
+; #########################################################################
+; Sustain Magic Menu
+
+org $c32806 : NOP #3 ; skip drawing MP cost
+
+; #########################################################################
+; Return to Magic Menu
+
+org $C32D56 : NOP #3 ; skip drawing MP cost
 
 ; #########################################################################
 ; Config Menu Initialize
@@ -179,6 +199,84 @@ EmptyTxt:       dw $3D35 : db "Empty",$00
 SingleTxt:      dw $3DA5 : db "Single",$00
 
 ; #########################################################################
+; Magic Menu Cursor Positions
+
+org $C34BAE
+MagicMenuCursorPositions:
+  dw $7408    ; Spell 1
+  dw $7478    ; Spell 2
+  dw $8008    ; Spell 3
+  dw $8078    ; Spell 4
+  dw $8C08    ; Spell 5
+  dw $8C78    ; Spell 6
+  dw $9808    ; Spell 7
+  dw $9878    ; Spell 8
+  dw $A408    ; Spell 9
+  dw $A478    ; Spell 10
+  dw $B008    ; Spell 11
+  dw $B078    ; Spell 12
+  dw $BC08    ; Spell 13
+  dw $BC78    ; Spell 14
+  dw $C808    ; Spell 15
+  dw $C878    ; Spell 16
+
+; #########################################################################
+; Draw Skills Menu
+
+org $C34C80 : JSR FlipMPDisplay : NOP #2 ; default MP display to "on"
+org $C34CC0 : NOP #6 ; skip drawing "title box" window
+
+; #########################################################################
+; Draw Magic Menu
+
+org $C34D8C : NOP #6 ; skip drawing "MP" label
+org $C34FAC : LDX #$0011 ; increase space between spell list columns (was $10)
+
+; #########################################################################
+; Draw Magic Menu Spell
+
+org $c35005
+DrawSpellAndCost:
+  LDA !_ellipsis     ; ellipsis character
+  STA $2180          ; add to string
+  LDA #$FF           ; space character
+  STA $2180          ; add to string
+  LDA $F8            ; tens digit
+  STA $2180          ; add to string
+  JMP EndDrawMP      ; finish old [moved] code
+  db $FF,$FF,$FF     ; [fill unused]
+warnpc $C3501A+1
+
+org $C35027 : LDY #$000C ; allow for spell name length 12 (was 11)
+
+org $c35082
+  LDA #$FF           ; space character
+  JMP EndDrawPercent ; finish drawing percentage learned
+  db $FF             ; [fill unused]
+
+; #########################################################################
+; Draw MP Cost in Magic Menu
+; No longer in use, can be used as freespace
+
+org $C351C6
+warnpc $C351F9+1
+
+; #########################################################################
+; Draw Lore Menu
+
+org $C35203 : NOP #6 ; skip drawing "Lore" title
+
+; #########################################################################
+; Draw Bushido Menu
+
+org $C352E8 : NOP #6 ; skip drawing "Bushido" title
+
+; #########################################################################
+; Draw Rage Menu
+
+org $C3539B : NOP #6 ; skip drawing "Rage" title
+
+; #########################################################################
 ; Build Rage List
 ;
 ; Rewritten by Assassin for "Alphabetical Rage" patch. Included notes:
@@ -257,11 +355,26 @@ DrawRageName:
 warnpc $C35452+1
 
 ; #########################################################################
+; Draw Esper Menu
+
+org $C35460 : NOP #6 ; skip drawing "Esper" title
+
+; #########################################################################
+; Draw Blitz Menu
+
+org $C355DE : NOP #6 ; skip drawing "Blitz" title
+
+; #########################################################################
 ; Draw Blitz Inputs
 ;
 ; Jump added by dn's "Blitz Menu" patch, to draw Blitz names as well
 
 org $C3565D : JSR BlitzNames
+
+; #########################################################################
+; Draw Dance Menu
+
+org $C3577E : NOP #6 ; skip drawing "Dance" title
 
 ; #########################################################################
 ; Draw command names based on availability
@@ -630,6 +743,29 @@ EquipSubSwap:
   CLC : ADC #$29    ; "Swap Actor in Equip Menu" (retain Equip or Remove mode)
   BRA HandleLR      ; branch
 warnpc $C3F570+1
+
+org $C3F700
+FlipMPDisplay:
+  LDA #$FF       ; MP display = on
+  STA $9E        ; store it
+  JSR $0F89      ; stop VRAM DMA B
+  RTS
+
+EndDrawMP:
+  LDA $F9        ; ones digit
+  STA $2180      ; add to string
+  LDA #$FF       ; space character
+  STA $2180      ; add to string
+  STZ $2180      ; end string
+  JMP $7FD9      ; draw string
+
+EndDrawPercent:
+  STA $2180      ; add to string
+  STZ $2180      ; end string
+  JMP $7FD9      ; draw string
+warnpc $C3F721+1
+
+; TODO: Dunno why we've left 2 unused bytes in between here
 
 org $C3F723
 C3_BlindJump:
