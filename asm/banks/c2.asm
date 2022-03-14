@@ -533,6 +533,12 @@ pad $C23C6E
 warnpc $C23C6E+1
 
 ; #########################################################################
+; Old GP Toss Routine (now freespace)
+
+org $C23FB7
+warnpc $C23FFC+1
+
+; #########################################################################
 ; Spiraler (per-strike special effect)
 ;
 ; Rewritten by Synchysi's "Blitz" patch to convert to "Chakra", which
@@ -594,6 +600,11 @@ ChakraHelp:
   STA $11B0      ; set MP heal amount
   RTS
 warnpc $C242C6+1
+
+; #########################################################################
+; Special Effect (per-strike) Jump Table [C242E1]
+
+org $C24383 : dw CoinToss ; Effect $51 ($C33FB7 now unused)
 
 ; #########################################################################
 ; Status Setting/Clearing Routine
@@ -1090,7 +1101,53 @@ org $C263BB : JSR DmgCmdAliasMass
 org $C26642
 SketchChk:         ; function defined in sketch_fix.asm [?]
 
-org $C26719
+org $C266C7
+; Coin Toss Formula
+;   -> GP Rained = Stam * 10
+;   -> Dmg = (GP Tossed * Lv) / (2 * (# of targets + 1))
+CoinToss:
+  LDA $3B40,Y     ; attacker stamina.
+  XBA             ; store in B
+  LDA #$0A        ; multiplier
+  JSR $4781       ; coins tossed: stamina * 10
+  REP #$20        ; 16-bit A
+  CPY #$08        ; is monster attacker
+  BCS .enemy_toss ; branch if ^
+  JSR $37B6       ; deduct thrown GP from party
+  BNE .toss_em    ; branch if have GP leftover
+.broke
+  STZ $A4         ; clear targets
+  LDX #$08        ; failure message ID
+  STX $3401       ; set ^
+  RTS
+.enemy_toss
+  STA $EE         ; save coins tossed
+  LDA $3D98,Y     ; monster GP
+  BEQ .broke      ; branch if none ^
+  SBC $EE         ; else, subtract thrown coins
+  BCS .deduct     ; branch if enough coins
+  LDA $3D98,Y     ; monster GP
+  STA $EE         ; throw all remaining coins
+  TDC             ; zero A/B
+.deduct
+  STA $3D98,Y     ; update monster GP
+  LDA $EE         ; tossed coins
+.toss_em
+  LDX $3B18,Y     ; attacker's level.
+  STX $E8         ; save multiplier
+  JSR $47B7       ; (stamina * 10) * level
+  SEP #$20        ; 8-bit A
+  LDA $3EC9 : INC ; number of targets + 1
+  XBA             ; store ^ in B
+  LDA #$02        ; multiplier
+  JSR $4781       ; (targets + 1) * 2 TODO: Why not ASL?
+  TAX             ; set divisor
+  REP #$20        ; 16-bit A
+  LDA $E8         ; total damage
+  JSR $4792       ; divide by ((targets + 1) * 2)
+  STA $11B0       ; set damage
+  RTS
+
 BlindHelp:
   LDA $3EE4,X      ; attacker status byte 1
   LSR              ; C: "Blind"
