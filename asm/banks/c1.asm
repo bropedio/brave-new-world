@@ -3,6 +3,11 @@ hirom
 ; C1 Bank
 
 ; ########################################################################
+; Bushido Menu
+
+org $C17D8A : JSR SwdTechMeter ; add handling for bushido meter scroll
+
+; ########################################################################
 ; Rage Battle Menu
 ;
 ; Modify max scroll value for shortened rage battle menu (dn)
@@ -35,3 +40,16 @@ org $C191A6 : dw $9609  ; battle dynamics $08, alias to $03 (mass)
 
 org $C1A5A9 : NOP : JSL SetMPDmgFlag
 org $C1A6E6 : NOP : JSL SetMPDmgFlagMass
+
+; ######################################################################
+; Freespace (stats at $C1FFE5)
+
+org $C1FFEC
+SwdTechMeter:
+  INC $7B82      ; increment meter position
+  LDA $7B82      ; get new meter postion
+  ADC $36        ; adds known Bushid count (to speed up)
+  STA $7B82      ; update meter position
+  RTS
+  NOP            ; [unused space] TODO: Why?
+

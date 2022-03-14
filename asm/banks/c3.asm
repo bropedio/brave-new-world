@@ -377,6 +377,12 @@ org $C3565D : JSR BlitzNames
 org $C3577E : NOP #6 ; skip drawing "Dance" title
 
 ; #########################################################################
+; Positioned Text for Skills Menu (and Submenus)
+
+org $C35C59 : dw $7A8D : db "Bushido",$00 ; rename "Swdtech"
+org $C35CB8 : dw $81B7 : db "Bushido",$00 ; rename "Swdtech"
+
+; #########################################################################
 ; Draw command names based on availability
 ;
 ; Rewritten as part of Assassin's "Brushless Sketch" patch to save space
@@ -498,6 +504,8 @@ org $C364BB : db $FF ; replace '%' with ' '
 org $C364C5 : db $FF ; replace '%' with ' '
 org $C38D9B : db $FF ; replace '%' with ' '
 org $C38DA5 : db $FF ; replace '%' with ' '
+
+org $C38E26 : dw $822F : db "Bushido",$00 ; rename "SwdTech" gear attribute
 
 ; #########################################################################
 ; Equip Menu Tabs Navigation

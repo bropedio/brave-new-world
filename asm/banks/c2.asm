@@ -292,6 +292,22 @@ WeapChk:
 org $C2180B : JSL C3_BlindJump : NOP ; helper routine in C3
 
 ; #########################################################################
+; Bushido (command)
+;
+; Synchysi's "Bushido" hack add support for "Gauntlet" effect to Bushido
+
+org $C2185B
+BushidoCommand:
+  LDA $3C58,X    ; relic effects
+  BIT #$08		   ; "Two-handed"
+  BEQ .end       ; branch if not ^
+  LDA #$40       ; "Gauntlet"
+  TRB $B3		     ; set ^
+  BRA .end       ; branch
+org $C2187D
+.end
+
+; #########################################################################
 ; GP Rain (command)
 ;
 ; Modified by Synchysi's Blind patch
