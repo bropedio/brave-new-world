@@ -335,10 +335,10 @@ org $C2180B : JSL C3_BlindJump : NOP ; helper routine in C3
 org $C2185B
 BushidoCommand:
   LDA $3C58,X    ; relic effects
-  BIT #$08		   ; "Two-handed"
+  BIT #$08       ; "Two-handed"
   BEQ .end       ; branch if not ^
   LDA #$40       ; "Gauntlet"
-  TRB $B3		     ; set ^
+  TRB $B3        ; set ^
   BRA .end       ; branch
 org $C2187D
 .end
@@ -542,6 +542,12 @@ LoadWeaponProperties:
 org $C22A78 : JSR ItemAbortEnemy ; Set "abort-on-enemies" flag for many items
 
 ; #########################################################################
+; Combat Routine
+
+org $C233BA : JSR SetTarget ; Enable target's counterattack, even if we miss
+org $C2343C : JSR CounterMiss : NOP ; Set counter variables early TODO [overwritten]
+
+; #########################################################################
 ; Rippler Effect (now freespace)
 
 org $C23C3D
@@ -707,6 +713,20 @@ OvercastFix:
   RTS
   NOP
   RTS
+
+; #########################################################################
+; Prepare Counterattacks (C24C5B)
+
+org $C24C5B
+PrepareCounterattacks:     ; set parent label for full routine
+org $C24CC2 : .no_counter
+org $C24CDD : BNE .counter ; skip blackbelt check for "damaged this turn"
+org $C24CE3 : BCC .counter ; skip blackbelt check for "damaged this turn"
+org $C24CFC : .counter
+org $C24D03
+  JSR $4B53         ; C: 50% chance to counter (75% in vanilla)
+  BCS .no_counter   ; branch ^
+  NOP #2            ; [unused]
 
 ; #########################################################################
 ; Scan Command (partial)
@@ -1121,6 +1141,25 @@ org $C2580C
 ; new "Abort on Enemies" helper routine. (Synchysi)
 
 org $C25902 : JSR EnemyAbort ; Add "abort-on-enemies" support
+
+; #########################################################################
+; Victorious Combat (C25D91)
+
+org $C25E31      ; freespace in middle of end-of-battle routine [TODO]
+SetTarget:
+  STY $C0        ; save target index in scratch RAM
+  JSR $220D      ; [displaced] miss determination
+  RTS
+CounterMiss:
+  LDY $C0        ; get target index
+  LDA $3018,Y    ; target bitmask
+  BIT $3A5A      ; "Miss" tile flag set
+  BEQ .done      ; branch if not ^
+  JSR $35E3      ; else, initialize counter variables
+.done
+  REP #$20       ; [displaced] 16-bit A
+  LDY #$12       ; [displaced] prep entity loop
+  RTS
 
 ; #########################################################################
 ; Damage Number Processing and Queuing Animation(s)
