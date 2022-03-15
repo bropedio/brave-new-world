@@ -27,6 +27,16 @@ warnpc $C04978+1
 org $C09958 : dw CharName
 
 ; #########################################################################
+; Random Encounters (Overworld)
+
+org $C0C257 : CMP #$D0 ; increase chance of third/forth formation encounters
+
+; #########################################################################
+; Random Encounters (Dungeons)
+
+org $C0C3F0 : CMP #$D0 ; increase chance of third/forth formation encounters
+
+; #########################################################################
 ; Unequip Character (General Action $8D) [end of routine]
 ;
 ; Leet Sketcher's "Unequipium" patch adds handling at the end of this
