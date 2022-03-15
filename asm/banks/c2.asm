@@ -175,6 +175,42 @@ CmdFuncs:
 warnpc $C204F6+1
 
 ; ########################################################################
+; Command Wait Times
+
+org $C2067B
+CommandWaitTimes:
+  db $10   ; Fight
+  db $10   ; Item
+  db $20   ; Magic
+  db $40   ; Morph
+  db $00   ; Revert
+  db $00   ; Steal
+  db $00   ; Capture
+  db $20   ; Bushido
+  db $10   ; Throw
+  db $20   ; Tools
+  db $20   ; Blitz
+  db $00   ; Runic
+  db $20   ; Lore
+  db $10   ; Sketch
+  db $20   ; Control
+  db $20   ; Slot
+  db $10   ; Rage
+  db $00   ; Leap
+  db $00   ; Mimic
+  db $10   ; Dance
+  db $00   ; Row
+  db $00   ; Defend
+  db $70   ; Jump
+  db $20   ; X-Magic
+  db $20   ; GP Rain
+  db $40   ; Summon
+  db $10   ; Health
+  db $10   ; Shock
+  db $00   ; Possess
+  db $00   ; MagiTek
+
+; ########################################################################
 ; Atma Weapon Damage (special effect)
 ;
 ; Partially rewritten as part of Synchysi's Atma Weapon changes.
