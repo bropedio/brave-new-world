@@ -101,6 +101,8 @@ ConfigMenuWindowLayout:
 
 org $C33A40 : LDA #$07     ; "Controller" config option ID (was 8 in vanilla)
 
+org $C33BA7 : LDY #OffTxt2
+
 ; Old "Battle Speed" drawing routine [now freespace]
 org $C33BB7
   RTS           ; automatically return from battle speed jump
@@ -109,6 +111,10 @@ BattleTxt: dw $3A4F : db $81,"attle","$00
 warnpc $C33BF2+1
 padbyte $FF
 pad $C33BF2
+
+org $C33C55 : LDY #WindowTxt
+org $C33CCB : LDY #ResetTxt
+org $C33CFF : LDY #WalkTxt
 
 ; #########################################################################
 ; Game Options Update Handlers
@@ -142,16 +148,9 @@ OptionJumpPage2:
 
 ; #########################################################################
 ; Positioned Text for Config Menu (page 1)
-;
-; Much of this code is unchanged from vanilla, but included here for context.
-; Modified by dn's "Remove Battle Speed" patch. The following was commented
-; out:
-;   org $c349f2
-;   dw $39e5
-;   db "Off",$00
-;    The above is handled by necessity in dash.asm
 
 org $C34903
+
 ConfigTxt1: dw ControllerTxt
 ConfigTxt2: dw CursorTxt
 ConfigTxt3: dw FastTxt
@@ -168,7 +167,7 @@ OffTxt:        dw $3BB5 : db "Off",$00
 StereoTxt:     dw $3C25 : db "Stereo",$00
 MonoTxt:       dw $3C35 : db "Mono",$00
 MemoryTxt:     dw $3CB5 : db "Memory",$00
-OptimumTxt:    dw $3D25 : db "Optimum",$00
+DashTxt2:      dw $3D25 : db "Dash",$00,$00,$00,$00
 MultipleTxt:   dw $3DB5 : db "Multiple",$00
 Scale1Txt:     dw $3A25 : db "1 2 3 4 5 6",$00
 Scale2Txt:     dw $3AA5 : db "1 2 3 4 5 6",$00
@@ -191,12 +190,13 @@ MsgSpeedTxt:    dw $3A8F : db "Msg.Speed",$00
 CmdSetTxt:      dw $3B0F : db "Cmd.Set",$00
 GaugeTxt:       dw $3B8F : db "Gauge",$00
 SoundTxt:       dw $3C0F : db "Sound",$00
-DashTxt:        dw $3D0F : db "Reequip",$00
-ActiveTxt:      dw $39A5 : db "Active",$00
+DashTxt:        dw $3D0F : db "B Button",$00
+OffTxt2:        dw $39E5 : db "Off",$00,$00,$00,$00
 WindowTxt:      dw $3B25 : db "Window",$00
 ResetTxt:       dw $3CA5 : db "Reset",$00
-EmptyTxt:       dw $3D35 : db "Empty",$00
+WalkTxt:        dw $3D35 : db "Walk",$00
 SingleTxt:      dw $3DA5 : db "Single",$00
+warnpc $C34A1C+1
 
 ; #########################################################################
 ; Magic Menu Cursor Positions

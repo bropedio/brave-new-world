@@ -19,6 +19,35 @@ padbyte $FF : pad $C04978
 warnpc $C04978+1
 
 ; #########################################################################
+; Movement Helpers (Auto-Dash)
+;
+; Modified by Synchysi's handling of auto-sprint shoes. Note that freespace
+; at $C04A67 is used, replacing now-unused Tintinabar effect handling.
+
+org $C04A67
+Dash:
+  LDA $4219      ; controller 1 input-2
+  ROL            ; C: "Pressing B"
+  LDA $1D4E      ; config option flags
+  BIT #$10       ; "B-Button Dash"
+  BEQ .exit      ; exit if ^
+  BCC .carry     ; else, toggle carry
+  CLC            ; ^
+  RTS
+.carry
+  SEC            ; ^
+.exit
+  RTS
+
+org $C04E28
+MovementSpeed:
+  JSR Dash
+  NOP #2
+  BCC .no_dash   ; branch if not dashing
+org $C04E33
+.no_dash
+
+; #########################################################################
 ; General Actions pointer updates
 ;
 ; Action $7F (Change Character Name) is optimized and shifted to make
