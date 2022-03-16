@@ -575,6 +575,18 @@ pad $C23C6E
 warnpc $C23C6E+1
 
 ; #########################################################################
+; Old Air Anchor Routine (now freespace)
+
+org $C23C78
+ChangeShld:
+  LDA #$01         ; "shield uncursed"
+  TSB $F0          ; set ^ flag
+  LDA #$67         ; "Paladin Shield" ID
+  STA $161F,X      ; replace equipped shield
+  RTS
+warnpc $C23C90+1
+
+; #########################################################################
 ; Old GP Toss Routine (now freespace)
 
 org $C23FB7
@@ -1160,6 +1172,20 @@ CounterMiss:
   REP #$20       ; [displaced] 16-bit A
   LDY #$12       ; [displaced] prep entity loop
   RTS
+
+; #########################################################################
+; Cursed Shield
+
+org $C25FFE
+CursedShield:
+  XBA             ; get cursed shield ID
+  INC $3EC0       ; increment uncurse count
+  LDA $3EC0       ; uncurse count
+  CMP #$40        ; = 64
+  BNE .nope       ; branch if not ^
+  JSR ChangeShld  ; else, replace with Paladin Shield
+org $C2600D
+.nope
 
 ; #########################################################################
 ; Damage Number Processing and Queuing Animation(s)
