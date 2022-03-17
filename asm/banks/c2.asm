@@ -17,6 +17,26 @@ AtmaOver:
 warnpc $C202B8+1
 
 ; #########################################################################
+; Adding Command to Wait Queue + Swap Roulette to Enemy Roulette
+;
+; End of adding command routine is overwritten by "Dies like a Boss" hack,
+; which appears to be using it as freespace. This space is made available
+; by the "roulette" patch, which has not been incorporated here yet. TODO
+;
+; Note that the "Swap Roulette" routine portion is definitely freespace
+; in BNW, as roulette is unused.
+
+org $C203B6
+BossDeath:
+  LDA $3C95,Y      ; special monster flags
+  AND #$0040       ; "Boss" (formerly "Auto crit if Imp")
+  BEQ .death       ; branch if not ^
+  RTS              ; else, exit now to prevent bosses from dying from HP loss
+.death
+  LDA #$0080       ; "Death" status
+  JMP $0E32        ; add ^ to status-to-set byte 1
+
+; #########################################################################
 ; Select actions/commands for uncontrollable characters
 ; 
 ; Rewritten as part of Assassin's "Swordless Runic" patch, to fix a bug
@@ -318,6 +338,16 @@ WeapChk:
   NOP #3
 .exit
   RTS
+
+; #########################################################################
+; Process HP and MP Damage
+;
+; Never set "Death" from HP depletion on bosses. Instead, all boss deaths
+; are handled via their AI script. This prevents a bug whereby some non-
+; counterable sources of HP loss could bypass special boss death handling,
+; messages, and animation.
+
+org $C213A1 : JMP BossDeath
 
 ; #########################################################################
 ; Jump (command)
