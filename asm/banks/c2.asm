@@ -572,6 +572,52 @@ LoadWeaponProperties:
 org $C22A78 : JSR ItemAbortEnemy ; Set "abort-on-enemies" flag for many items
 
 ; #########################################################################
+; Battle Initialization / Special Event Setup
+;
+; Portion rewritten to save space and allow for initialization of aura
+; cycling variable(s).
+
+org $C2307D
+LaterBattleInit:
+  PHX                   ; preserve party member index
+  LDA $FE               ; get row
+  STA $3AA1,X           ; save to special properties
+  LDA $3ED9,X           ; preserve special sprite
+  PHA                   ; save special sprite
+  LDA $05,S             ; get loop variable
+  STA $3ED9,X           ; save roster position
+  TDC                   ; zero A/B
+  TXA                   ; character slot index
+  ASL #4                ; x16 (slot x32)
+  TAX                   ; index it
+  LDA #$06              ; 7-iteration loop
+  STA $FE               ; initialize loop counter
+  PHY                   ; preserve character SRAM data offset
+.loop
+  LDA $1601,Y           ; get normal sprite & name characters
+  STA $2EAE,X           ; store to display variables
+  INX                   ; next destination data
+  INY                   ; next source data
+  DEC $FE               ; decrement interator
+  BPL .loop             ; loop to copy sprite and name
+  PLY                   ; restore character SRAM data offset
+  PLA                   ; restore special sprite
+  CMP #$FF              ; is special sprite null
+  BEQ .init_aura        ; branch if ^
+  STA.w $2EAE-7,X       ; else, overwrite battle sprite (offset by loop above)
+.init_aura
+  LDA #$81              ; "Reflect", "WaitBit"
+  STA.w !aura_cycle-7,X ; initialize aura to ^ (offset by loop above)
+  LDA $03,S             ; character ID
+  STA.w $2EC6-7,X       ; save it (offset by loop above)
+  CMP #$0E              ; is it Banon or higher?
+  REP #$20              ; 16-bit A
+  TAX                   ; move to X
+padbyte $EA
+pad $C230BC
+warnpc $C230BC+1
+
+; #########################################################################
 ; Combat Routine
 
 org $C233BA : JSR SetTarget ; Enable target's counterattack, even if we miss
