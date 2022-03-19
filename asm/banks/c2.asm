@@ -624,6 +624,11 @@ org $C233BA : JSR SetTarget ; Enable target's counterattack, even if we miss
 org $C2343C : JSR CounterMiss : NOP ; Set counter variables early TODO [overwritten]
 
 ; #########################################################################
+; Weapon Addition Magic
+
+org $C2381D :  JSL AutoCritProcs ; power-up crit doom to x-zone, multitarget quartr
+
+; #########################################################################
 ; Rippler Effect (now freespace)
 
 org $C23C3D

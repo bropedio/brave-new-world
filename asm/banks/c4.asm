@@ -11,6 +11,36 @@ db $1D,$22,$E9,$5D,$20,$91,$4F,$4A,$58,$96,$3D,$1F,$08,$62,$7B,$39
 db $63,$47,$0C,$89,$D4,$2E,$FE,$48,$EE,$17,$0F,$D0,$55,$D2,$61,$21
 db $CE,$03,$41,$70,$6B,$28,$DF,$F1,$75,$72,$5C,$8E,$0B,$13,$05,$01
 db $0E,$18,$42,$66,$F2,$5B,$34,$27,$DD,$46,$88,$93,$F8,$87,$F7,$82
+warnpc $C4A820+1
+
+; #########################################################################
+; Freespace
+
+org $C4B9D0
+AutoCritProcs:
+  LDA #$02          ; "Auto Critical"
+  BIT $B3           ; check attack flags for ^
+  BNE .exit         ; branch if not ^
+  LDA $B6           ; spell #
+  CMP #$17          ; is it quartr?
+  BEQ .quartr       ; branch if so
+  CMP #$0D          ; is it doom?
+  BEQ .doom         ; branch if so
+.exit
+  LDA #$40          ; [moved] single enemy targeting
+  STA $BB           ; [moved] update targeting type ^
+  RTL
+.doom
+  LDA #$12          ; "X-Zone"
+  STA $B6           ; set ^ spell
+.quartr
+  LDA #$6E          ; all foes targeting
+  STA $BB           ; update targeting type ^
+  LDA #$40          ; "Randomize Targets" [TODO why?]
+  TSB $BA           ; set ^ flag
+  STZ $11A9         ; clear special effect
+  STZ $341A         ; set "Cannot be Countered"
+  RTL
 
 ; #########################################################################
 ; Freespace Helpers
