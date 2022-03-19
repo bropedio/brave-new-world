@@ -1,0 +1,63 @@
+CANNOT RELEASE NEXT VERSION WITHOUT THESE
+
+	Fractional Defense:		Damage taken from fractional damage is Power * (160-stam)/128
+							
+	Retort:					Balanced Retort discussed. Prolly increase Cover/Counter, self-heal, counters with Dispatch?
+	
+	Tools:					Autocrossbow's power is just straight 255, no Schematics
+
+WOULD BE NICE, BUT NOT STRICTLY REQUIRED FOR RELEASE OF LOL NEW WORLD
+
+	Heiji's Coin:			Cheats on Cover and Counter
+	
+	Rage:					Has stam-based chance of coming out of Rage 
+								if Moogle Charm is equipped.
+							Rage attacks may crit (natural crit rate, boosted by "critical rate up")
+							
+	Spd-rev-fill			Speed-based pre-fill of ATB after being revived
+	
+	Enemy regen				Can go over 255
+	
+UNDEVELOPED IDEAS
+
+	Slots:					something, something, gains "Schematics" boost somewhere
+							Really, just gains more slots later on?
+							Deschain liked Joker. Could even just ... re-randomize Slots, lol
+							
+	Duncan:					Gives Gauntlent effect to physical Blitzes instead of giving Bum Rush
+							MY END would be setting Bum Rush to lvl.30 capstone, 210 power
+							
+	Tools:					Something, something, Schematics boosts magic tools
+							Schematics hidden ... somewhere
+							Or just something something mag Edgar
+							
+	Counter-attack:			Tiered counter-attack, insted of stat-based?
+							Spd-based counter-attack?
+							
+	Bro's SOS Idea:			SOS Remedy
+							Image
+							???
+							Sir Newton Fig should like this. Could even change Terra's auto-morph
+							pendant to use these instead of auto-haste and auto-regen
+							
+usME or Zone Doctor stuff, don't bother the asm coders
+Some of this is developed ideas, some are undeveloped ideas
+							
+	?Radiant Gown?:			(temp) re-named to "Artist's Gown"
+							Stats changes to Spd/Stam +5
+							Resist Water
+							--Spellcast rate up (use Veil)
+							??MP+ 25%/50% ??
+							
+	Terra:					Carbunkl to MP+20 / Mag+1
+							Zoneseek to MP+20 / Stam+1
+							Tritotch to MP+40
+							Gets the Mag/MP espers in WoB, instead of waiting until Tritoch
+							
+	?Healing:?				Alongside the nerfed Cure 2 and Cure 3 power (20 and 30 respectively)
+							Raise MP costs to 24 and 48
+							Raise RegenX MP cost to 64
+							
+	Boss:					More ways to encourage going dps against boss (higher regen? scripting?)
+	
+	?Mogoon?:				Mogoon Seal with half-turn item?
