@@ -1,0 +1,453 @@
+*********************************************************************
+****************************** GENERAL ******************************
+*********************************************************************
+
+	Status Evade
+		stam/128			Sap, Slow, Death, Freeze, Zombie
+		stam/104			Condemned, Petrify, Sleep, Berserk, Muddle
+		stam/80				Blind, Mute, Imp, Stop, Poison
+	Espers
+		HP and MP Espers:	Level up bonuses standardized to +20 and +40
+	Equipment
+		Blood Sword:		Swaps location & battle power with Soul Sabre. 
+							(Found in Figaro Basement, Battle Power 160 -> 175)
+							
+		Soul Sabre:			Swaps location & battle power with Blood Sword. 
+							(Found in Sealed Cave, Battle Power 175 -> 160)
+	
+		Flameguard: 		Cyan's Soul Thunderguard reverts to a Flameguard
+		Multiguard:			Only nulls elements, not absorbs. ("Early" 2.1 change)
+		Mirage Vest: 		Only equip by Lo/Sa/Ga/Sh.
+		Back Guard:			Only equipable by Setzer, Gau, Shadow
+							
+		Amulet:				Unbuyable in WoB. Buy in WoR Figaro Castle
+		White Cape:			Unbuyable in WoB. Buy in WoR Figaro Castle
+		Spirit Stone:		Unbuyable in WoB. Buy in WoR Figaro Castle
+		
+		Muscle Belt:		Doma's Castle Power Glove changed to a Muscle Belt
+	Item
+		Max Item Limit:		Reduced from 99 -> 20
+		Warp Whistles:		Unbuyable. Finite supply found in treasure chests
+	Magic
+		Cure 2:				Power nerfed from 25 -> 20
+		Cure 3:				Power nerfed from 40 -> 30
+		
+		Storm:				Removed.
+		Aqua:				New magic. Replaces Storm.
+							Water attack, single-target.
+							75 power, 24 MP.
+							Learned from Bismark (Terra, Cyan)
+							
+		Quartr:				Changed to Storm. No functional change, save for animation and element.
+							(Celes, Cyan)
+		
+		Merton: 			Renamed to Melt
+							48 power, ignores defense
+							(Celes)
+	
+		Draining Moves:		Damage no longer capped by user's missing HP
+							(Still capped by enemies HP. lul, w/e)
+		
+		Drain:				Power lowered from 100 -> 75
+							MP cost raised from 10 -> 30
+							(Mog, Setzer, various weapons)
+	Shops
+		Wandering Merchant:	Red Bull
+							(Sabin's scenario)
+							
+		Phantom Train:		Red Bull
+							
+		Thamasa, WoB: 		Kunai, Sakura, Shuriken, & Smoke Bomb buyable in Weapon Shops
+		Thamasa, WoR: 		Sakura, Ninjato, Shuriken, & Smoke Bomb buyable in Weapon Shops
+	Colosseum
+		Muscle Belt:		Trades to Nirvana
+		Crystal Orb:		Trades to Quartz Charm
+		Moogle Charm:		In a trade triangle with Storm Belt and Blizzard Orb
+	Misc
+		Counter-attack:		Chance based on vigor
+		Critical:			Chance based on speed (spd/512)
+		Esper Points:		EP gains slightly increased in the WoR
+		"Hit allies":		Damage reduced from 1/2 -> 1/4 damage ("Early" 2.1 change)
+		Near Fatal:			Threshold is 1/4 HP, instead of 1/8
+		
+*********************************************************************
+****************************** TERRA ********************-***********
+*********************************************************************
+
+	Mechanics
+		Morph: 				Raises MP cost by 50%
+	Espers
+		Maduin: 			Level up bonus is now stam+2
+		Tritoch: 			Level up bonus is now mag+1 / MP+20
+	Weapons
+		Soul Sabre:			May cast changed from Osmose -> Rasp
+		Excalibur: 			X-Fight, 140 power, stats+7, Terra/Celes only
+		Zantetsuken: 		Dual-wield
+	Misc
+		Level Up Magic: 	Slow learned earlier (lvl.15 -> lvl.12)
+							Learns Regen thru Unicorn instead of naturally
+							Learns Remedy naturally (lvl.15) instead of thru Unicorn
+		
+*********************************************************************
+****************************** CELES ********************************
+*********************************************************************
+
+	Mechanics
+		Runic: 				Runic stance also puts Celes in Defend stance
+	Espers
+		Crusader: 			Equip bonus is now Spd+5
+		Crusader: 			Summon is now a physical AoE (210, ignores defense, no split loss)
+	Weapons
+		Soul Sabre:			May cast changed from Osmose -> Rasp
+		Excalibur: 			X-Fight, 140 power, stats+7, Terra/Celes only
+		Zantetsuken: 		Dual-wield
+	Misc
+		Level Up Magic: 	Slow learned earlier (lvl.12 -> lvl.9)
+							Scan learned later (lvl.9 -> lvl.12)
+							
+*********************************************************************
+****************************** LOCKE ********************************
+*********************************************************************
+
+	Espers
+		Ifrit: 				Teaches Doom instead of Drain
+	Weapons
+		Triton: 			New Dagger. Replaces Demonsbane. Water/Ice. 
+							Buy in Maranada or WoR Kohlingen for 2000 GP
+		Avenger: 			Renamed to Demonsbane
+		Cannot equip: 		Excalibur
+		Soul Sabre:			May cast changed from Osmose -> Rasp
+		Zantetsuken: 		Dual-wield
+	Armor
+		Ninja Gear:			Raises critical hit rate by 6.25%
+		Mirage Vest:		Vig/Spd +7. Raises critical hit rate by 6.25%
+	Relic
+		Rogue Cloak: 		Raises spellcast rate
+		Sage Stone: 		Dropped by Chesticle
+		Thief Glove:		Now also makes Item command use half a turn
+		
+*********************************************************************
+****************************** EDGAR ********************************
+*********************************************************************
+
+	Tools
+		Autocrossbow: 		Pushed to WoR. WIP - Base power raised to 255. No for Schematics
+		Defibrillator: 		Buyable in WoB Narshe after Magitek Factory. Cost lowered to 15,000 GP
+	Espers
+		Unicorn:			Teaches Regen
+	Weapons:
+		Spears: 			Trade out "may cover" for "counter-attack"
+		Frost Spear: 		New Spear. Found on Floating Continent. Trade at Colosseum for Phoenix Tear
+		Fire Lance: 		Pushed to WoR
+		Partisan: 			Removed
+		Gungnir: 			HP +50% replaced with HP +25%, auto-regen, & stam+5. Power dropped 160 -> 150
+		Cannot equip:		Excalibur
+		Soul Sabre:			May cast changed from Osmose -> Rasp
+		Zantetsuken: 		Dual-wield
+	Shields
+		Paladin Kite: 		New Shield. May guard allies. 40/40 defense, 10/10 evade, spd-2, stam+5.
+							Equip by Ed/Se/Mog. Found in Daryl's Tomb or for betting Hero Shield
+	Armor
+		Cannot equip:		Royal Jacket
+	Relic
+		Dragoon Seal: 		Cost lowered 5000 -> 1250, but no longer raises spellcast rate
+		Nirvana Band: 		Raises spellcast rate
+		
+*********************************************************************
+****************************** SABIN ********************************
+*********************************************************************
+
+	Blitz
+		Blitz Fail: 		Failing a Blitz only uses half a turn
+		Fire Dance: 		Learned at lvl 12, power dropped from 60 -> 48
+		Meditate: 			New Blitz. Lvl 15 Replaces Sonic Boom. stam-based self-heal, 10 power. Cures some statuses
+		Mantra: 			Lvl 18
+		Aurabolt: 			Lvl 22, non-elemental, back-row friendly
+	Espers
+		Terrato: 			Teaches Berserk instead of Drain
+	Weapons
+		Fire Claw:			Replaces Spirit Claw.
+		
+		Poison Claw:		May cast Slow
+							Unbuyable until Tzen. Found in early Zozo treasure
+							
+		Stormfang:			Replaces Ocean Claw.
+							Unbuyable until post-IMF Narshe. Found in treasure in IMF
+							
+		Frostbite:			Replaces Hell Claw. May cast Drain
+							None found until WoR
+		
+		Godhand:			Replaces Frostgore. May cast Dispel. 
+							Won from Wrexsoul
+		
+		Leviathan:			Replaces Stormfang. Has Zantetsuken's "high critical, may insta-kill" effect
+							Won from Yeti
+	Armor
+		Royal Jacket: 		Re-named to "Fighter Vest". Sabin/Cyan.
+							HP +50%. 35/35 defenses, 20/0 evades, +5 Vigor
+							Found in Zone Eater's
+		
+		Ninja Gear:			Raises critical hit rate by 6.25%
+		Mirage Vest:		Vig/Spd +7. Raises critical hit rate by 6.25%
+	Relic
+		Nirvana Band: 		Raises spellcast rate
+		
+*********************************************************************
+****************************** CYAN *********************************
+*********************************************************************
+
+	Bushido
+		Empowerer:	 		Physical damage. Power is x1/2 Battle Power
+		Eclipse:			Pulled to lvl 18. Power lowered 90 -> 75
+		Dragon:	 			Pushed to lvl 24. Power raied 40 -> 48
+		Tempest: 			Reverts to ignores defense, x3/8 battle power
+	Espers
+		Crusader: 			Equip bonus is now Spd+5
+		Crusader: 			Summon is now a physical AoE (210, ignores defense, no split loss)
+	Weapons
+		Counter Katanas:	Vig+ / Spd+
+		Wind Katanas:		Stam+ / Mag+
+		"May Hit as Wind": 	Reverts to mag-based. Kazekiri's wind power raised
+	Armor
+		Royal Jacket: 		Re-named to "Fighter Vest". Sabin/Cyan.
+							HP +50%. 35/35 defenses, 20/0 evades, +5 Vigor
+							Found in Zone Eater's
+	Misc
+		Base Stats:			Speed lowered from 30 -> 24
+		
+*********************************************************************
+****************************** SHADOW *******************************
+*********************************************************************
+
+	Mechanics
+		Interceptor:	 	Block chance is stam/192
+							Interceptor's damage is physical
+	Throw
+		Throwables:			Can no longer throw daggers (Lo/Se/Sh/Go daggers)
+	Magic
+		Warp:		 		1 sp to unlock, MP cost raised to 36
+	Weapons
+		Kunai: 				No special properties
+		Sakura: 			May hit as Wind Slash
+		Ninjato: 			No special properties
+	Armor
+		Ninja Gear:			Raises critical hit rate by 6.25%
+		Mirage Vest:		Vig/Spd +7. Raises critical hit rate by 6.25%
+	Relic
+		Back Guard: 		May equip
+		
+*********************************************************************
+****************************** SETZER *******************************
+*********************************************************************
+
+	Espers
+		Shoat: 				Teaches Drain instead of Doom
+	Weapons
+		Darts & Cards: 		May dual wield. 1 battle power. Randomly cast dark type spells.
+		Darts: 				May cast Sap
+		Poison Darts: 		May cast Poison. Found in Daryl's Tomb or win from Bonelord
+		Joker: 				May cast Dark. Found in Phoenix Cave, or bet Orochi
+	Shields
+		Paladin Kite: 		New Shield. May guard allies. 40/40 defense, 10/10 evade, spd-2, stam+5.
+							Equip by Ed/Se/Mog. Found in Daryl's Tomb or for betting Hero Shield
+	Relic
+		Back Guard: 		May Equip
+		Rogue Cloak: 		May equip, raises spellcast rate
+		
+*********************************************************************
+****************************** GAU **********************************
+*********************************************************************
+
+	Rages
+		Scrapper: 			Suplex/Chakra
+		Antlion: 			Special/Glare
+		Sand Ray: 			Special/Sirocco* (basically a fire/wind sand storm, stronger when single-target)
+	Magic
+		Warp: 				1 sp to unlock, MP cost raised to 36
+	Weapons
+		Clubs: 				Stronger in 2 hands
+	Shields:
+		Parma: 				New Shield. Replaces Diamond Kite. 
+							Buy in same place as Diamond Kite.
+							35/20 defenses, 20/0 evades
+	Armor
+		Ninja Gear:			Raises critical hit rate by 6.25%
+		Mirage Vest:		Vig/Spd +7. Raises critical hit rate by 6.25%
+	Relic
+		Back Guard: 		May equip
+		
+*********************************************************************
+****************************** MOG **********************************
+*********************************************************************
+
+	Mechanics
+		Stumble:			Stumble only takes half a turn
+		Dance:				Base success rate dropped from 96 -> 72
+		Dance:				4 Dances found in WoB, based on local nature
+		Dance:				4 Dances found in WoR, based on themes of loss
+	Dance
+		Earth Blues: 		Harvester / Razor Leaf / Moonlight / Raccoon. 	Forests & Caves. 		
+		Fire Waltz: 		Fireball / Elf Fire / Mirage / Meerkat. 		Magma caves & WoB industrial places. 		
+		Wind Song: 			Mirage / Sun Bath / Wind Slash / Rabbit. 		Plains, deserts, mountain tops, airships. 
+		Water Rondo: 		El Nino / Plasma / Surge / Toxic Frog. 			Underwater & in Zozo
+		--
+		Ruin Lament:		Avalanche / Surge / Sirocco / Wild Boars.		Found in WoR plains/Narshe, & in ruined castles
+		Love Requiem:		Sun Bath / Moonlight / Harvester / Cockatrice.	Found in Daryl's Tomb, Opera House, & Cyan's Dream
+		Soul Dirge:			Bedevil / Elf Fire / Devour / Tapir.			Found in Owzer's, Fanatics', & Phantom Train
+		Dancing Mad:		Cadenza / Devour / Sirocco / Wombat.			Found in Kefka's Tower
+		--
+		Sun Bath:			Power lowered 20 -> 15
+		Wild Boars:			Changed to 180 power, does NOT ignore defense
+		Wombat:				Power raised 100 -> 120
+		--
+		Sirocco:			Modified Sand Storm. Fire/Wind, 90 power, splits loss, sets Blind/Sap
+		Devour:				AoE Drain. 30 power, ignores defense, grounded attack
+		Cadenza:			For each party member, may set one of {Safe, Shell, Haste, Regen, Rerise}
+	Espers
+		Maduin: 			Level up bonus is now stam+2
+		Shoat: 				Teaches Drain instead of Doom
+		Terrato: 			Teaches Berserk instead of Drain
+	Magic
+		Quake:				MP cost slightly lowered from 48 -> 45
+	Weapon
+		Spears: 			Trade out "may cover" for "counter-attack"
+		Gungnir: 			HP +50% replaced with HP +25%, auto-regen, & stam+5. Power dropped 160 -> 150
+		Quartrstaff:		Stats changes to +7 Vig, +10 mg.eva. 
+							Casts Demi or W Wind, depending on if its a crit or not.
+							
+		Doomstick:			Removed
+		Aqua Rod:			New Rod. Replaces Doomstick.
+							May cast Aqua. 150 power, +10 mg.eva, mag+5
+							Buyable in WoR Thamasa
+							
+		Blood Staff:		New Rod. Replaces Wind Breaker. 150 power, May cast Drain, +7 Stam, +10 evade
+		Punisher:			+10 mg.eva instead of +10 eva
+	Shields
+		Paladin Kite: 		New Shield. May guard allies. 40/40 defense, 10/10 evade, spd-2, stam+5.
+							Equip by Ed/Se/Mog. Found in Daryl's Tomb or for betting Hero Shield
+	Relics
+		Sage Stone: 		Dropped by Chesticle
+	Base
+		Equipment:			Starts with Moogle Charm
+							WIP - Removing 2nd Moogle Charm from Mog in beginning game "Defend Terra" in mines
+		
+*********************************************************************
+****************************** STRAGO *******************************
+*********************************************************************
+
+	Lore
+		Antipode:			New Lore. Replaces Blaze. 
+							Hits ALL, Fire/Ice/Bolt, 36 Power, ignores defense
+							56 MP, Used by Tritoch and Magic Pots
+		
+		Raze:				Found in WoB from Heartfire or Chimera
+							Reverts to Fire/Dark element
+							
+		Refract:			MP cost raised from 24 -> 48
+	Espers
+		Odin: 				Level up bonus is now spd+1 / stam+1
+		Odin: 				Equip bonus is now Auto-Reflect
+		Odin: 				Summon is now a magic AoE, dark elemental (same strength as Alexander)
+	Magic
+		Warp: 				1 sp to unlock, MP cost raised to 36
+	Weapons:
+		Quartrstaff:		Stats changes to +7 Vig, +10 eva. 
+							Casts Demi or W Wind, depending on if its a crit or not.
+							
+		Doomstick:			Removed
+		Aqua Rod:			New Rod. Replaces Doomstick.
+							May cast Aqua. 150 power, +10 mg.eva, mag+5
+							Buyable in WoR Thamasa
+							
+		Blood Staff:		New Rod. Replaces Wind Breaker. 150 power, May cast Drain, +7 Stam, +10 evade
+		Punisher:			+10 mg.eva instead of +10 eva
+	Shields
+		Parma: 				New Shield. Replaces Diamond Kite. 
+							Buy in same place as Diamond Kite.
+							35/20 defenses, 20/0 evades
+	Relics
+		Sage Stone: 		Dropped by Chesticle
+	Misc
+		Base Stats:			Stamina raised from 42 -> 48
+		
+*********************************************************************
+****************************** RELM *********************************
+*********************************************************************
+
+	Interceptor
+		Interceptor:	 	Block chance is stam/192
+							Relm always has Interceptor after Intangir is beaten
+							If Shadow is alive, Interceptor does physical damage
+							If Shadow is dead, Interceptor does magical damage
+	Espers
+		Bahamut: 			Level up bonus is now mag+2
+		Ifrit: 				Teaches Doom instead of Drain
+	Magic
+		Warp: 				1 sp to unlock, MP cost raised to 36
+	Brushes
+		Half-Turn:			Brushes only use half a turn & may critical
+							X-Fight removed. Power of brushes raised
+							Brushes no longer give Magic+ or Mg.Eva+. Only Spd+
+							Relm can no longer equip Healing Shiv.
+							Relm may equip Veils
+							Radiant Gown raises critical hit rate by 6.25%
+							Dali Brush (Zone Eater's) sets Reflect
+							Ross Brush (Hidon) sets Shell
+							Air Brush from Nowea Hard Type
+	Rods
+		Quartrstaff:		Stats changes to +7 Vig, +10 mg.eva. 
+							Casts Demi or W Wind, depending on if its a crit or not.
+							
+		Doomstick:			Removed
+		Aqua Rod:			New Rod. Replaces Doomstick.
+							May cast Aqua. 150 power, +10 mg.eva, mag+5
+							Buyable in WoR Thamasa
+							
+		Blood Staff:		New Rod. Replaces Wind Breaker. 150 power, May cast Drain, +7 Stam, +10 evade
+		Punisher:			+10 mg.eva instead of +10 eva
+	Shields
+		Parma: 				New Shield. Replaces Diamond Kite. 
+							Buy in same place as Diamond Kite.
+							35/20 defenses, 20/0 evades
+							
+*********************************************************************
+************************* UMARO & GOGO ******************************
+*********************************************************************
+
+	UMARO
+		Join Level: 			Lowered to party average +2
+		Clubs: 					Stronger in 2 hands
+		Base Stats: 			Vigor lowered 90 -> 60, p.def raised 60 -> 72
+	GOGO
+		n/a
+	
+*********************************************************************
+****************************** ENEMIES ******************************
+*********************************************************************
+
+	Behemoths:				No longer immune to Wind
+	Chimeras:				Wind/Water immune
+	Fanatics' Tower:		Randoms are unrunnable
+	
+	Fire-weak Bosses:		Yeti, Katanasoul, Hidon have their mg.def raised
+							Chadarnook and Doom Gaze no longer undead or Fire weak. Still Holy weak.
+	
+	Number 024:				No longer human. P.def lowered. Counters non-elemental attacks more strongly
+	Ultros III:				Script slightly modified. (What element causes him to counter-attack who)
+	Tentacles:				Ice-weak Tentacle no longer has auto-shell
+	Magimaster:				No longer human. P.def lowered.
+	Wind Dragon:			Storm replaced. Doesn't use Aqua. Very slightly higher chance of using Slow instead.
+	Bolt Dragon:			Drops a Ribbon. (Ribbon in Kefka's Tower is now an X-Potion)
+	Final Boss:				No longer floating
+	
+*********************************************************************
+************************ OTHER PATCHEs ******************************
+*********************************************************************
+
+	Behold, Pants:			Alternate sprites for Terra and Celes. Celes with armor, Terra with a shawl.
+	Vigor Thamasa:			Joke patch. Modified Odin & Bahamut to grant vigor. Radiant Gown has Power Glove effect
+	
+	
+---------------------------- ??? ------------------------------------
+	???:					Is there something in Mobliz. Perhaps ... one of the children hid it outside somewhere?
+							??? has no Colosseum trade
