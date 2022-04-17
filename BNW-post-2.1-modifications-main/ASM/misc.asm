@@ -93,12 +93,12 @@ org $c3f9ba : and #$07       ;Check if #$00 is set
 org $c3f9bc : beq $39	     ;Branch if is it (fixed, original code excludes print routine)
 
 ;Set Attack print value
-org $d863ec : db $01,$10,$10    ;Autocrossbow 
-org $d8631a : db $01,$10,$10    ;Noiseblaster 
-org $d86338 : db $01,$10,$10    ;Bio Blaster
-org $d863b0 : db $01,$10,$10    ;Drill value
-org $d86356 : db $01,$10,$10    ;Flash value
-org $d86392 : db $01,$10,$10    ;Defibrillator
+org $d863ec : db $00,$10,$10    ;Autocrossbow 
+org $d8631a : db $00,$10,$10    ;Noiseblaster 
+org $d86338 : db $00,$10,$10    ;Bio Blaster
+org $d863b0 : db $00,$10,$10    ;Drill value
+org $d86356 : db $00,$10,$10    ;Flash value
+org $d86392 : db $00,$10,$10    ;Defibrillator
 
 ;Set value number
 org $d86400 : db $b4        ;Autocrossbow 
@@ -115,11 +115,11 @@ org $d863a6 : db $0a        ;Defibrillator
 ;;-----------------------------------------------------
 
 ;Set Attack print value
-org $d8579e : db $10,$08,$10	;Shuriken
-org $d86428 : db $10,$08,$10	;Ninja scroll water
-org $d8640a : db $10,$08,$10	;Ninja scroll fire
-org $d86446 : db $10,$08,$10	;Ninja scroll bolt
-org $d86482 : db $10,$08,$10	;Ninja scroll smoke
+org $d8579e : db $16,$08,$10	;Shuriken
+org $d86428 : db $16,$08,$10	;Ninja scroll water
+org $d8640a : db $16,$08,$10	;Ninja scroll fire
+org $d86446 : db $16,$08,$10	;Ninja scroll bolt
+org $d86482 : db $16,$08,$10	;Ninja scroll smoke
 
 ;Set value number
 org $d86428+20 : db $64		;Ninja scroll water
