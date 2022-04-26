@@ -2,6 +2,8 @@ hirom
 
 ; C0 Bank
 
+incsrc ram.asm
+
 ; #########################################################################
 ; Diagonal Movement Handlers
 ;
@@ -115,6 +117,26 @@ Advance:
 
 padbyte $EA : pad $C0A07C
 warnpc $C0A07C+1
+
+; #########################################################################
+; Initializing SRAM on Game Creation
+;
+; Modified to free up SRAM for EL/EP/SP system (synchysi)
+; Modified to initialize RNG seed to non-zero (Think)
+
+org $C0BDE2
+InitStuff:
+  NOP
+  INC $01F1      ; initialize RNG seed to 1 [?]
+  LDX $00        ; zero X
+.ep_loop
+  STZ !EP,X      ; zero SRAM (starting with EP)
+  INX            ; next byte
+  CPX #$0030     ; zero 48 bytes
+  BNE .ep_loop   ; loop till done
+
+org $C0BE03
+  CPX #$0077     ; for SP SRAM initialization, plus extra space, too
 
 ; #########################################################################
 ; Freespace

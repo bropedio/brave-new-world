@@ -1262,6 +1262,9 @@ org $C25902 : JSR EnemyAbort ; Add "abort-on-enemies" support
 ; #########################################################################
 ; Victorious Combat (C25D91)
 
+; Make EP gains display after combat
+org $C25E0B : JSR Show_EP
+
 org $C25E31      ; freespace in middle of end-of-battle routine [TODO]
 SetTarget:
   STY $C0        ; save target index in scratch RAM
@@ -1278,6 +1281,22 @@ CounterMiss:
   LDY #$12       ; [displaced] prep entity loop
   RTS
 
+; Remove learning spells from post-combat routine
+org $C25E6A : BRA No_Spells
+org $C25E72 : No_Spells:
+
+; Synchysi's note:
+; The instruction here would seem to prevent the game from ever displaying
+; magic point gains after battle, but that's clearly not the case in
+; vanilla. For now, they're NOP'd until I can determine their function.
+; Bropedio's note:
+; TODO: Note, this is the source of the SP/EL/EP showing up early bug. Confirm
+; that this NOP code is removed in follow-up hacks
+org $C25E79 : NOP #2
+
+; Make EL gains display after combat
+org $C25EAC : JSR Show_EL
+
 ; #########################################################################
 ; Cursed Shield
 
@@ -1293,6 +1312,183 @@ org $C2600D
 .nope
 
 ; #########################################################################
+; Level-up Routine
+
+; Check for learning abilities in new displaced routine location
+org $C260BC : JSR LevelChk
+
+; Re-arranging level up function to separate levels from esper bonuses
+org $C260DD
+  REP #$21      ; Set 16-bit A, clear carry
+  LDA $160B,X   ; Max HP
+  PHA
+  AND #$C000    ; Isolate bits for HP boosts from gear
+  STA $EE
+  PLA           ; Max HP again
+  AND #$3FFF    ; Isolate max HP without equipment boosts
+  ADC $FC       ; Add to HP gain for leveling
+  CMP #$2710
+  BCC $03       ; Branch if new HP value is less than 10000
+  LDA #$270F    ; Otherwise, set it to 9999
+  ORA $EE       ; Combine with HP boosts from gear
+  STA $160B,X   ; New max HP
+  CLC
+  LDA $160F,X   ; Max MP
+  PHA
+  AND #$C000    ; Isolate bits for MP boosts from gear
+  STA $EE
+  PLA           ; Max MP again
+  AND #$3FFF    ; Isolate max MP without equipment boosts
+  ADC $FE       ; Add to MP gain for leveling
+  CMP #$03E8
+  BCC $03       ; Branch if new MP value is less than 1000
+  LDA #$03E7    ; Otherwise, set it to 999
+  ORA $EE       ; Combine with MP boosts from gear
+  STA $160F,X   ; New max MP
+  PLP
+  RTS
+  
+; Esper bonuses
+Do_Esper_Lvl:
+  LDA #$25
+  XBA
+  TXA
+  LDX $4216       ; Get start of esper info block
+  JSR $4781       ; Character ID * 37
+  TAY
+  TDC
+  LDA $D86E0A,X   ; Get esper bonus index
+  ASL
+  TAX             ; X = bonus index * 2
+  JSR (ELBoost,X) ; Calculate bonus
+  RTL
+
+; Esper bonus handling, completely rewritten
+
+org $C2614E     ; TODO: Remove this org [?]
+ELBoost:
+  dw HP_60      ; HP +60
+  dw MP_40      ; MP +40
+  dw HP_MP_Dual ; HP +30/MP +15
+  dw Vig_Dual   ; Vigor +1/HP +20
+  dw Mag_Dual   ; Magic +1/MP +20
+  dw Vig_Dual   ; Vigor +1/Speed +1
+  dw Mag_Dual   ; Magic +1/Speed +1
+  dw Vig_Dual   ; Vigor +1/Stamina +1
+  dw Mag_Dual   ; Magic +1/Stamina +1
+  dw Spd_Stam   ; Speed +1/Stamina +1
+  dw HP_Stam    ; HP +30/Stamina +1
+  dw MP_Stam    ; MP +25/Stamina +1
+  dw Vig_Boost  ; Vigor +2
+  dw Spd_Boost  ; Speed +2
+  dw Sta_Boost  ; Stamina +2
+  dw Mag_Boost  ; Magic +2
+  dw End        ; Free space
+
+; HP/MP boosts
+
+MP_15:
+  LDA #$0F
+  BRA MP_Prep
+MP_20:
+  LDA #$14
+  BRA MP_Prep
+MP_25:
+  LDA #$19
+  BRA MP_Prep
+MP_40:
+  LDA #$28
+MP_Prep:
+  INY
+  INY
+  INY
+  INY
+  BRA HPMP_Boost
+HP_20:
+  LDA #$14
+  BRA HPMP_Boost
+HP_30:
+  LDA #$1E
+  BRA HPMP_Boost
+HP_60:
+  LDA #$3C
+HPMP_Boost:
+  CLC
+  ADC $160B,Y
+  STA $160B,Y
+  TDC
+  ADC $160C,Y
+  STA $160C,Y
+End:
+  RTS
+
+; Dual bonuses
+
+HP_MP_Dual:
+  PHY
+  JSR HP_30
+  PLY
+  JMP MP_15
+Mag_Dual:
+  PHY           ; Preserve Y, since it will get molested when boosting magic
+  JSR Mag_Boost
+  PLY           ; Restore Y for potential future stat boosts
+  BRA Skip_Vig
+Spd_Stam:
+  PHY           ; Preserve Y, since it will get molested when boosting speed
+  JSR Spd_Boost
+  PLY           ; Restore Y for potential future stat boosts
+  BRA Sta_Boost
+Vig_Dual:
+  JSR Vig_Boost ; No need to preserve Y, as a vigor boost won't modify it
+Skip_Vig:
+  CPX #$0008
+  BCC HP_20     ; If X < 8, we're boosting HP +20 along with vigor
+  BEQ MP_20     ; If X = 8, we're boosting MP +20 along with magic
+  CPX #$000E
+  BCC Spd_Boost ; If 8 < X < 14, we're boosting speed along with vigor/magic
+  BRA Sta_Boost ; Else, we're boosting stamina along with vigor/magic/HP/MP
+HP_Stam:
+  PHY
+  JSR HP_30
+  PLY
+  BRA Sta_Boost
+MP_Stam:
+  PHY
+  JSR MP_25
+  PLY
+  BRA Sta_Boost
+
+; Stat bonus
+
+Mag_Boost:
+  INY            ; 3 INYs = boost magic power
+Sta_Boost:
+  INY            ; 2 INYs = boost stamina
+Spd_Boost:
+  INY            ; 1 INY = boost speed
+Vig_Boost:       ; 0 INYs = boost vigor
+  LDA $161A,Y    ; Stat to raise, based on Y
+  INC
+  CPX #$0017     ; If X > 22, we're boosting a single stat, which will be +2
+  BCC Store_Stat ; Otherwise, we're doing a dual stat bonus, which is +1
+  INC
+
+Store_Stat:
+  CMP #$81        ; If the stat is greater than 128, set it equal to 128
+  BCC Update_Stat
+  LDA #$80
+Update_Stat:
+  STA $161A,Y     ; Save updated stat
+  RTS
+
+; #########################################################################
+; Add Experience after Battle
+
+; Interrupt leveling routine to calculate EP
+org $C26236 : JSR Add_EP : NOP #2
+
+; #########################################################################
 ; Damage Number Processing and Queuing Animation(s)
 ;
 ; Part of "MP Colors" patch, Fork which battle dynamics command ID
@@ -1306,6 +1502,48 @@ org $C263BB : JSR DmgCmdAliasMass
 
 org $C26642
 SketchChk:         ; function defined in sketch_fix.asm [?]
+
+; Displaced due to original esper boost rewrite
+; TODO: Look into moving back in-line after Bropedio change overwrites boosts
+org $C26659
+LevelChk:
+  LDX #$0000       ; Beginning of Terra's magic learned at level up block
+  CMP #$00
+  BEQ .learn_magic ; If Terra leveled, branch to see if she learns any spells
+  LDX #$0020       ; Beginning of Celes' magic learned at level up block
+  CMP #$06
+  BEQ .learn_magic ; If Celes leveled, branch to see if she learns any spells
+  LDX #$0000       ; Beginning of Cyan's SwdTech learned at level up block
+  CMP #$02         ; If Cyan leveled, check for any new SwdTechs
+  BNE .learn_blitz ; Else, check for any new Blitzes for Sabin
+.learn_bushido
+  JSR $6222        ; Are any SwdTechs learned at the current level?
+  BEQ .exit        ; If not, exit
+  TSB $1CF7        ; If so, enable the newly learnt SwdTech
+  BNE .exit        ; If it was already enabled (finished the nightmare), exit
+  LDA #$40
+  TSB $F0
+  BNE .exit
+  LDA #$42
+  JMP $5FD4
+.learn_blitz
+  LDX #$0008       ; Beginning of Sabin's Blitzes learned at level up block
+  CMP #$05         ; If Sabin leveled, check for any new Blitzes
+  BNE .exit        ; If not, exit
+  JSR $6222        ; Are any Blitzes learned at the current level?
+  BEQ .exit        ; If not, exit
+  TSB $1D28        ; If so, enable the newly learnt Blitz
+  BNE .exit        ; If it was already enabled (Bum Rush), exit
+  LDA #$80
+  TSB $F0
+  BNE .exit
+  LDA #$33
+  JMP $5FD4
+.learn_magic
+  JMP $61FC
+.exit
+  RTS
+warnpc $C266A3+1 ; TODO: Confirm this end offset
 
 org $C266C7
 ; Coin Toss Formula
@@ -1383,10 +1621,132 @@ BlindHelp:
 ; #########################################################################
 ; Esper Level and Experience Messages
 ;
-; This patch has not been integrated into banks yet, but dn's "Scan Status"
-; patch appears to modify the message ID for one of the new battle messages.
+; dn's "Scan Status" patch modifies the message ID for one of
+; the new battle messages.
 
-org $C2A708 : db $46 ; Modify battle message ID
+org $C2A674
+Calc_EP:
+  PHP               ; store flags
+  SEP #$20          ; 8-bit A
+  LDA $FB           ; spell points gained
+  STA $E8           ; save multiplier
+  BEQ .zero         ; branch if zero ^
+  REP #$20          ; 16-bit A
+  LDA $2F35         ; XP gained from battle
+  LSR               ; / 2
+  LSR               ; / 4
+  LSR               ; / 8
+  JSR $47B7         ; $E8 = XP/8 * SP
+.zero
+  PLP               ; restore flags
+  RTS
+
+Add_EP:
+  PHP               ; store flags
+  SEP #$20          ; 8-bit A
+  LDA $161E,X       ; equipped esper
+  BMI .no_ep        ; branch if null ^
+  TDC               ; zero A/B
+  LDA $3ED8,Y       ; character ID (00 = Terra, 01 = Locke, etc.)
+  PHY               ; store Y
+  TAY               ; index to character
+  LDA $FB           ; spell points gained
+  CLC               ; clear carry
+  ADC !spell_bank,Y ; add spell points gained to current SP bank
+  CMP #$1E          ; at max (30)
+  BCC .set_sp       ; branch if not ^
+  LDA #$1E          ; else use max SP (30)
+.set_sp
+  STA !spell_bank,Y ; save new banked SP
+  TYA               ; character ID
+  ASL               ; x2
+  TAY               ; index it
+  JSR Calc_EP       ; $E8 = EP gained
+  REP #$20          ; 16-bit A
+  LDA $E8           ; EP gained
+  CLC               ; clear carry
+  ADC !EP,Y         ; add to character's EP
+  CMP #$C350        ; at max (50,000)
+  BCC .set_ep       ; branch if not ^
+  LDA #$C350        ; else, use max EP (50,000)
+.set_ep
+  STA !EP,Y         ; save new EP total
+  PLY               ; restore Y
+.no_ep
+  PLP               ; restore flags
+  REP #$21          ; [displaced] 16-bit A, clear carry (preps ADC)
+  LDA $2F35         ; [displaced] gained XP
+  RTS
+
+Show_EL:
+  JSR $606D         ; [displaced] check for level-up
+  PHP               ; store flags
+  PHX               ; store X
+  PHY               ; store Y
+  TDC               ; zero A/B
+  SEP #$20          ; 8-bit A
+  LDA #$2E          ; "Gained an EL" message
+  STA $F2           ; set message pending
+.el_check
+  LDA $3ED8,Y       ; character ID (00 = Terra, 01 = Locke, etc.)
+  CMP #$0C          ; Gogo or higher
+  BCS .exit         ; exit if ^
+  TAY               ; index character ID
+  LDA !EL,Y         ; esper level
+  CMP #$19          ; at max EL (25)
+  BCS .exit         ; exit if ^
+  ASL               ; x2
+  TAX               ; index to EP lookup
+  PHY               ; store character ID
+  TYA               ; character ID
+  ASL               ; x2
+  TAY               ; index it
+  REP #$20          ; 16-bit A
+  LDA !EP,Y         ; character's total EP
+  CMP EP_Chart,X    ; enough EP to level-up?
+  PLX               ; get character ID (00 = Terra, 01 = Locke, etc.)
+  BCC .exit         ; exit if not enough EP to level-up
+  INC !EL,X         ; EL + 1
+  INC !EL_bank,X    ; Available EL + 1
+  LDA $01,S         ; get original Y from stack
+  TAY               ; index it [TODO: Not needed]
+  SEP #$20          ; 8-bit A
+  LDA $F2           ; "EL gained" message still pending
+  BEQ .skip         ; branch if not ^
+  STZ $F2           ; else, zero pending flag
+  LDA #$46          ; load message ID [TODO: Replace 2E above?]
+  JSR $5FD4         ; buffer and display message ^
+.skip
+  BRA .el_check     ; loop until all ELs are gained (if multiple)
+.exit
+  PLY               ; restore Y
+  PLX               ; restore X
+  PLP               ; restore flags
+  RTS
+
+Show_EP:
+  JSR $5FD4         ; [displaced]
+  LDA $F1           ; espers have been acquired
+  BEQ .exit         ; exit if not ^
+  JSR Calc_EP       ; $E8 = gained EP
+  LDA $E8           ; ^
+  BEQ .exit         ; exit if none ^
+  LDA $2F35         ; XP gained
+  PHA               ; store on stack
+  LDA $2F37         ; XP gained hibyte
+  PHA               ; store on stack
+  STZ $2F37         ; zero hibyte
+  STZ $2F36         ; zero midbyte
+  LDA $E8           ; gained EP
+  STA $2F35         ; store EP gained for display
+  LDA #$0045        ; "EP Gained" message ID
+  JSR $5FD4         ; buffer and display message ^
+  PLA               ; restore XP gained hibyte
+  STA $2F37         ; save ^
+  PLA               ; restore XP gained midbyte
+  STA $2F35         ; save ^
+.exit
+  RTS
 
 ; #########################################################################
 ; Helpers in Freespace

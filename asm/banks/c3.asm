@@ -9,6 +9,18 @@ table vwf.tbl,rtl
 !_ellipsis = #$C7
 
 ; #########################################################################
+; Draw Character HP/MP/LV Values
+
+org $C30C81 : JSR Esp_Lvl ; Also draw EL value
+
+; #########################################################################
+; Animation Queue
+
+; Remove infinite loop that existed for some reason (TODO: Test this)
+; Change included in "Esper Changes" hack for EP/EL/Spell Bank features
+org $C311AD : NOP #2
+
+; #########################################################################
 ; Initialize Magic Menu
 
 org $C32125 : NOP #3 ; skip drawing MP Cost in Magic Menu
@@ -64,6 +76,21 @@ org $c32806 : NOP #3 ; skip drawing MP cost
 ; Return to Magic Menu
 
 org $C32D56 : NOP #3 ; skip drawing MP cost
+
+; #########################################################################
+; Character Display
+
+; Change position of LV to make room for EL
+; If espers have been acquired, write EL label after LV label
+org $C33303 : JSR EL_Main_1 ; Main menu, character 1
+org $C3332D : dw $39A5
+org $C3334F : JSR EL_Main_2 ; Main menu, character 2
+org $C33379 : dw $3B25
+org $C3339B : JSR EL_Main_3 ; Main menu, character 3
+org $C333C5 : dw $3CA5
+org $C333E7 : JSR EL_Main_4 ; Main menu, character 4
+org $C33411 : dw $3E25
+
 
 ; #########################################################################
 ; Config Menu Initialize
@@ -221,15 +248,13 @@ MagicMenuCursorPositions:
   dw $C878    ; Spell 16
 
 ; #########################################################################
-; Draw Skills Menu
+; Draw Skills Menu(s)
 
 org $C34C80 : JSR FlipMPDisplay : NOP #2 ; default MP display to "on"
 org $C34CC0 : NOP #6 ; skip drawing "title box" window
-
-; #########################################################################
-; Draw Magic Menu
-
 org $C34D8C : NOP #6 ; skip drawing "MP" label
+org $C34EEA : JSR EL_Skill  ; draw EL in skills display
+org $C34F12 : db $35,$42 ; make room for EL display
 org $C34FAC : LDX #$0011 ; increase space between spell list columns (was $10)
 
 ; #########################################################################
@@ -377,10 +402,44 @@ org $C3565D : JSR BlitzNames
 org $C3577E : NOP #6 ; skip drawing "Dance" title
 
 ; #########################################################################
+; Sustain Esper Data Menu
+
+org $C358DB : JMP Pressed_A : NOP ; support Spell Bank and EL Bonus selection
+
+; #########################################################################
+; Draw Selected Esper Data Info
+
+org $C359AC : JSR Blue_Bank_Txt
+org $C35A3B : JSR Unspent_EL ; add unspent EL draw to esper bonus draw
+org $C35A84 : JMP $7FD9 ; skip drawing spell progress
+
+; Re-formats the esper screen to properly display SP cost
+org $C35AFF
+  LDA #$FF          ; " "
+  STA $2180         ; write ^
+  STA $2180         ; write ^
+  JSR Learn_Chk     ; check if spell learned
+  JSR $04E0         ; turn SP cost (A) into displayable digits
+  LDA $F8           ; tens digit
+  STA $2180         ; write ^
+  LDA $F9           ; ones digit
+  STA $2180         ; write ^
+  LDA #$FF          ; " "
+  STA $2180         ; write ^
+  LDA #$92          ; "S"
+  STA $2180         ; write ^
+  JMP Finish_Esper_Txt ; jump to second part of routine
+
+org $C35B26 : JSR No_Spell_In_Slot
+
+; #########################################################################
 ; Positioned Text for Skills Menu (and Submenus)
 
 org $C35C59 : dw $7A8D : db "Bushido",$00 ; rename "Swdtech"
 org $C35CB8 : dw $81B7 : db "Bushido",$00 ; rename "Swdtech"
+org $C35CE2 : dw $4431 : db "  SP ",$00
+org $C35CEA : dw $4425 : db "          ",$00 ; blank text space, if needed
+
 
 ; #########################################################################
 ; Draw command names based on availability
@@ -468,11 +527,34 @@ warnpc $C35F50+1
 org $C35f50 : LDX #$620A ; nudge mask around Gogo portrait
 
 ; #########################################################################
+; Draw Status Screen
+
+; Modify the status screen to display EP and esper level to the player
+; Change total exp display to exp to next level
+org $C36068
+  JSR $60A0         ; get experience needed to level
+  JSR $0582         ; convert to digit tiles
+  LDX #$7CD7        ; tilemap position
+  JSR $04A3         ; write experience needed to status screen
+  JSR EL_Status     ; draw "Total EP" label
+  JSR Calc_EP_Status ; $F1: needed ep, Carry: show ep
+  BCC .done         ; branch if hiding EP numbers
+  JSR $0582         ; convert $F1 into text digits
+  LDX #$7DD7        ; tilemap position for EP number
+  JSR $04A3         ; draw EP needed
+.done
+  STZ $47           ; [displaced] turn ailments off
+  JSR $11B0         ; [displaced] hide ailment icons
+  JMP $625B         ; [displaced] display status
+
+; #########################################################################
 ; Status Screen Commands
 ; 
 ; Rewritten as part of Assassin's "Brushless Sketch" patch to make room
 ; for a helper function. This new helper exposes $C36172 (command upgrades)
 ; to the C2 menu command routine(s).
+
+org $C36096 : db $25,$3A ; make room for EL in Character display
 
 org $C36102
 StatusCmdOpt:
@@ -502,10 +584,18 @@ org $C36482 : db $FF ; replace '%' with ' '
 org $C36486 : db $FF ; replace '%' with ' '
 org $C364BB : db $FF ; replace '%' with ' '
 org $C364C5 : db $FF ; replace '%' with ' '
+org $C36511 : dw $7C4D : db "Exp to lv. up:",$00 ; status menu exp text
+
+; #########################################################################
+; Character Lineup
+org $C3797D : JSR EL_Party  ; draw EL after LV in party select screen
+org $C379E6 : dw $3A75      ; shift LV label to make room for EL display
 
 ; #########################################################################
 ; [fork] Draw Offensive Properties
 ; Rewritten to always draw "Runic", "2-Hand", "Bushido" but grayed out
+
+org $C38743 : RTS ; skip drawing "Spell Taught" in gear details
 
 org $C38746
 OffensiveProps:
@@ -711,6 +801,223 @@ org $C3C2E1 : JSR DrawDetailsLabels
 ; #########################################################################
 ; Freespace Helpers
 
+; Label only for ease of use for "Esper Changes" hack. Can be removed once
+; "restrict_espers.asm" is integrated.
+org $C3F097 : ChkEsp:
+
+; EL/EP/Spell bank text data and helpers
+; Many new label and text positions and tiles
+org $C3F277
+EPUpTxt:
+  dw $7D4D : db "EP to lv. up:",$00
+EPUpClr:
+  dw $7D4D : db "             ",$00 ; 13 blanks for Gogo+
+EPClear:
+  dw $7DDD : db "     ",$00         ;  5 blanks for Gogo+ EP
+
+; TODO: Lots of duplicated code here
+; Many "EL" text positions, plus extra $FF buffer for indexing purposes
+  dw $39AB : db "EL",$00,$FF,$FF,$FF
+  dw $3B2B : db "EL",$00,$FF,$FF,$FF
+  dw $3CAB : db "EL",$00,$FF,$FF,$FF
+  dw $3E2B : db "EL",$00,$FF,$FF,$FF
+  dw $423B : db "EL",$00,$FF,$FF,$FF
+  dw $3A2B : db "EL",$00,$FF,$FF,$FF
+  dw $3A7B : db "EL",$00,$FF,$FF,$FF
+
+; TODO: Lots of duplicated code here
+; Many "EL" text positions, but with spaces instead, to overwrite
+  dw $39AB : db "     ",$00
+  dw $3B2B : db "     ",$00
+  dw $3CAB : db "     ",$00
+  dw $3E2B : db "     ",$00
+  dw $423B : db "     ",$00
+  dw $3A2B : db "     ",$00
+  dw $3A7B : db "     ",$00
+UnspentTxt:
+  db "Unspent EL:",$00
+
+Calc_EP_Status:
+  LDA $1E8A         ; event byte
+  AND #$08          ; "met Ramuh"
+  BEQ .no_ep        ; branch if not ^
+  LDX $67           ; character data offset
+  LDA $0000,X       ; character ID
+  CMP #$0C          ; Gogo or above
+  BCC .yes_ep       ; branch if not ^
+.no_ep
+  LDY #EPClear      ; pointer for spaces to blank out EP value
+  JSR $02F9         ; draw ^
+  LDY #EPUpClr      ; pointer for spaces to blank out "EP to lv. up"
+  JSR $02F9         ; draw ^
+  CLC               ; clear carry (hide EP needed)
+  RTS
+.yes_ep
+  PHA               ; store character ID
+  LDA #$2C          ; color: gray-blue
+  STA $29           ; set text palette
+  LDY #EPUpTxt      ; pointer for "EP to lv. up" text display
+  JSR $02F9         ; draw ^
+  TDC               ; zero A/B
+  LDA #$20          ; color: white
+  STA $29           ; set text palette
+  PLA               ; restore character ID
+  TAY               ; index it
+  LDA !EL,Y         ; character's esper level
+  CMP #$19          ; at max (25)
+  BNE .needed_ep    ; branch if not ^
+  SEC               ; set carry (show EP needed)
+  JMP $60C3         ; display zero and exit
+.needed_ep
+  ASL               ; EL x2
+  TAX               ; index to EP lookup
+  TYA               ; character ID
+  ASL               ; x2
+  TAY               ; index it
+  REP #$30          ; 16-bit A, X/Y
+  LDA !EP,Y         ; character's total EP
+  STA $F1           ; store ^
+  LDA EP_Chart,X    ; EP needed for next level
+  SEC               ; set carry
+  SBC $F1           ; EP needed - total EP
+  STA $F1           ; store ^
+  SEP #$20          ; 8-bit A
+  SEC               ; set carry (show EP needed)
+  RTS
+
+Esp_Lvl:
+  JSR $04B6         ; [displaced] draw two digits
+  JSR Ramuh_Chk     ; check if optained espers yet
+  BEQ .exit         ; exit if not ^
+  JSR Char_Chk      ; check if Gogo or above
+  BCS .exit         ; exit if ^
+  TAY               ; index character ID
+  LDA !EL,Y         ; character's esper level
+  JSR $04E0         ; turn into digit tiles
+  REP #$20          ; 16-bit A
+  LDA [$EF]         ; tilemap position for level display
+  CLC               ; clear carry
+  ADC #$000C        ; move X position for esper level display
+  TAX               ; index it
+  SEP #$20          ; 8-bit A
+  JMP $04B6         ; write esper level to screen
+.exit
+  RTS
+
+Ramuh_Chk:
+  TDC               ; zero A/B
+  LDA $1E8A         ; event byte
+  AND #$08          ; "met Ramuh"
+  RTS
+
+Char_Chk:
+  LDX $67           ; character data offset
+  TDC               ; zero A/B
+  LDA $0000,X       ; character ID
+  CMP #$0C          ; carry: Gogo or higher
+  RTS
+
+EL_Main_1:
+  LDA #$00          ; slot 1 offset for "EL" label in main menu
+  PHA               ; store ^
+  BRA Write_Text    ; draw "EL" label
+
+EL_Main_2:
+  LDA #$08          ; slot 2 offset for "EL" label in main menu
+  PHA               ; store ^
+  BRA Write_Text    ; draw "EL" label
+
+EL_Main_3:
+  LDA #$10          ; slot 3 offset for "EL" label in main menu
+  PHA               ; store ^
+  BRA Write_Text    ; draw "EL" label
+
+EL_Main_4:
+  LDA #$18          ; slot 4 offset for "EL" label in main menu
+  PHA               ; store ^
+  BRA Write_Text    ; draw "EL" label
+
+EL_Skill:
+  LDA #$24          ; color: blue
+  STA $29           ; set text palette
+  LDA #$20          ; offset for "EL" label in skills menu
+  PHA               ; store ^
+  BRA Stat_Skill_Ent ; draw "EL" label
+
+EL_Status:
+  LDA #$24          ; color: blue
+  STA $29           ; set text palette
+  LDA #$28          ; offset for "EL" label in status menu
+  PHA               ; store ^
+  BRA Stat_Skill_Ent ; draw "EL" label
+
+EL_Party:
+  LDA #$30          ; offset for EL label in party lineup menu
+  PHA               ; store ^
+Write_Text:
+  JSR $69BA         ; [displaced] draw multiple strings
+
+Stat_Skill_Ent:
+  JSR Ramuh_Chk     ; obtained espers
+  BEQ No_Ramuh      ; branch if not ^
+  JSR Char_Chk      ; Gogo check
+  PLA               ; restore text offset
+  PHP               ; store flags
+  REP #$20          ; 16-bit A
+  BCS Gogo          ; branch if Gogo or higher
+  ADC #$F29F        ; else, add "EL" text location
+  BRA Write_EL      ; branch to write ^
+
+No_Ramuh:
+  PLA               ; restore text offset
+  PHP               ; store flags
+  REP #$20          ; 16-bit A
+
+Gogo:
+  CLC               ; clear carry
+  ADC #$F2D7        ; add black spaces text location
+
+Write_EL:
+  TAY               ; index text source
+  PLP               ; restore flags
+  JMP $02F9         ; draw source text
+
+; Adds "Unspent EL" display under the esper bonuses
+Unspent_EL:
+  LDA #$24          ; color: blue
+  STA $29           ; set text palette
+  LDY #$4795        ; tilemap position to write to
+  JSR $3519         ; initialize WRAM buffer with ^
+  LDX $00           ; zero X
+.write_uel
+  LDA UnspentTxt,X  ; get "Unspent EL:" tile
+  BEQ .finish       ; break if EOL
+  STA $2180         ; else, write to WRAM
+  INX               ; next tile index
+  BRA .write_uel    ; loop till EOL ($00)
+.finish
+  STZ $2180         ; write EOL
+  JSR $7FD9         ; draw string from WRAM buffer
+  LDA #$20          ; color: white
+  STA $29           ; set palette
+  JSR Char_Chk      ; current character's ID
+  TAY               ; index it
+  LDA !EL_bank,Y    ; available ELs for character to spend
+  JSR $04E0         ; turn into digit tiles
+  LDY #$47AD        ; tilemap position to write to
+  JSR $3519         ; initialize WRAM buffer with ^
+  LDA $F8           ; tens digit of ELs
+  STA $2180         ; write ^
+  LDA $F9           ; ones digit of ELs
+  STA $2180         ; write ^
+  STZ $2180         ; write EOL
+  JSR $7FD9         ; draw string from WRAM buffer
+  LDY #$4713        ; [displaced] next tilemap position
+  RTS
+
+
+
+
 org $C3F480
 DrawEsperName:
   PHY           ; store actor name position
@@ -885,6 +1192,156 @@ C3_BlindJump:
 .exit
   RTL
 warnpc $C3F737+1
+
+; TODO: Another two unused bytes here
+
+; EL, EP, Spell Bank Helpers (Synchysi)
+org $C3F739
+Blue_Bank_Txt:
+  LDA #$24          ; color: blue
+  STA $29           ; set text palette ^
+  JSR $02F9         ; display "SP" in blue text
+  LDA #$20          ; color: white
+  STA $29           ; set text palette ^
+  LDX $67           ; character data offset
+  TDC               ; zero A/B
+  LDA $0000,X       ; character ID
+  TAY               ; index it
+  LDA !spell_bank,Y ; character's banked SP
+  JSR $04E0         ; convert to displayable digits
+  LDX #$443B        ; where to display
+  JMP $04B6         ; write banked SP to screen
+
+Finish_Esper_Txt:
+  LDA #$8F          ; "P"
+  STA $2180         ; add ^ to WRAM
+  LDA #$FF          ; " "
+  STA $2180         ; add ^ to WRAM
+  STA $2180         ; add ^ to WRAM
+  STA $2180         ; add ^ to WRAM
+  LDA $AA           ; spell learned
+  LSR               ; C: learned
+  BCC .unknown      ; branch if not ^
+  LDA #$CF          ; "checkmark"
+  BRA .finish       ; draw ^ and finish
+.unknown
+  LDA #$FF          ; " "
+.finish
+  STA $2180         ; add ^ to WRAM
+  STZ $2180         ; add EOL to WRAM
+  JMP $7FD9         ; finish drawing spell row
+
+Learn_Chk:
+  STZ $AA           ; zero "learned" flag
+  LDA $E0           ; SP cost of the spell
+  PHA               ; preserve it, because C3/50A2 mutilates $E0
+  JSR Chk_Esper_Eq  ; check if the current esper can be equipped
+  LDA $29           ; text color palette
+  CMP #$28          ; grey (disabled)
+  BEQ .set_color    ; branch if ^
+  LDA $E1           ; spell ID
+  JSR $50A2         ; get mastery percent
+  BEQ .unknown      ; branch if zero ^
+  INC $AA           ; else, set flag for later
+.unknown
+  LDA #$20          ; color: white
+.set_color
+  STA $29           ; update text palette
+  PLA               ; restore SP cost of the spell
+  RTS
+
+Pressed_A:
+  LDA $4B           ; pointer index
+  BNE .spell        ; branch if pointing at a spell
+  JMP $C358DF       ; vanilla "can equip esper" fork
+.spell
+  LDA $99           ; load esper ID
+  STA $4202         ; set multiplier
+  JSR ChkEsp        ; check esper restriction
+  TDC               ; zero A/B
+  LDA $29           ; text palette
+  CMP #$28          ; color: gray (disabled)
+  BEQ .nope         ; branch if ^
+  LDA #$0B          ; size of esper data block (11)
+  STA $4203         ; set multiplicand
+  LDA $4B           ; pointer index
+  CMP #$06          ; "esper bonus" index
+  BEQ Apply_Bonus   ; branch if ^
+  DEC               ; else, decrement index
+  ASL               ; and *2
+  CLC               ; clear carry
+  REP #$20          ; 16-bit A
+  ADC $4216         ; add spell offset to esper data offset
+  STA $A5           ; store ^
+  TAX               ; index it
+  SEP #$20          ; 8-bit A
+  LDA $D86E01,X     ; spell ID the pointer is currently on
+  STA $E0           ; store ^
+  CMP #$FF          ; null?
+  BEQ Exiter        ; branch if ^
+  JSR $50A2         ; check spell mastery
+  BNE .nope         ; exit if already learned
+  LDX $A5           ; restore spell offset
+  TDC               ; zero A/B
+  LDA $D86E00,X     ; SP cost of the spell
+  STA $A4           ; store ^
+  LDX $67           ; character data offset
+  LDA $0000,X       ; character ID
+  TAX               ; index it
+  STA $4202         ; set multiplier
+  LDA !spell_bank,X ; character's banked SP
+  SEC               ; set carry
+  SBC $A4           ; subtract spell SP cost
+  BCC .nope         ; exit if not enough SP
+  STA !spell_bank,X ; else, reduce banked SP
+  LDA #$36          ; size of character spell lists (54)
+  STA $4203         ; set multiplicand
+  JSR $0ECE         ; sound: "cha-ching"
+  TDC               ; zero A/B
+  LDA $E0           ; spell ID
+  REP #$20          ; 16-bit A
+  CLC               ; clear carry
+  ADC $4216         ; add spell index to character spell list offset
+  TAX               ; index it
+  SEP #$20          ; 8-bit A
+  LDA #$FF          ; "learned"
+  STA $1A6E,X       ; set spell learned
+  JMP $5913         ; jump to vanilla "press B" esper menu fork
+.nope
+BzztPlayer:
+  JMP $0EC0         ; sound: Bzzt
+
+Chk_Esper_Eq:
+  STA $4203         ; save SP cost of spell [TODO: Why?]
+  LDA $99           ; esper ID
+  JSR ChkEsp        ; check esper restriction
+  LDA $29           ; text color palette
+  CMP #$2C          ; color: gray-blue (equipped)
+  BNE .exit         ; exit if not ^
+  LDA #$20          ; color: white (equippable)
+.exit
+Exiter:
+  RTS
+
+No_Spell_In_Slot:
+  LDX #$B492        ; tilemap position [?]
+  STX $2181         ; set WRAM destination
+  LDA #$FF          ; " " space
+  STA $2180         ; write ^
+  STZ $2180         ; write EOL
+  JMP $7FD9         ; draw esper name
+
+Apply_Bonus:        ; F834
+  LDX $67           ; character data offset
+  LDA $0000,X       ; character ID
+  TAX               ; index it
+  LDA !EL_bank,X    ; unspent esper levels
+  BEQ BzztPlayer    ; branch if none ^
+  DEC !EL_bank,X    ; else, decrement unspent ELs
+  JSL Do_Esper_Lvl  ; and apply esper boost
+  JSR $0ECE         ; sound: "cha-ching"
+  JSR $4EED         ; redraw HP/MP on the status screen
+  JMP $5913         ; jump to vanilla "Press B" esper menu fork
 
 org $C3F850
 OffensiveHelp:
