@@ -504,6 +504,13 @@ InitializeATBTimers:
 warnpc $C22602+1
 
 ; #########################################################################
+; Death and Poison Immunity Setup/Handling
+;
+; Modified by dn's "Stop Block" hack to give Stop immunity with Death
+
+org $c2265b : JSR StopBlock ; Add hook to give stop immunity
+
+; #########################################################################
 ; Load Weapon Properties
 ;
 ; Synchysi's Atma Weapon patch modifies the special effect handling
@@ -630,6 +637,17 @@ org $C2381D :  JSL AutoCritProcs ; power-up crit doom to x-zone, multitarget qua
 
 ; #########################################################################
 ; Rippler Effect (now freespace)
+
+org $C23C04
+StopBlock:
+  PHA             ; save A
+  LDA $3330,X     ; vulnerable status-3
+  AND #$EF        ; remove "Stop"
+  STA $3330,X     ; update vulnerable status-3
+  PLA             ; restore A
+  ORA #$80        ; [displaced]
+  XBA             ; [displaced]
+  RTS 
 
 org $C23C3D
 CoinHelp:
