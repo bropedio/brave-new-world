@@ -1,6 +1,6 @@
 hirom
 
-; CB Bank
+; CA, CB, CC Event Banks
 
 ; ########################################################################
 ; Ebot's Rock Coral Event(s)
