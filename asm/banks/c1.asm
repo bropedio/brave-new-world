@@ -120,6 +120,14 @@ org $C12D2B : NOP : NOP : JSL PaletteMP
 org $C12B9B : NOP : NOP : JSL PaletteMP_mass
 
 ; #######################################################################
+; Spell Name Message Display
+;
+; dn's "Spell Dot" hack shifts loop to include prefix dot
+
+org $C1602E : NOP #3 ; skip decrementing spell name length
+org $C16031 : LDA $E6F567,X ; decrement starting offset by 1
+
+; #######################################################################
 ; Battle Dynamics Commands Jump Table
 
 ; Add aliases for existing damage number commands
