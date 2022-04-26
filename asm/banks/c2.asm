@@ -387,6 +387,8 @@ org $C21908 : JSR CoinHelp
 ;   Have Blind status apply on skills with 255 hit rate and sets the
 ;   accuracy of a blinded attacker to 50%
 
+org $C222D1 : Miss:   ; Code for missed attack
+
 org $C22306
 BlindPatch:
   JSR BlindHelp
@@ -394,12 +396,39 @@ BlindPatch:
 org $C22315
 .skip_ahead
 
+; Terii Senshi evasion bugfix, with modification to Image removal
+org $C2232C
+  BEQ .no_img  ; Branch if the target does not have Image status
+  JSR $4B5A    ; random(255)
+  CMP #$56     ; 33% chance to clear Image status
+  BCS Miss     ; branch if not ^
+  LDA $3DFD,Y  ; status-to-clear-2
+  ORA #$04     ; add "Image"
+  STA $3DFD,Y  ; update status-to-clear-2
+  BRA Miss     ; branch to miss
+warnpc $C2233F+1
+org $C2233F
+.magic_evd_fork
+  LDA $3B55,Y  ; 255 - (MBlock *2) + 1
+  PHA          ; store hitrate
+  BRA HitCalc  ; branch to calculate
+.no_img
+  LDA $3B54,Y  ; Handled in sei_tank_n_spank.asm (TODO Integrate)
+warnpc $C22348+1
+org $C22348
+  PHA          ; store hitrate
+  NOP
+
 org $C2234A
 BlindPatch2:
   BRA .skip_ahead
 org $C22358
 .skip_ahead
   LDA $3C58,Y       ; [moved] relic effects
+
+org $C2235E : PEA $0004 ; remove evasion penalty from Rerise
+org $C22372 : BRA HitCalc ; skip evasion bonuses from all statuses
+org $C22388 : HitCalc:
 
 ; #########################################################################
 ; Initialize ATB Timers
