@@ -1396,6 +1396,22 @@ DmgCmdAliasMass:
 warnpc $C2A800+1
 
 ; #########################################################################
+; Status Text Tile Data
+; $20-$23 = Regen
+; $24-$25 = Sap
+; $20, $26-$28 = Rerise
+
+org $C2ADE1
+  db $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF    ; nothing
+  db $20,$21,$22,$23,$FF,$FF,$FF,$FF,$FF,$FF    ; Regen
+  db $20,$26,$27,$28,$FF,$FF,$FF,$FF,$FF,$FF    ; Rerise
+  db $20,$21,$22,$23,$20,$26,$27,$28,$FF,$FF    ; Regen, Rerise
+  db $24,$25,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF    ; Sap
+  db $82,$87,$84,$80,$93,$84,$91,$FF,$FF,$FF    ; Sap, Regen
+  db $24,$25,$FF,$20,$26,$27,$28,$FF,$FF,$FF    ; Sap, Rerise
+  db $82,$87,$84,$80,$93,$84,$91,$FF,$FF,$FF    ; Sap, Rerise, Regen
+
+; #########################################################################
 ; Palette Data for Various Animations
 ;
 ; Modify palette for MP damage, part of "MP Colors" patch

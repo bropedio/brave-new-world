@@ -120,6 +120,34 @@ org $C12D2B : NOP : NOP : JSL PaletteMP
 org $C12B9B : NOP : NOP : JSL PaletteMP_mass
 
 ; #######################################################################
+; Status Text Display for targeting window
+
+org $C14587
+StatusTextDisp: ; @returns: bit 0 = Regen, Bit 1 = Rerise, Bit 2 = Sap
+  XBA           ; get B
+  PHA           ; store ^
+  XBA           ; get A again
+  LDA $2EBE,X   ; Status byte 2 (for Sap)
+  ROL #2        ; Rotate Sap into carry
+  TDC           ; Clear A
+  ROL           ; Rotate Sap into bit 0
+  XBA           ; Save Sap
+  LDA $2EC0,X   ; Status byte 4 (Rerise byte)
+  LSR #3        ; Shift Rerise into carry
+  XBA           ; Get Sap again
+  ROL           ; Rotate Rerise into bit 0, Sap into bit 1
+  XBA           ; Save Sap and Rerise
+  LDA $2EBF,X   ; Status byte (for Regen)
+  LSR #2        ; Shift Regen into carry
+  XBA           ; Get Sap and Rerise
+  ROL           ; Rotate Regen into bit 0, Rerise into bit 1, Sap into bit 2
+  XBA           ; store A
+  PLA           ; restore original B
+  XBA           ; store in B ^
+  RTS
+padbyte $FF : pad $C145B3
+
+; #######################################################################
 ; Spell Name Message Display
 ;
 ; dn's "Spell Dot" hack shifts loop to include prefix dot
