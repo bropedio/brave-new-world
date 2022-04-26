@@ -826,6 +826,12 @@ OvercastFix:
   RTS
 
 ; #########################################################################
+; Special Checks for End-of-Battle
+;
+; Allows partial party engulfs to still transport the party to Gogo's Cave
+org $C24816 : NOP #5
+
+; #########################################################################
 ; Prepare Counterattacks (C24C5B)
 
 org $C24C5B
