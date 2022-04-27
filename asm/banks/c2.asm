@@ -1518,6 +1518,11 @@ Update_Stat:
 org $C26236 : JSR Add_EP : NOP #2
 
 ; #########################################################################
+; Changes the experience cap from 15,000,000 to 999,999.
+
+org $C26276 : dl $0F423F ; 999,999
+
+; #########################################################################
 ; Damage Number Processing and Queuing Animation(s)
 ;
 ; Part of "MP Colors" patch, Fork which battle dynamics command ID
