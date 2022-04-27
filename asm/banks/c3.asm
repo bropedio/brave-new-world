@@ -409,8 +409,11 @@ org $C358DB : JMP Pressed_A : NOP ; support Spell Bank and EL Bonus selection
 ; #########################################################################
 ; Draw Selected Esper Data Info
 
+org $C3599D : dw $B810  ; Reposition EL bonus cursor
 org $C359AC : JSR Blue_Bank_Txt
+org $C359CF : JSR DrawEsperMP ; end of drawing esper name
 org $C35A3B : JSR Unspent_EL ; add unspent EL draw to esper bonus draw
+org $C35A4C : db $0B    ; Remove 2 spaces between label and bonus
 org $C35A84 : JMP $7FD9 ; skip drawing spell progress
 
 ; Re-formats the esper screen to properly display SP cost
@@ -418,7 +421,8 @@ org $C35AFF
   LDA #$FF          ; " "
   STA $2180         ; write ^
   STA $2180         ; write ^
-  JSR Learn_Chk     ; check if spell learned
+  JSR Learn_Chk
+SPCost:
   JSR $04E0         ; turn SP cost (A) into displayable digits
   LDA $F8           ; tens digit
   STA $2180         ; write ^
@@ -428,7 +432,7 @@ org $C35AFF
   STA $2180         ; write ^
   LDA #$92          ; "S"
   STA $2180         ; write ^
-  JMP Finish_Esper_Txt ; jump to second part of routine
+  JMP FinishSP      ; jump to second part of routine
 
 org $C35B26 : JSR No_Spell_In_Slot
 
@@ -437,9 +441,10 @@ org $C35B26 : JSR No_Spell_In_Slot
 
 org $C35C59 : dw $7A8D : db "Bushido",$00 ; rename "Swdtech"
 org $C35CB8 : dw $81B7 : db "Bushido",$00 ; rename "Swdtech"
-org $C35CE2 : dw $4431 : db "  SP ",$00
-org $C35CEA : dw $4425 : db "          ",$00 ; blank text space, if needed
-
+org $C35CE2
+  SPLabel:    dw $47B1 : db "SP ",$00
+  LearnLabel: dw $4437 : db "Learn",$00
+  SPMax:      dw $47BB : db "/30",$00
 
 ; #########################################################################
 ; Draw command names based on availability
@@ -986,7 +991,7 @@ Write_EL:
 Unspent_EL:
   LDA #$24          ; color: blue
   STA $29           ; set text palette
-  LDY #$4795        ; tilemap position to write to
+  LDY #$4791        ; tilemap position to write to
   JSR $3519         ; initialize WRAM buffer with ^
   LDX $00           ; zero X
 .write_uel
@@ -1004,7 +1009,7 @@ Unspent_EL:
   TAY               ; index it
   LDA !EL_bank,Y    ; available ELs for character to spend
   JSR $04E0         ; turn into digit tiles
-  LDY #$47AD        ; tilemap position to write to
+  LDY #$47A9        ; tilemap position to write to
   JSR $3519         ; initialize WRAM buffer with ^
   LDA $F8           ; tens digit of ELs
   STA $2180         ; write ^
@@ -1012,11 +1017,8 @@ Unspent_EL:
   STA $2180         ; write ^
   STZ $2180         ; write EOL
   JSR $7FD9         ; draw string from WRAM buffer
-  LDY #$4713        ; [displaced] next tilemap position
+  LDY #$470F        ; next tilemap position (shifted left 2 spaces)
   RTS
-
-
-
 
 org $C3F480
 DrawEsperName:
@@ -1209,10 +1211,10 @@ Blue_Bank_Txt:
   TAY               ; index it
   LDA !spell_bank,Y ; character's banked SP
   JSR $04E0         ; convert to displayable digits
-  LDX #$443B        ; where to display
-  JMP $04B6         ; write banked SP to screen
+  LDX #$47B7        ; where to display
+  JMP NewLabels     ; Output banked SP and other new static labels
 
-Finish_Esper_Txt:
+Finish_Esper_Txt:   ; TODO: Label unused
   LDA #$8F          ; "P"
   STA $2180         ; add ^ to WRAM
   LDA #$FF          ; " "
@@ -1712,5 +1714,111 @@ GearActors:  : dw $750B : db $1C,$06
 GearNameBox: : dw $708B : db $1C,$02
 GearDesc:    : dw $738B : db $1C,$04
 
+; ------------------------------------------------------------------------
+; More EL/EP/SpellBank Helpers
+; TODO: Some of this code deprecates unused labels above
+; TODO: Some of this code may not be used at all
 
+org $C3FD08
+FinishSP:
+  LDA #$8F          ; P
+  STA $2180
+  STZ $2180         ; EOS
+  JMP $7FD9         ; String done, now print it
+
+MPCost:             ; TODO: Apparently unused [??]
+  PHA               ; Store SP cost for retrieval
+  PHX               ; Preserve X for isolation purposes
+  LDA #$FF
+  STA $2180
+  LDA $E1           ; ID of the spell
+  JSR $50F5         ; Compute index
+  LDX $2134         ; Load it
+  LDA $C46AC5,X     ; Base MP cost
+  PLX               ; Restore X
+  JSR $04E0         ; Turns A into displayable digits
+  LDA $F8           ; tens digit
+  STA $2180
+  LDA $F9           ; ones digit
+  STA $2180
+  LDA #$FF          ; space
+  STA $2180
+  LDA #$8C          ; M
+  STA $2180
+  LDA #$8F          ; P
+  STA $2180
+  LDA #$FF          ; 3 spaces
+  STA $2180
+  STA $2180
+  STA $2180
+  LDA $AA
+  LSR
+  BCC .unknown
+.known
+  PLA
+  JMP Known         ; print a checkmark
+.unknown
+  PLA
+  JSR $04E0         ; Turns A into displayable digits
+  JMP SPCost        ; go back to where we sliced in and output SP cost
+
+Known:  
+  LDA #$FF          ; 2 spaces to center checkmark
+  STA $2180
+  STA $2180
+  
+  LDA #$CF          ; checkmark
+  STA $2180
+  
+  LDA #$FF          ; 2 more spaces to overwrite stale text in this slot
+  STA $2180
+  STA $2180
+
+  STZ $2180         ; EOS
+  JMP $7FD9
+
+NewLabels:
+; The flip-flopping from white to blue for all of the static positioned
+; text could be streamlined, but this is just so much simpler to grap
+; than having to slice the blue in with the blue and the white in with
+; the white, etc.
+  JSR $04B6         ; Write banked SP to screen (relocated)
+  LDY #SPMax
+  JSR $02F9         ; Print "/30" with SP bank
+  LDA #$24
+  STA $29           ; Set text color to blue
+  LDY #LearnLabel
+  JSR $02F9         ; Print "Learn"
+  LDA #$20
+  STA $29           ; Set text color back to white
+  LDA #$00
+  XBA               ; Wipe HB of A
+  LDA $99
+  RTS
+
+DrawEsperMP:
+  LDA #$FF
+  STA $2180         ; 3 spaces
+  STA $2180
+  STA $2180
+  LDA $99           ; Current Esper
+  ADC #$36          ; Get attack ID
+  PHX
+  JSR $50F5         ; Compute index
+  LDX $2134         ; Load it
+  LDA $C46AC5,X     ; Base MP cost
+  PLX
+  JSR $04E0         ; Turns A into displayable digits
+  LDA $F8           ; tens digit
+  STA $2180
+  LDA $F9           ; ones digit
+  STA $2180
+  LDA #$FF          ; space
+  STA $2180
+  LDA #$8C          ; M
+  STA $2180
+  LDA #$8F          ; P
+  STA $2180
+  STZ $2180         ; EOS
+  RTS
 
