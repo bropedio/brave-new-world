@@ -1837,6 +1837,20 @@ org $C2ADE1
 org $C2C6A1 : db $63,$14,$41,$7F,$E0,$03,$00,$7F
 
 ; #########################################################################
+; The code, pointers, and text for summon descriptions (C4) is in a
+; region of the ROM usually utilized for graphics data, and it just so
+; happens that the Esper summon drawer in combat has some sort of label
+; in it that points to this region of the ROM for its glyphs.
+;
+; It is normally invisible, since this region is empty, but since
+; I added a bunch of stuff here, it ends up displaying a couple of
+; tiles of gibberish instead. This change just prevents these tiles
+; from displaying at all.
+
+org $C2E092 : db $03,$8C,$03,$8F,$FF,$16,$00,$00         
+                ; 03  2C  03  2F  FF  16  00  00
+
+; #########################################################################
 ; Sketch Animation Helper
 ;
 ; Modified by Assassin's "Sketch Fix" patch, which is actually only half

@@ -135,6 +135,25 @@ org $C33BB7
   RTS           ; automatically return from battle speed jump
 BNWText:   dw $78CF : db "   ",$81,"rave New World 2.1b18 ",$00 ; Issue w/ "B" char
 BattleTxt: dw $3A4F : db $81,"attle","$00
+warnpc $C33BDE+1
+padbyte $FF
+pad $C33BDE
+
+; -------------------------------------------------------------------------
+; Helper for Loading Summon Descriptions (in freespace)
+
+org $C33BDE           ; 18 bytes, we'll use 17 :)
+LoadDescription:
+  LDA $4B             ; On esper name?
+  BEQ .esper          ; Branch if so
+  CMP #$06            ; On bonus?
+  BEQ .bonus          ; Branch if so
+  JMP $5BE3           ; Load magic description
+.esper
+  JMP SummonDescription
+.bonus
+  JMP $5BF6           ; Load EL description
+
 warnpc $C33BF2+1
 padbyte $FF
 pad $C33BF2
@@ -402,6 +421,11 @@ org $C3565D : JSR BlitzNames
 org $C3577E : NOP #6 ; skip drawing "Dance" title
 
 ; #########################################################################
+; Initialize Esper Data Menu
+
+org $C358B9 : JSL InitEsperDataSlice ; ($C4)
+
+; #########################################################################
 ; Sustain Esper Data Menu
 
 org $C358DB : JMP Pressed_A : NOP ; support Spell Bank and EL Bonus selection
@@ -435,6 +459,7 @@ SPCost:
   JMP FinishSP      ; jump to second part of routine
 
 org $C35B26 : JSR No_Spell_In_Slot
+org $C35BA6 : JSR LoadDescription
 
 ; #########################################################################
 ; Positioned Text for Skills Menu (and Submenus)
@@ -622,6 +647,29 @@ OffensiveProps:
   LDY #$8E26          ; "Bushido" text data address
   JSR DrawTextData    ; draw ^
   RTS
+padbyte $FF : pad $C38777
+
+; ------------------------------------------------------------------------
+; Helper for Summon Descriptions (in freespace)
+
+org $C38777           ; 29 bytes, we'll use 24 >.>
+SummonDescription:    ; Load Esper summon description
+  LDX #EsperDescPointers
+  STX $E7             ; Set ptr loc LBs
+  LDX $00
+  STX $EB             ; Set text loc LBs
+  LDA #$C4            ; Pointer/text bank
+  STA $E9             ; Set ptr loc HB
+  STA $ED             ; Set text loc HB
+  LDA #$10
+  TRB $45             ; Description: On
+  RTS                 ;   It expects (in a roundabout way) this value to be in the X
+                      ;   register in the event a character tries to equip an Esper
+                      ;   that doesn't belong to them, because it needs an offset to
+                      ;   a region of memory where there will be a large swath of
+                      ;   values below #$80 /shrug
+
+
 padbyte $FF : pad $C38795
 
 ; dn's "Shop Hack" patch changes where to write elemental effects
