@@ -21,6 +21,11 @@ org $C30C81 : JSR Esp_Lvl ; Also draw EL value
 org $C311AD : NOP #2
 
 ; #########################################################################
+; Initialize Skills Menu
+
+org $C31B61 : JSR StChr ; store character ID in $A3 (for esper restrict)
+
+; #########################################################################
 ; Initialize Magic Menu
 
 org $C32125 : NOP #3 ; skip drawing MP Cost in Magic Menu
@@ -401,7 +406,12 @@ warnpc $C35452+1
 ; #########################################################################
 ; Draw Esper Menu
 
-org $C35460 : NOP #6 ; skip drawing "Esper" title
+org $C35460 : NOP #6       ; skip drawing "Esper" title
+org $C35524 : JSR ChkEsp   ; handle restrictions when choosing esper palette
+org $C35576 : ChkEq:       ; [label] check if any espers are already equipped
+org $C35593 : LDA #$2C     ; color: grey-blue (esper equipped by someone else)
+org $C35595 : SetTxtColor: ; [label] used in restrict espers hack
+org $C355B2 : JSR Uneq     ; handle printing name of unequippable esper
 
 ; #########################################################################
 ; Draw Blitz Menu
@@ -429,12 +439,22 @@ org $C358B9 : JSL InitEsperDataSlice ; ($C4)
 ; Sustain Esper Data Menu
 
 org $C358DB : JMP Pressed_A : NOP ; support Spell Bank and EL Bonus selection
+org $C358E1 : JSR ChkEsp ; handle restrictions when choosing esper palette
+
+; Checks if the text color is gray, and BZZTs the character if it is. Since
+; we're also using blue to indicate an unequippable esper, we'll simply
+; change the comparison from "if not gray, branch" to "if white, branch"
+org $C358E8
+  CMP #$20        ; is esper color white
+  BEQ WhiteTxt    ; branch if ^
+org $C35902 : WhiteTxt:
 
 ; #########################################################################
 ; Draw Selected Esper Data Info
 
 org $C3599D : dw $B810  ; Reposition EL bonus cursor
 org $C359AC : JSR Blue_Bank_Txt
+org $C359B1 : JSR ChkEsp ; handle restrictions when choosing esper palette
 org $C359CF : JSR DrawEsperMP ; end of drawing esper name
 org $C35A3B : JSR Unspent_EL ; add unspent EL draw to esper bonus draw
 org $C35A4C : db $0B    ; Remove 2 spaces between label and bonus
@@ -854,10 +874,114 @@ org $C3C2E1 : JSR DrawDetailsLabels
 ; #########################################################################
 ; Freespace Helpers
 
-; Label only for ease of use for "Esper Changes" hack. Can be removed once
-; "restrict_espers.asm" is integrated.
-org $C3F097 : ChkEsp:
+; Restricts espers to be equippable only by certain characters set in the
+; tables at the bottom.
+org $C3F091
 
+StChr:
+  TAX           ; index slot
+  LDA $69,X     ; character ID in slot
+  STA $A3       ; save in scratch RAM
+  RTS
+
+; Checks if a character can use an esper before checking if someone else
+; has it equipped.
+
+ChkEsp:    
+  PHX              ; Preserve X.
+  STA $E0          ; Preserve esper ID, which needs to be in $E0 anyway.
+  LSR
+  LSR
+  LSR              ; Four bytes per character, each with 8 espers, so divide by 8
+  TAY              ; Y = which byte the current esper is in.
+  LDA $A3          ; Character ID
+  ASL
+  ASL              ; 26 espers, so 4 bytes per character needed.
+  TAX              ; X = which set of 4 bytes to check (i.e., character index).
+.byte_loop
+  CPY #$0000
+  BEQ .found_byte  ; If Y = 0, then we've found the correct byte for the esper
+  DEY
+  INX              ; Increment character table index
+  BRA .byte_loop   ; Try again.
+.found_byte
+  LDA $E0          ; A = esper ID
+  AND #$07         ; Get the bit that represents the current esper in the current byte
+  TAY
+  LDA EsperData,X  ; Load the character byte we're checking for equippable espers
+.bit_loop
+  CPY #$0000       ; If Y = 0, we've found our esper, so branch.
+  BEQ .found_bit
+  LSR              ; Otherwise, shift bits in A to the right. This way our
+                   ; desired esper will always be in bit 0 of A.
+  DEY
+  BNE .bit_loop
+.found_bit
+  PLX              ; Restore X, since it's no longer needed.
+  AND #$01
+  BEQ .nope        ; If bit 0 = 0, the esper is unequippable.
+  JMP ChkEq        ; Otherwise, it can be equipped, so check if someone else already has it.
+.nope
+  LDA #$28   ; Grey text color.
+  JMP SetTxtColor
+
+; Handle error messages in the case of trying to equip a grey esper.
+; This prints out the name of the person currently using the esper you're trying to
+; equip, which was originally the only thing stopping someone from equipping a certain
+; esper. We need to change this, as the name will be blank if the character simply
+; can't equip it.
+Uneq:
+  LDA $1602,X   ; Character's name.
+  CMP #$80      ; If the first letter isn't blank, then someone has the esper
+  BCS .exit     ;   equipped and we can go back to tell the player as much.
+  PLX           ; Else, the character can't equip the esper at all.
+  LDX $00
+.char_loop
+  LDA NoEqTxt,X
+  BEQ .null     ; If the character (letter) being written is null ($00), end the line.
+  STA $2180     ; Print the current letter.
+  INX           ; Go to the next letter.
+  BRA .char_loop
+.exit
+  RTS
+.null
+  STZ $2180     ; End this string.
+  JMP $7FD9
+
+; "Can't equip!" text.
+NoEqTxt:
+  db "Can't equip!",$00
+
+; Character esper data table. See below for specifics.
+EsperData:
+  db $C0,$84,$88,$04 ; Terra
+  db $03,$00,$02,$04 ; Locke
+  db $80,$40,$02,$00 ; Cyan
+  db $00,$00,$10,$01 ; Shadow
+  db $08,$02,$C0,$00 ; Edgar
+  db $10,$01,$40,$00 ; Sabin
+  db $0D,$40,$31,$00 ; Celes
+  db $04,$08,$0C,$00 ; Strago
+  db $02,$20,$04,$02 ; Relm
+  db $20,$00,$20,$02 ; Setzer
+  db $70,$02,$00,$00 ; Mog
+  db $00,$01,$00,$01 ; Gau
+  db $00,$00,$00,$00 ; Gogo
+  db $00,$00,$00,$00 ; Umaro
+  db $00,$00,$00,$00 ; Slot 15
+  db $00,$00,$00,$00 ; Slot 16
+
+; Byte 1        Byte 2         Byte 3         Byte 4
+; $01: Ramuh    $01: Stray     $01: Alexandr  $01: Fenrir
+; $02: Ifrit    $02: Palidor   $02: Kirin     $02: Starlet
+; $04: Shiva    $04: Tritoch   $04: Zoneseek  $04: Phoenix
+; $08: Siren    $08: Odin      $08: Carbunkle $08: N/A
+; $10: Terrato  $10: Raiden    $10: Phantom   $10: N/A
+; $20: Shoat    $20: Bahamut   $20: Seraph    $20: N/A
+; $40: Maduin   $40: Crusader  $40: Golem     $40: N/A
+; $80: Bismark  $80: Ragnarok  $80: Unicorn   $80: N/A
+
+; ------------------------------------------------------------------------
 ; EL/EP/Spell bank text data and helpers
 ; Many new label and text positions and tiles
 org $C3F277
