@@ -585,6 +585,23 @@ org $C35f50 : LDX #$620A ; nudge mask around Gogo portrait
 ; #########################################################################
 ; Draw Status Screen
 
+; -------------------------------------------------------------------------
+; Skip over useless code, create freespace used for Battle Power helper
+
+org $C36002
+  BRA Skip       ; skip over unused code, now freespace for helper function
+PowHelper:       ; in freespace branched over
+  LDX #$300C     ; use addresses $300C and $300D for hand Battle Powers
+  STX $E0        ; save in temp variable
+  LDX $CE        ; just want bottom half, top half will be ignored
+  CLC
+  LDA $A0        ; check for Gauntlet, setting Zero Flag accordingly
+  NOP
+  RTS
+Skip:
+  JSR $052E      ; [vanilla] unchanged, left for context
+
+; -------------------------------------------------------------------------
 ; Modify the status screen to display EP and esper level to the player
 ; Change total exp display to exp to next level
 org $C36068
@@ -760,15 +777,93 @@ org $C38F7D : JSR DrawEsperName
 
 ; #########################################################################
 ; Draw Equip Menu
-;
+
+; -------------------------------------------------------------------------
 ; Reduce options loop from 4 to 3, now that "Optimize" is removed. (dn)
 
 org $C39055 : LDY #$0006 ; 3 loops 
 
+; -------------------------------------------------------------------------
+; Hook into new routine to include Gauntlet in Battle Power calculation
+
+org $C39182 : JSR DefineBatPwr
+
 ; #########################################################################
 ; Sustain Relic and Sustain Equip Menus
-;
-; Modifictions to button press handlers to handle Y button presses to
+
+; -------------------------------------------------------------------------
+; Hook into new routine to include Gauntlet in Battle Power calculation
+
+org $C3934F : JSR $9382  
+
+; -------------------------------------------------------------------------
+; Rewrite "Define New Battle Power" routine to account for Gauntlet
+; 32 bytes freed starting at C3/93C9.
+
+org $C39371
+  LDX #$11AC      ; use addresses $11AC and $11AD for hand Battle Powers
+  STX $E0         ; save in temp variable
+  LDX $CD         ; just want bottom half, top half will be ignored
+  CLC
+  LDA $A1         ; check for Gauntlet, setting Zero Flag accordingly
+  JSR General
+  STA $F3         ; save 16-bit sum of hands' Battle Powers
+  BRA CleanUpPwr  ; do cleanup and return
+DefineBatPwr:
+  JSR PowHelper   ; do moved code
+  JSR General
+  STA $F1         ; save 16-bit sum of hands' Battle Powers
+CleanUpPwr:
+  TDC             ; clear A/B
+  SEP #$20        ; 8-bit A
+  RTS
+
+General:
+  BEQ .skip       ; branch if Gauntlet not present
+  SEC             ; set Carry if it is
+.skip
+  PHB             ; push bank ($00)
+  LDA #$7E        ; RAM bank
+  PHA             ; add to stack
+  PLB             ; set bank to $7E
+  LDY #$0001      ; offset to left hand battle power
+  PHP             ; store gauntlet flag
+  BCS .add        ; skip Genji Glove check if Gauntlet in use
+  TXA             ; get value of Variable $CD or $CE, Genji Glove presence
+  ORA #$00        ; TODO: Remove unnecessary ORA
+  BNE .add        ; branch if Genji Glove
+  LDA ($E0)       ; get right hand Battle Power
+  BEQ .add        ; branch if zero ^
+  TDC             ; zero A/B
+  STA ($E0),Y     ; if rh battle power, then zero left hand
+.add
+  TDC             ; make sure top half of A is clear for addition
+  LDA ($E0)       ; right hand battle power
+  CLC             ; clear carry
+  ADC ($E0),Y     ; sum of two hands' [modified] battle powers
+  XBA             ; hi-byte
+  ADC #$00        ; add carry if overflow
+  XBA             ; now 16-bit A = sum of hands' battle powers
+  PLP             ; restore gauntlet flag in carry
+  REP #$20        ; 16-bit A
+  BCC .exit       ; branch if no Gauntlet
+  JSR OneAndAHalf ; else add 50% power
+.exit:
+  PLB             ; restore old Data Bank ($00)
+  RTS
+
+OneAndAHalf:
+  PHA             ; store A
+  LSR             ; A / 2
+  CLC             ; clear carry
+  ADC $01,S       ; add A
+  STA $01,S       ; save result to stack
+  PLA             ; A * 1.5
+  RTS
+  RTS
+
+; -------------------------------------------------------------------------
+; Modifications to button press handlers to handle Y button presses to
 ; swap between relic and equip menus. Part of dn's "Y Screen Swap" patch
 ; Modify jump table pointers for Equip menu option
 
@@ -784,6 +879,13 @@ EquipOptionJumpTable:
 org $C398C8 : JMP EquipSubSwap : NOP #4
 org $C39908 : JMP EquipSubSwap : NOP #4
 
+; -------------------------------------------------------------------------
+; Use Yellow to indicate two handed weapon use
+
+org $C399BD : LDA #$28 ; Yellow
+org $C399E2 : LDA #$28 ; Yellow
+
+; -------------------------------------------------------------------------
 org $C39EDC : JSR RelicSwap
 org $C3A047 : JSR RelicSwap
 org $C3A146 : JSR RelicSwap
