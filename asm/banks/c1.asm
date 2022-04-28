@@ -102,11 +102,17 @@ org $C12EF7
 org $C17D8A : JSR SwdTechMeter ; add handling for bushido meter scroll
 
 ; ########################################################################
-; Rage Battle Menu
-;
-; Modify max scroll value for shortened rage battle menu (dn)
+; Lore Battle Menu
 
-org $C184F9 : CMP #$1C ; (64 rages / 2) - 4(onscreen)
+org $C18336 : CMP #$0C    ; lore menu length - 4 (x2)
+org $C1838F : LDA #$0C    ; lore menu scrollbar rows + 4 (see above)
+
+; ########################################################################
+; Rage Battle Menu
+
+org $C184F9 : CMP #$1C    ; (64 rages / 2) - 4(onscreen)
+org $C1854A : LDA #$1C    ; rage menu scrollbar rows (see above)
+org $C1854E : LDX #$0140  ; pixels per rage menu scrollbar row [?]
 
 ; ########################################################################
 ; Damage number color palette routine
