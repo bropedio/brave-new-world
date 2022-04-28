@@ -411,7 +411,7 @@ org $C35524 : JSR ChkEsp   ; handle restrictions when choosing esper palette
 org $C35576 : ChkEq:       ; [label] check if any espers are already equipped
 org $C35593 : LDA #$2C     ; color: grey-blue (esper equipped by someone else)
 org $C35595 : SetTxtColor: ; [label] used in restrict espers hack
-org $C355B2 : JSR Uneq     ; handle printing name of unequippable esper
+org $C355B2 : JMP Uneq     ; handle printing name of unequippable esper
 
 ; #########################################################################
 ; Draw Blitz Menu
@@ -439,11 +439,17 @@ org $C358B9 : JSL InitEsperDataSlice ; ($C4)
 ; Sustain Esper Data Menu
 
 org $C358DB : JMP Pressed_A : NOP ; support Spell Bank and EL Bonus selection
-org $C358E1 : JSR ChkEsp ; handle restrictions when choosing esper palette
+
+org $C358E1           ; handle restrictions when choosing esper palette
+  STA $E0             ; memorize esper
+  LDX $FD             ; retrieve stored offset for who has esper equipped
+  NOP                 ; filler byte to get us back in the right spot
+  LDA $FC             ; retrieve stored esper palette
 
 ; Checks if the text color is gray, and BZZTs the character if it is. Since
 ; we're also using blue to indicate an unequippable esper, we'll simply
 ; change the comparison from "if not gray, branch" to "if white, branch"
+
 org $C358E8
   CMP #$20        ; is esper color white
   BEQ WhiteTxt    ; branch if ^
@@ -887,43 +893,42 @@ StChr:
 ; Checks if a character can use an esper before checking if someone else
 ; has it equipped.
 
-ChkEsp:    
-  PHX              ; Preserve X.
-  STA $E0          ; Preserve esper ID, which needs to be in $E0 anyway.
-  LSR
-  LSR
-  LSR              ; Four bytes per character, each with 8 espers, so divide by 8
-  TAY              ; Y = which byte the current esper is in.
-  LDA $A3          ; Character ID
-  ASL
-  ASL              ; 26 espers, so 4 bytes per character needed.
-  TAX              ; X = which set of 4 bytes to check (i.e., character index).
-.byte_loop
-  CPY #$0000
-  BEQ .found_byte  ; If Y = 0, then we've found the correct byte for the esper
-  DEY
-  INX              ; Increment character table index
-  BRA .byte_loop   ; Try again.
-.found_byte
-  LDA $E0          ; A = esper ID
-  AND #$07         ; Get the bit that represents the current esper in the current byte
+ChkEsp:
+  STZ $FB           ; reserve for equippability flag
+  STA $E0           ; store Esper ID in $E0
+  LSR #3            ; /8 (determine which byte the esper is in)
+  STA $FC           ; store offest to scratch
+  LDA $A3           ; load character ID
+  ASL #2            ; x4 (4 equippability bytes per character?)
+  ADC $FC           ; add stored offset
+  TAX               ; index it in X
+  LDA $E0           ; load esper ID
+  AND #$07          ; which bit of the equippability byte corresponds to this esper?
   TAY
-  LDA EsperData,X  ; Load the character byte we're checking for equippable espers
-.bit_loop
-  CPY #$0000       ; If Y = 0, we've found our esper, so branch.
-  BEQ .found_bit
-  LSR              ; Otherwise, shift bits in A to the right. This way our
-                   ; desired esper will always be in bit 0 of A.
-  DEY
-  BNE .bit_loop
-.found_bit
-  PLX              ; Restore X, since it's no longer needed.
-  AND #$01
-  BEQ .nope        ; If bit 0 = 0, the esper is unequippable.
-  JMP ChkEq        ; Otherwise, it can be equipped, so check if someone else already has it.
-.nope
-  LDA #$28   ; Grey text color.
-  JMP SetTxtColor
+  LDA EsperData,X   ; get equippability byte for esper/character pair
+- LSR               ; Do: shift right
+  DEY               ; | Y--
+  BPL -             ; + loop until Y negative
+                    ;
+  ROR $FB           ; ############## // New Swag Alert! \\ ###############
+                    ; | At this point, the C flag will be 1 if the esper |
+                    ; | is equippable. I roll it onto the MSB of $FB     |
+                    ; | so that we can use the shorthand `BIT $FB` later |
+                    ; | to evaluate the equippability of the currently   |
+                    ; | loaded esper without having to destroy A         |
+                    ; ####################################################
+                    ;
+  BPL +             ; if positive, esper cannot be equipped; branch
+  JSR ChkEq         ; can equip; check for equip conflict with another character
+  STX $FD           ; keep track of who has the current esper equipped, if anyone
+  PHA
+  LDA $29
+  STA $FC           ; keep track of the esper palette
+  PLA
+  RTS
++ LDA #$28          ; cannot equip; gray text
+  STA $FC           ; keep track of the esper palette
+  JMP SetTxtColor   ; return
 
 ; Handle error messages in the case of trying to equip a grey esper.
 ; This prints out the name of the person currently using the esper you're trying to
@@ -931,26 +936,21 @@ ChkEsp:
 ; esper. We need to change this, as the name will be blank if the character simply
 ; can't equip it.
 Uneq:
-  LDA $1602,X   ; Character's name.
-  CMP #$80      ; If the first letter isn't blank, then someone has the esper
-  BCS .exit     ;   equipped and we can go back to tell the player as much.
-  PLX           ; Else, the character can't equip the esper at all.
-  LDX $00
-.char_loop
-  LDA NoEqTxt,X
-  BEQ .null     ; If the character (letter) being written is null ($00), end the line.
-  STA $2180     ; Print the current letter.
-  INX           ; Go to the next letter.
-  BRA .char_loop
+  BIT $FB           ; Is esper equippable?
+  BPL +               
+  LDA $1602,X       ; Character's name; displaced from calling function
+  JMP $55B5         ; If esper is equippable, go back and display who has it equipped
++ LDX $00           ; Else, print "Can't Equip!" error message
+- LDA.l NoEqTxt,X
+  STA $2180         ; Print the current letter.
+  BEQ .exit         ; If the letter written was null ($00), exit.
+  INX               ; Go to the next letter.
+  BRA -
 .exit
-  RTS
-.null
-  STZ $2180     ; End this string.
   JMP $7FD9
 
-; "Can't equip!" text.
 NoEqTxt:
-  db "Can't equip!",$00
+  db "Can't equip!",$00,$00,$00 ; TODO: Remove unneeded 2x $00 padding here
 
 ; Character esper data table. See below for specifics.
 EsperData:
@@ -1406,23 +1406,25 @@ Finish_Esper_Txt:   ; TODO: Label unused
   JMP $7FD9         ; finish drawing spell row
 
 Learn_Chk:
-  STZ $AA           ; zero "learned" flag
+  STZ $AA
   LDA $E0           ; SP cost of the spell
-  PHA               ; preserve it, because C3/50A2 mutilates $E0
-  JSR Chk_Esper_Eq  ; check if the current esper can be equipped
-  LDA $29           ; text color palette
-  CMP #$28          ; grey (disabled)
-  BEQ .set_color    ; branch if ^
-  LDA $E1           ; spell ID
-  JSR $50A2         ; get mastery percent
-  BEQ .unknown      ; branch if zero ^
-  INC $AA           ; else, set flag for later
-.unknown
-  LDA #$20          ; color: white
-.set_color
-  STA $29           ; update text palette
-  PLA               ; restore SP cost of the spell
+  PHA               ; Preserve it, because C3/50A2 mutilates $E0
+  BIT $FB           ; Is esper equippable? (new)
+  BPL .cantEquip
+  LDA $E1           ; If so, get spell ID
+  JSR $50A2         ; See if it's known yet
+  BEQ .notLearned
+  INC $AA           ; If so, flag $AA
+.notLearned
+  LDA #$20          ; White text if esper is equippable
+  BRA .done
+.cantEquip
+  LDA #$28          ; Gray text if not (moved from above)
+.done
+  STA $29           ; Set palette
+  PLA               ; Retrieve SP cost
   RTS
+  RTS               ; TODO: Remove duplicated, unused RTS
 
 Pressed_A:
   LDA $4B           ; pointer index
@@ -1431,11 +1433,10 @@ Pressed_A:
 .spell
   LDA $99           ; load esper ID
   STA $4202         ; set multiplier
-  JSR ChkEsp        ; check esper restriction
-  TDC               ; zero A/B
-  LDA $29           ; text palette
-  CMP #$28          ; color: gray (disabled)
-  BEQ .nope         ; branch if ^
+  BIT $FB           ; Is esper equippable?
+  BRA $04           ; Skip the next 4 bytes
+  NOP #4            ; Dummy them out to be sure TODO: Remove these NOPs
+  BPL .nope         ; branch if ^
   LDA #$0B          ; size of esper data block (11)
   STA $4203         ; set multiplicand
   LDA $4B           ; pointer index
