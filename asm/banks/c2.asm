@@ -725,6 +725,13 @@ ChangeShld:
 warnpc $C23C90+1
 
 ; #########################################################################
+; Golem Wall Effect
+;
+; Alters the Golem Wall effect to use the caster's max HP instead of current
+
+org $C23F67 : LDA $3C1C,Y
+
+; #########################################################################
 ; Old GP Toss Routine (now freespace)
 
 org $C23FB7
