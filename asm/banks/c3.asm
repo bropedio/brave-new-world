@@ -886,6 +886,13 @@ org $C399BD : LDA #$28 ; Yellow
 org $C399E2 : LDA #$28 ; Yellow
 
 ; -------------------------------------------------------------------------
+; Support validation for dual-wield, two-handed, katana equips
+
+org $C39A5D : JSR Wpn_Index ; save selected item index in scratch
+org $C39A90 : JMP DW_Chk_RH ; handle right hand slot
+org $C39ABC : JMP DW_Chk_LH ; handle left hand slot
+
+; -------------------------------------------------------------------------
 org $C39EDC : JSR RelicSwap
 org $C3A047 : JSR RelicSwap
 org $C3A146 : JSR RelicSwap
@@ -1082,6 +1089,52 @@ EsperData:
 ; $20: Shoat    $20: Bahamut   $20: Seraph    $20: N/A
 ; $40: Maduin   $40: Crusader  $40: Golem     $40: N/A
 ; $80: Bismark  $80: Ragnarok  $80: Unicorn   $80: N/A
+
+; ------------------------------------------------------------------------
+; Helpers for Dual-Wield and Two-Handed equip restrictions
+
+org $C3F137
+Wpn_Index:
+  LDA $1869,X         ; item in equipment list slot
+  STA $A3             ; store item ID
+  RTS
+DW_Chk_RH:
+  LDA $0020,Y         ; left hand weapon ID
+  BRA Item_Chk        ; branch
+DW_Chk_LH:
+  LDA $001E,Y         ; right hand weapon ID
+Item_Chk:
+  PHA                 ; store lh/rh weapon ID
+  LDA $A3             ; equipment list item ID
+  CMP #$5A            ; in "weapon" range?
+  PLA                 ; restore lh/rh weapon ID
+  BCS .allow          ; branch if item not a weapon (allow)
+  LDA $D8500C,X       ; lh/rh weapon properties (special byte 3)
+  AND #$18            ; isolate "Genji Glove" and "Gauntlet"
+  CMP #$08            ; check if only "Gauntlet" (eg. spear)
+  BEQ .exit           ; branch if ^ (disallow all off-hand weapons)
+  CMP #$10            ; check if only "Genji Glove" (eg. claw)
+  BEQ .spear_chk      ; branch if ^
+  JSR GetItemOffset   ; get selected weapon flags
+  CMP #$10            ; check if only "Genji Glove" (eg. claw)
+  BEQ .allow          ; branch to allow if ^
+.exit
+  CLC                 ; clear carry (=unequippable)
+  RTS
+.spear_chk
+  JSR GetItemOffset   ; get selected weapon flags
+  CMP #$08            ; check if only "Gauntlet" (eg. spear)
+  BEQ .exit           ; branch to disallow if ^
+.allow
+  SEC                 ; set carry (=equippable)
+  RTS
+GetItemOffset:
+  LDA $A3             ; selected weapon ID
+  JSR $8321           ; get item data offset (x30)
+  LDX $2134           ; load offset into X
+  LDA $D8500C,X       ; selected weapon properties (special byte 3)
+  AND #$18            ; isolate "Genji Glove" and "Gauntlet"
+  RTS
 
 ; ------------------------------------------------------------------------
 ; EL/EP/Spell bank text data and helpers
