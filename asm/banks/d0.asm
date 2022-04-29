@@ -3,6 +3,13 @@ hirom
 ; D0 Bank (includes battle events)
 
 ; -------------------------------------------------------------------------
+; Speed up the aero animation
+
+org $D015DE : db $89,$20
+org $D015FC : db $89,$60
+org $D01611 : db $89,$03
+
+; -------------------------------------------------------------------------
 ; Wrexsoul Event 1/2
 ; Battle script command: F7 08
 
