@@ -915,8 +915,30 @@ org $C24D03
   NOP #2            ; [unused]
 
 ; #########################################################################
-; Scan Command (partial)
-;
+; Scan Command
+
+; -------------------------------------------------------------------------
+; Some portion of previous routine is now overwritten as freespace. Unsure
+; exactly where/how this space is made available.
+
+org $C25105       ; freespace [?]
+Get_Tgt_Byte:
+  JSR $2B63       ; multiply weapon ID by 30
+  REP #$10        ; 16-bit X/Y
+  TAX             ; index weapon data offset
+  LDA $D8500E,X   ; weapon targeting byte
+  CMP #$01        ; "target one ally"
+  BNE .exit       ; exit if not ^
+  REP #$21        ; 16-bit A
+  LDA $06,S       ; attacker index
+  TAX             ; index it
+  SEP #$20        ; 8-bit Accumulator
+  LDA #$01        ; "target one ally"
+  STA $0002,X     ; set ^ aiming byte
+.exit
+  RTS
+
+; -------------------------------------------------------------------------
 ; Modified by dn's "Scan Status" patch to add support for Status messages.
 ; The "Scan Weakness" code is now displaced into C4 along with the new
 ; "Scan Status" code.
@@ -1024,6 +1046,21 @@ SketchHelp:
   LSR            ; C: Sketch Invalid
   RTS
 warnpc $C25301+1
+
+; #########################################################################
+; Fight and Mug Command Targeting Setup
+;
+; Now adjusts targeting for Heal Rod, and no longer changes targeting
+; for the Offering (X-Fight)
+
+org $C25301
+  PHP               ; store flags
+  LDA $3CA8,Y       ; righthand weapon ID
+  JSR Get_Tgt_Byte  ; update targeting byte if heal rod
+  LDA $3CA9,Y       ; lefthand weapon ID
+  JSR Get_Tgt_Byte  ; update targeting byte if heal rod
+  PLP               ; restore flags
+  RTS
 
 ; #########################################################################
 ; Convert or hide commands based on relics or event bits
