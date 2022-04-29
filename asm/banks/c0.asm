@@ -75,9 +75,9 @@ org $C0C3F0 : CMP #$D0 ; increase chance of third/forth formation encounters
 ; when the equipment is removed.
 
 org $C0A035
- 	LDA $EB          ; character ID
- 	JSL $C20006      ; recalculate properties from equipment
- 	LDA #$02         ; args to advance
+  LDA $EB          ; character ID
+  JSL $C20006      ; recalculate properties from equipment
+  LDA #$02         ; args to advance
   BRA Advance      ; advance script
 
 ; #########################################################################

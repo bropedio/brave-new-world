@@ -1865,22 +1865,22 @@ Show_EP:
 org $C2A742
 GauRageStatuses:
   STA $3C6C,Y
-  LDA $CF0014,X		; blocked status bytes 1-2
-  AND $331C,Y			; and with the original status weaknesses
-  EOR #$FFFF			; invert 'em to get statuses to clear
+  LDA $CF0014,X   ; blocked status bytes 1-2
+  AND $331C,Y     ; and with the original status weaknesses
+  EOR #$FFFF      ; invert 'em to get statuses to clear
   AND $3EE4,Y     ; and with current status
   STA $3EE4,Y     ; update current status
   RTS
   
 GauRageStatuses2:
   STA $3C6C,X
-  AND $3EE5,X	  	; equipment status byte 2 AND current status = status to actually have
+  AND $3EE5,X     ; equipment status byte 2 AND current status = status to actually have
   STA $3EE5,X
   LDA $D4
-  AND $3EF8,X	  	; equip status byte 3 and current status 3
+  AND $3EF8,X     ; equip status byte 3 and current status 3
   STA $3EF8,X
-  LDA $3EF9,X	  	; load float byte
-  AND #$7F		  	; no float
+  LDA $3EF9,X     ; load float byte
+  AND #$7F        ; no float
   STA $3EF9,X
   RTS
 
