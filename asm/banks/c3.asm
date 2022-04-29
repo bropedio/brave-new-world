@@ -82,6 +82,7 @@ org $c32806 : NOP #3 ; skip drawing MP cost
 
 org $C32C32 : CMP #$29 ; update spell ID for float (allow field usage)
 org $C32C36 : CMP #$1F ; update spell ID for Imp (allow field usage)
+org $C32C67 : AND #$65 ; add Imp status to curable by Remedy item in field
 
 ; #########################################################################
 ; Return to Magic Menu
@@ -733,16 +734,40 @@ org $C388DA : LDX #$7BE5 ; where to write absorbed elements
 org $C388E6 : LDX #$7C65 ; where to write immune elements
 org $C388F2 : LDX #$7CE5 ; where to write weak elements
 
+; #########################################################################
+; Sustain Item Usage Menu
+
+org $C38B7B
+  CMP #$FC        ; check if "Slim Jim" to allow field use (was Green Cherry)
+  BEQ Heal        ; branch to regular healing item check if "Slim Jim" ^
+
+org $C38B81
+  JMP More_Checks ; hook into extended field item usage validation
+  RTS             ; Just in case
+
+; -------------------------------------------------------------------------
+; Handle "Snake Oil" usage (was Soft in vanilla)
+
+org $C38BA0
+  JSR Heal        ; carry: target needs healing
+  BCC Remedy      ; branch to status check if not ^
+
+org $C38BB2 : Remedy:
+org $C38BC4 : Heal:
+
+; #########################################################################
+; Menu Label Changes (part 1.5)
+
+; -------------------------------------------------------------------------
 ; dn's "Shop Hack" patch: Text pointers for gear data menu (point to new text)
+
 org $C38D69
   dw EleResist
   dw EleAbsorb
   dw EleImmune
   dw EleWeak
 
-; #########################################################################
-; Menu Label Changes (part 1.5)
-;
+; -------------------------------------------------------------------------
 ; Percent symbols (%) overwritten with spaces by dn's "No Percents" patch
 
 org $C38D9B : db $FF ; replace '%' with ' '
@@ -1153,6 +1178,22 @@ GetItemOffset:
   LDA $D8500C,X       ; selected weapon properties (special byte 3)
   AND #$18            ; isolate "Genji Glove" and "Gauntlet"
   RTS
+
+; ------------------------------------------------------------------------
+; Helper for field item usage target validation
+; TODO: Sleeping Bag handling should be removed altogether
+; TODO: May be able to inline this helper once sleeping bag is skipped
+
+org $C3F197
+More_Checks:
+  BEQ .sleeping_bag   ; branch if was sleeping bag
+  CMP #$FB            ; "Red Bull" item ID
+  BEQ .red_bull       ; branch if ^
+  JMP $8BD0           ; else return with clear carry
+.sleeping_bag
+  JMP $8BD2           ; jump to sleeping bag handler [vanilla]
+.red_bull
+  JMP Heal            ; jump to check if target needs healing
 
 ; ------------------------------------------------------------------------
 ; EL/EP/Spell bank text data and helpers
