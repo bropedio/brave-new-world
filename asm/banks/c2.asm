@@ -747,6 +747,17 @@ StopBlock:
   XBA             ; [displaced]
   RTS 
 
+org $C23C22
+ShadowChk:
+  LDA $1E94       ; one event byte
+  AND #$08        ; "Shadow Died"
+  BNE .relm       ; branch if ^
+  LDA #$FC        ; else load spell ID 252
+  RTS
+.relm
+  LDA #$FD        ; load spell ID 253
+  RTS
+
 org $C23C3D
 CoinHelp:
   JSR $298A       ; [moved] load command data
@@ -965,6 +976,8 @@ PrepareCounterattacks:     ; set parent label for full routine
 org $C24CC2 : .no_counter
 org $C24CDD : BNE .counter ; skip blackbelt check for "damaged this turn"
 org $C24CE3 : BCC .counter ; skip blackbelt check for "damaged this turn"
+org $C24CE5 : JSR ShadowChk : NOP ; change Interceptor spell for Relm
+
 org $C24CFC : .counter
 org $C24D03
   JSR $4B53         ; C: 50% chance to counter (75% in vanilla)
