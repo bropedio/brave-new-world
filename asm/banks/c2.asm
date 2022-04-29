@@ -606,11 +606,34 @@ LoadWeaponProperties:
 
 ; #########################################################################
 ; Load Item Properties
-;
+
+; ------------------------------------------------------------------------
+; Save space to allow clearing some default targeting for items, so things
+; like Tonics can automatically retarget if the target dies.
+
+org $C22A44
+  LDA #$20      ; "Cannot dodge"
+  STA $11A4     ; set ^
+  INC           ; $21
+  STA $11A2     ; set "Ignore Defense"/"Physical"
+  INC           ; $22
+  STA $11A3     ; set "Retarget if Dead"/"Unreflectable"
+  STZ $BA       ; clear "Can Target Dead" and "No Retarget if Dead"
+
+; ------------------------------------------------------------------------
 ; Modified as part of "Abort on Enemies" patch to prevent most items and
 ; rods from being targeted at enemies. (Synchysi)
 
 org $C22A78 : JSR ItemAbortEnemy ; Set "abort-on-enemies" flag for many items
+
+; ------------------------------------------------------------------------
+; Repurpose "Reverse Dmg on Undead" flag on items to indicate that the
+; item can target dead entities. In BNW, no items can damage the undead,
+; the old handling wasn't needed.
+
+org $C22ACD
+  LDA #$08
+  TSB $BA : NOP
 
 ; #########################################################################
 ; Load Monster Properties
