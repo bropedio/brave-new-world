@@ -3,6 +3,14 @@ hirom
 ; C1 Bank
 
 ; ########################################################################
+; NMI
+
+; ------------------------------------------------------------------------
+; Add hook to listen for "Select" button press
+
+org $C10CFA : JSR CheckSel
+
+; ########################################################################
 ; Status Graphics (cont.)
 ;
 ; Large portion after $2E69 rewritten by dn to support cycling auras.
@@ -180,7 +188,16 @@ org $C1A6E6 : NOP : JSL SetMPDmgFlagMass
 ; ######################################################################
 ; Freespace (stats at $C1FFE5)
 
-org $C1FFEC
+org $C1FFE5
+
+; ----------------------------------------------------------------------
+; During NMI, if Select button pressed, swap gauge display
+
+CheckSel:
+  JSL SwapGauge  ; (in $C3)
+  JMP $0B73      ; [displaced]
+
+; ----------------------------------------------------------------------
 SwdTechMeter:
   INC $7B82      ; increment meter position
   LDA $7B82      ; get new meter postion

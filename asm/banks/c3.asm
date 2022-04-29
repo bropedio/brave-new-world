@@ -930,6 +930,12 @@ org $C3A395 : db $FF ; replace '%' with ' '
 org $C3A39F : db $FF ; replace '%' with ' '
 
 ; #########################################################################
+; Button Settings
+
+; Fixes vanilla bug where the Select button was getting mapped to the R button
+org $C3A5D7 : LDY #$0756
+
+; #########################################################################
 ; Sustain Main Shop Menu
 
 ; Modifies "buy item" list handling to update full details ("Shop Hack")
@@ -1347,6 +1353,36 @@ Unspent_EL:
   LDY #$470F        ; next tilemap position (shifted left 2 spaces)
   RTS
 
+; ---------------------------------------------------------
+; Handle in-battle gauge mode toggle via Select button
+
+org $C3F444
+SwapGauge:
+  LDA $1D4E       ; Is gauge disabled in config?
+  BMI .off
+  LDA $0B
+  BIT #$20
+  BEQ .skip
+  STZ $021
+  BRA .exit
+.skip
+  LDA #$FF
+  STA $2021
+.exit
+  RTL
+.off
+  LDA $0B
+  BIT #$20
+  BNE .skip2
+  STZ $2021
+  BRA .exit2
+.skip2
+  LDA #$FF
+  STA $2021
+.exit2
+  RTL
+
+; ---------------------------------------------------------
 org $C3F480
 DrawEsperName:
   PHY           ; store actor name position
