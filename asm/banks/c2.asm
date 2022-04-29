@@ -734,6 +734,31 @@ org $C2343C : JSR CounterMiss : NOP ; Set counter variables early TODO [overwrit
 org $C2381D :  JSL AutoCritProcs ; power-up crit doom to x-zone, multitarget quartr
 
 ; #########################################################################
+; Leap Effect (rewritten)
+
+org $C23B71
+  LDA $3A76      ; present and living character count
+  CMP #$02       ; at least 2
+  BCC .miss      ; branch if not ^ (solo party member cannot leap)
+  LDA $05,S      ; attacker index
+  TAX            ; index it
+  LDA $3DE9,X    ; status-to-set (byte 4)
+  ORA #$20       ; "Hide"
+  STA $3DE9,X    ; add ^ to-set (byte 4)
+  LDA $3018,X    ; attacker bit
+  TSB $2F4C      ; set to be removed from battlefield
+  JSR $4A07      ; learn rages
+  RTS
+.miss
+  LDA #$05       ; "Cannot Leap" message ID
+  JMP $3B18      ; miss with messasge ^
+
+checkLeap:
+  LDA $2F4B      ; formation flags
+  EOR #$02       ; invert bit to mean "Leapable Formation"
+  RTS
+
+; #########################################################################
 ; Rippler Effect (now freespace)
 
 org $C23C04
@@ -1310,9 +1335,9 @@ ChkMenu:
   LDA $1D4C         ; known dances
   BRA .may_null     ; null if none ^
 .Leap
-  LDA $11E4         ; battle flags
-  BIT #$02          ; "Leap Available"
-  BRA .may_null     ; null if not ^
+  JSR checkLeap     ; run helper function
+  BIT #$02          ; "Leapable Formation"
+  BRA .try_mp       ; TODO: This branch seems wrong (should be may_null)
 .Lore
 .needs_mp
   LDA #$01          ; "Needs MP" flag
