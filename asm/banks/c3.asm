@@ -78,6 +78,12 @@ org $C32341
 org $c32806 : NOP #3 ; skip drawing MP cost
 
 ; #########################################################################
+; Field Spell Usage
+
+org $C32C32 : CMP #$29 ; update spell ID for float (allow field usage)
+org $C32C36 : CMP #$1F ; update spell ID for Imp (allow field usage)
+
+; #########################################################################
 ; Return to Magic Menu
 
 org $C32D56 : NOP #3 ; skip drawing MP cost
@@ -302,6 +308,12 @@ org $c35082
   LDA #$FF           ; space character
   JMP EndDrawPercent ; finish drawing percentage learned
   db $FF             ; [fill unused]
+
+; -------------------------------------------------------------------------
+; Skip Imp disabling magic usage in field
+
+org $C3518D : BRA No_Imp
+org $C3519B : No_Imp:
 
 ; #########################################################################
 ; Draw MP Cost in Magic Menu

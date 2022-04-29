@@ -3,9 +3,17 @@ hirom
 ; C2 Bank
 
 ; #########################################################################
-; Part of Attack Prep (Imp command disabling used as Freespace)
-;
+; Part of Attack Prep
+
+; -------------------------------------------------------------------------
+; Skip handling that turns commands into "Fight" when Imped. Below this
+; point is now freespace
+
+org $C202A0 : PLA : RTS
+
+; -------------------------------------------------------------------------
 ; Note, assumes no more than 1 overflow in $EA from multiplication
+; (Imp command disabling used as Freespace)
 
 org $C202AD
 AtmaOver:
@@ -231,6 +239,12 @@ CommandWaitTimes:
   db $00   ; MagiTek
 
 ; ########################################################################
+; SOS Equipment Activations
+
+org $C20A6A : LDA #$23 ; update spell ID for SOS Shell
+org $C20A78 : LDA #$22 ; update spell ID for SOS Safe
+
+; ########################################################################
 ; Atma Weapon Damage (special effect)
 ;
 ; Partially rewritten as part of Synchysi's Atma Weapon changes.
@@ -338,6 +352,16 @@ WeapChk:
   NOP #3
 .exit
   RTS
+
+; #########################################################################
+; Load Item Data into Memory
+
+; -------------------------------------------------------------------------
+; Skip Imp Equipment handling
+; Frees up some 16 bytes or so in between BRA
+
+org $C2101C : BRA AfterImpEquip
+org $C21031 : AfterImpEquip:
 
 ; #########################################################################
 ; Process HP and MP Damage
@@ -687,9 +711,21 @@ pad $C230BC
 warnpc $C230BC+1
 
 ; #########################################################################
+; Entity Executes One Hit
+
+; -------------------------------------------------------------------------
+; Skip muting all magic except the Imp spell for Imps
+
+org $C2320D : BRA SkipImpMute
+org $C23225 : SkipImpMute:
+
+; #########################################################################
 ; Combat Routine
 
-org $C233BA : JSR SetTarget ; Enable target's counterattack, even if we miss
+org $C233A3 : JSR Imp_Nerf          ; add hook for new Imp damage nerf routine
+org $C233BA : JSR SetTarget         ; Enable target's counterattack, even if we miss
+org $C233EA : BRA NoImpCrit         ; skip Imp critical handling
+org $C233F2 : NoImpCrit:            ; label for BRA above
 org $C2343C : JSR CounterMiss : NOP ; Set counter variables early TODO [overwritten]
 
 ; #########################################################################
@@ -759,6 +795,22 @@ org $C23F67 : LDA $3C1C,Y
 
 org $C23FB7
 warnpc $C23FFC+1
+
+; #########################################################################
+; Old Revenge Routine (now freespace)
+
+org $C241E6
+Imp_Nerf:
+  LDA $B5        ; command ID
+  CMP #$01       ; "Item"
+  BEQ .exit      ; exit if ^
+  LDA $3EE4,X    ; Status byte 1
+  BIT #$20       ; "Imp"
+  BEQ .exit      ; branch if not ^
+  LSR $11B1      ; damage / 2 (hibyte)
+  ROR $11B0      ; damage / 2 (lobyte)
+.exit
+  JMP $14AD      ; [displaced]
 
 ; #########################################################################
 ; Spiraler (per-strike special effect)
@@ -894,6 +946,11 @@ OvercastFix:
   NOP
   RTS
 
+; -------------------------------------------------------------------------
+; Imp no longer reruns equipment check
+
+org $C245E2 : JMP $464C ; changed from JSR
+
 ; #########################################################################
 ; Special Checks for End-of-Battle
 ;
@@ -956,6 +1013,7 @@ warnpc $C25161+1
 ;
 ; Largely rewritten as part of Assassin's "Brushless Sketch" patch to
 ; disable the "Sketch" command when no brush is equipped.
+; Also modified to bypass or omit Imp effects on command availability.
 
 org $C2527D
 DisableCommands:
@@ -986,7 +1044,7 @@ DisableCommands:
   TAX                ; index to command data
   LDA $3EE4,Y        ; character status-1
   BIT #$20           ; "Imp"
-  BEQ .skip_imp      ; branch if not ^
+  BRA .skip_imp      ; branch if not ^ TODO: Remove unused code below this BRA
   LDA $CFFE00,X      ; command data
   BIT #$04           ; "Allowed while Imp"
   BEQ .disable       ; branch if not ^
@@ -1292,6 +1350,12 @@ CmdBlanks:
   db $17 ; X-Magic
   db $0C ; Lore
 warnpc $C2546E+1
+
+; ########################################################################
+; Construct Magic and Lore Menus
+
+org $C257B0 : BRA NoImpDis   ; skip Imp check for disabling spells in list
+org $C257BB : NoImpDis:      ; label for above ^
 
 ; ########################################################################
 ; Construct Dance and Rage Menus
