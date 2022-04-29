@@ -860,7 +860,7 @@ General:
   REP #$20        ; 16-bit A
   BCC .exit       ; branch if no Gauntlet
   JSR OneAndAHalf ; else add 50% power
-.exit:
+.exit
   PLB             ; restore old Data Bank ($00)
   RTS
 
