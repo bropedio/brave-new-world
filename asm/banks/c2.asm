@@ -827,6 +827,15 @@ org $C23A01 : failSteal:
 org $C23A09 : enemySteal:
 
 ; #########################################################################
+; Control Effect (largely unused)
+
+; -------------------------------------------------------------------------
+; Control failure fork, reused by multiple special effects
+; Add hook to clear any status-to-set from missed special effect
+
+org $C23B1D : JSR Clear_Status
+
+; #########################################################################
 ; Leap Effect (rewritten)
 
 org $C23B71
@@ -943,7 +952,8 @@ Imp_Nerf:
 
 ; #########################################################################
 ; Spiraler (per-strike special effect)
-;
+
+; -------------------------------------------------------------------------
 ; Rewritten by Synchysi's "Blitz" patch to convert to "Chakra", which
 ; restores MP based on caster's level and stamina:
 ;   HealMP = (Level + Stamina) / 2 * RandomVariance
@@ -960,6 +970,19 @@ Chakra:
   JMP ChakraHelp ; jump to helper
   NOP #2         ; [unused space]
   RTS            ; preserved in case it's branched to from elsewhere
+
+; -------------------------------------------------------------------------
+; Helper for special effect misses
+
+org $C2428B
+Clear_Status:
+  TYX            ; target index
+  STZ $3DD4,X    ; clear status-to-set bytes 1/2
+  STZ $3DE8,X    ; clear status-to-set bytes 3/4
+  LDA $3018,Y    ; [displaced]
+  RTS
+
+; -------------------------------------------------------------------------
 warnpc $C2424B+1
 
 ; #########################################################################
@@ -1007,6 +1030,7 @@ warnpc $C242C6+1
 ; #########################################################################
 ; Special Effect (per-strike) Jump Table [C242E1]
 
+org $C24341 : dw $3E8A    ; Remove random targeting from Suplex effect
 org $C24383 : dw CoinToss ; Effect $51 ($C33FB7 now unused)
 
 ; #########################################################################
