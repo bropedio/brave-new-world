@@ -45,6 +45,14 @@ BossDeath:
   JMP $0E32        ; add ^ to status-to-set byte 1
 
 ; #########################################################################
+; Time to Wait Determination
+
+; -------------------------------------------------------------------------
+; Hook for Moogle Charm "falls like a stone" effect
+
+org $C203EE : JSR Charm_Chk
+
+; #########################################################################
 ; Select actions/commands for uncontrollable characters
 ; 
 ; Rewritten as part of Assassin's "Swordless Runic" patch, to fix a bug
@@ -201,6 +209,14 @@ CmdFuncs:
   dw $FFFF        ; Currently unused
   dw $FFFF        ; Currently unused
 warnpc $C204F6+1
+
+; ########################################################################
+; Uncontrollable/Muddle Random Attack Selections
+
+; ------------------------------------------------------------------------
+; Changes the odds each dance step shows up.
+
+org $C205CE : dl $104090 ; 10/FF; 30/FF; 60/FF
 
 ; ########################################################################
 ; Command Wait Times
@@ -397,6 +413,13 @@ org $C21031 : AfterImpEquip:
 org $C213A1 : JMP BossDeath
 
 ; #########################################################################
+; Dance (command)
+
+org $C2177D : DanceCmd:       ; [label] for Moogle Charm entrypoint 1
+org $C21785 : DanceCmd2:      ; [label] for Moogle Charm entrypoint 2
+org $C2179D : JSR DanceChance ; use stamina to get dance chance
+
+; #########################################################################
 ; Jump (command)
 ;
 ; Modified by dn's "Blind Jump Fix" patch to make "Blind" affect Jump
@@ -426,6 +449,11 @@ org $C2187D
 ; Modified by Synchysi's Blind patch
 
 org $C21908 : JSR CoinHelp
+
+; #########################################################################
+; Code Pointers for Commands
+
+org $C219ED : dw PreDanceCmd ; changed to add Moogle Charm hook
 
 ; #########################################################################
 ; Hit Determination
@@ -827,6 +855,45 @@ org $C23A01 : failSteal:
 org $C23A09 : enemySteal:
 
 ; #########################################################################
+; Debilitator Special Effect (now freespace)
+
+; -------------------------------------------------------------------------
+;  Helper for Moogle Charm "fall like a stone" effect
+
+org $C23A9E
+Charm_Chk:
+  XBA              ; command ID
+  CMP #$16         ; "Jump"
+  BNE .no_jump     ; branch if not ^
+  LDA $3C59,X      ; relic flags
+  BIT #$20         ; "Moogle Charm"
+  BEQ .no_charm    ; branch if not ^
+  LDA #$0E         ; shorter wait time
+  BRA .no_jump     ; and finish
+.no_charm
+  LDA #$16         ; longer wait time
+.no_jump
+  CMP #$1E         ; [displaced] is command > 1E
+  RTS
+
+; -------------------------------------------------------------------------
+;  Helper for Dance chance based on Stamina
+
+DanceChance:
+  PHA              ; store A
+  JSR $4B5A        ; random(256)
+  PHA              ; store ^
+  LDA $3B40,Y      ; dancer's stamina
+  ASL              ; x2
+  ADC #$60         ; (Stam * 2) + 96
+  BCS .exit        ; auto-success if overflow
+  CMP $01,S        ; C: success rate >= random(256)
+.exit
+  PLA              ; clean up stack
+  PLA              ; restore A
+  RTS
+
+; #########################################################################
 ; Control Effect (largely unused)
 
 ; -------------------------------------------------------------------------
@@ -910,7 +977,7 @@ pad $C23C6E
 warnpc $C23C6E+1
 
 ; #########################################################################
-; Old Air Anchor Routine (now freespace)
+; Air Anchor Routine (now freespace)
 
 org $C23C78
 ChangeShld:
@@ -919,6 +986,14 @@ ChangeShld:
   LDA #$67         ; "Paladin Shield" ID
   STA $161F,X      ; replace equipped shield
   RTS
+
+PreDanceCmd:
+  LDA $3C59,Y      ; relic flags
+  BIT #$20         ; "Moogle Charm"
+  BNE .exit        ; branch if ^
+  JMP DanceCmd     ; else, do full Dance cmd
+.exit
+  JMP DanceCmd2    ; do Dance cmd w/o setting Dance status
 warnpc $C23C90+1
 
 ; #########################################################################
