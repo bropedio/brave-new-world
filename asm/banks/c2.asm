@@ -773,6 +773,60 @@ org $C2343C : JSR CounterMiss : NOP ; Set counter variables early TODO [overwrit
 org $C2381D :  JSL AutoCritProcs ; power-up crit doom to x-zone, multitarget quartr
 
 ; #########################################################################
+; Steal Effect (rewritten)
+; Speed now affects rare steal chance (Speed / 256)
+
+org $C2399E
+StealFunction:
+  LDA $05,S       ; attacker index
+  TAX             ; index it
+  LDA #$01        ; "Doesn't have anything!"
+  STA $3401       ; set message ID ^
+  CPX #$08        ; is attacker a monster
+  BCS enemySteal  ; branch if ^
+  REP #$20        ; 16-bit A
+  LDA $3308,Y     ; target's stealable items
+  INC A           ; null check
+  SEP #$20        ; 8-bit A
+  BEQ failSteal   ; branch if null item (no item)
+  INC $3401       ; set message ID "Couldn't steal!!"
+  LDA $3B19,X     ; attacker speed
+  ASL A           ; x2
+  BCS .success    ; always steal if speed >= 128
+  ADC #$70        ; +112
+  BCS .success    ; steal if > 255
+  STA $EE         ; save steal chance
+  JSR $4B5A       ; random(256)
+  BRA .skip       ; branch past unused code
+  NOP #11         ; unused code
+.skip
+  CMP $EE         ; is random >= steal chance
+  BCS failSteal   ; branch if ^ (fail)
+.success
+  PHY             ; store target index
+  JSR $4B5A       ; random(256)
+  CMP $3B19,X     ; is random >= speed stat
+  BCC .rare       ; branch if not ^ (rare steal)
+  INY             ; check the 2nd [Common] stealable slot
+.rare
+  LDA $3308,Y     ; target's stolen item
+  PLY             ; restore target index (if modified)
+  CMP #$FF        ; null?
+  BEQ failSteal   ; branch if ^ (fail)
+  STA $2F35       ; save stolen item ID for message template
+  STA $32F4,X     ; store in "Acquired Item"
+  LDA $3018,X     ; attacker bit
+  TSB $3A8C       ; flag ^ to process reserve item at end of turn
+  LDA #$FF        ; "null"
+  STA $3308,Y     ; remove stealable item
+  STA $3309,Y     ; in both slots
+  INC $3401       ; set message ID "Stole #whatever"
+  RTS
+
+org $C23A01 : failSteal:
+org $C23A09 : enemySteal:
+
+; #########################################################################
 ; Leap Effect (rewritten)
 
 org $C23B71
