@@ -245,6 +245,29 @@ org $C20A6A : LDA #$23 ; update spell ID for SOS Shell
 org $C20A78 : LDA #$22 ; update spell ID for SOS Safe
 
 ; ########################################################################
+; Damage Modification (per-target)
+
+; ------------------------------------------------------------------------
+; Forces magic attacks to take defending targets into consideration
+; Changes the back row defense boost from 50% damage reduction to 25%
+
+org $C20CFF
+  LDA $3AA1,Y     ; target special state flags
+  BIT #$02        ; "Defending"
+  BEQ .row        ; branch if not ^
+  LSR $F1         ; dmg / 2
+  ROR $F0         ; dmg / 4
+.row
+  PLP             ; restore flags
+  BCC SkipRow     ; branch if not "Physical"
+  BIT #$20        ; "Back Row"
+  BEQ SkipRow     ; branch if not ^
+  JSR Row_Dmg     ; else lower damage by 25%
+  NOP
+
+SkipRow: ; Following is the morph check, handled in morph.asm ($C20D15)
+
+; ########################################################################
 ; Atma Weapon Damage (special effect)
 ;
 ; Partially rewritten as part of Synchysi's Atma Weapon changes.
@@ -668,6 +691,14 @@ org $C22ACD
   TSB $BA : NOP
 
 ; #########################################################################
+; Load Monster Stats
+
+; -------------------------------------------------------------------------
+; Removes the 1.5x spell power enemies get
+
+org $C22D30 : NOP #3
+
+; #########################################################################
 ; Load Monster Properties
 
 org $C22E17 : JSR GauRageStatuses
@@ -1047,6 +1078,20 @@ org $C24F47
 ; -------------------------------------------------------------------------
 ; Some portion of previous routine is now overwritten as freespace. Unsure
 ; exactly where/how this space is made available.
+
+org $C250F4
+Row_Dmg:
+  PHP             ; store flags
+  REP #$20        ; 16-bit A
+  LDA $F0         ; dmg
+  LSR             ; dmg / 2
+  LSR             ; dmg / 4
+  EOR #$FFFF      ; -(dmg / 4) - 1
+  SEC             ; set carry (to add 1)
+  ADC $F0         ; dmg - dmg/4
+  STA $F0         ; update dmg
+  PLP             ; restore flags
+  RTS
 
 org $C25105       ; freespace [?]
 Get_Tgt_Byte:
