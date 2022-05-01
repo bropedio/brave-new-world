@@ -455,6 +455,14 @@ org $C22372 : BRA HitCalc ; skip evasion bonuses from all statuses
 org $C22388 : HitCalc:
 
 ; #########################################################################
+; Initialize Characters
+
+; -------------------------------------------------------------------------
+; Add hook to condense spell lists
+
+org $C2256D : JSR condenseSpellLists
+
+; #########################################################################
 ; Initialize ATB Timers
 ;
 ; Partially rewritten by Seibaby's "ATB Start" patch, which alters the starting
@@ -1008,6 +1016,30 @@ org $C24D03
   JSR $4B53         ; C: 50% chance to counter (75% in vanilla)
   BCS .no_counter   ; branch ^
   NOP #2            ; [unused]
+
+; #########################################################################
+; Determine MP Cost of Spell
+
+; -------------------------------------------------------------------------
+; Account for condensed magic list when looking up MP cost
+
+org $C24F24
+  XBA                ; store command ID
+  REP #$10           ; 16-bit X/Y
+  LDA $3A7B          ; spell/attack ID
+  CPX #$0008         ; monster slot range
+  BCS .fka_4F47      ; branch if attacker in ^
+  XBA                ; high is spell, low is command
+  CMP #$19           ; "Summon" command ID
+  BEQ .summon        ; branch if ^
+  JMP calcMPCost     ; helper to find spell in condensed menu
+  NOP
+.summon
+  CLC                ; clear carry
+  TDC                ; zero A/B
+  REP #$20           ; 16-bit A
+org $C24F47
+.fka_4F47
 
 ; #########################################################################
 ; Scan Command
@@ -1713,6 +1745,68 @@ org $C263BB : JSR DmgCmdAliasMass
 ; #########################################################################
 ; Freespace (C26469-C26800)
 
+; -------------------------------------------------------------------------
+; Condensed Spell List helper.
+; Takes a character's spell list and 'shuffles' it up, so that all of the
+; blank spots are at the end.
+; TODO: Remove nested loops
+
+org $C265CE
+condenseSpellLists:
+  PHX                 ; store character slot index
+  PHP                 ; store flags
+  LDY #$04            ; first spell entry in list (source index)
+.noMoreSpells
+  TYX                 ; copy to destination index
+  REP #$10            ; 16-bit X/Y
+.checkSpellLoop
+  LDA ($F2),Y         ; spell ID in destination slot
+  INC                 ; check for null
+  BNE .check_next     ; branch if not ^
+.findNextSpell
+  INY #4              ; advance to next spell entry
+  CPY #$00DC          ; at start of Lore list
+  BEQ .noMoreSpells   ; branch if ^
+  CPY #$013C          ; after Lore list range
+  BEQ .noMoreLores    ; branch if no more spells ^
+  LDA ($F2),Y         ; spell ID in source slot
+  INC                 ; check for null
+  BEQ .findNextSpell  ; branch if ^
+  PHY                 ; store source spell index
+  CLC                 ; clear carry
+  REP #$20            ; 16-bit A (to move spell data 2 bytes at a time)
+.copyNextSpell
+  LDA ($F2),Y         ; spell data (two bytes) in source slot
+  PHY                 ; store source spell index
+  TXY                 ; destination index in Y now
+  STA ($F2),Y         ; move spell data to destination slot
+  PLY                 ; restore source spell index
+  INY #2              ; point to MP cost (source)
+  INX #2              ; point to MP cost (destination)
+  BCS .doneCopy       ; branch if done copying
+  SEC                 ; set carry
+  BPL .copyNextSpell  ; if we haven't done four bytes, loop back and grab the next TODO: Should be BRA
+.doneCopy
+  SEP #$20            ; 8-bit A
+  PLY                 ; this is the first byte of the slot we copied from
+  TDC                 ; zero A/B
+  STA ($F4),Y         ; zero out the MP cost
+  DEC                 ; $FF (null)
+  STA ($F2),Y         ; null the spell we copied from
+  BRA .weCopiedASpell ; branch
+.check_next
+  INX #4              ; next destination spell
+.weCopiedASpell
+  TXY                 ; and then copy it over to Y for our next loop through
+  CPY #$0138          ; last lore index
+  BNE .checkSpellLoop ; branch if not ^
+.noMoreLores
+  PLP                 ; restore flags
+  PLX                 ; restore X (character slot index)
+  JMP $532C           ; [displaced] modify commands
+
+; --------------------------------------------------------------------------
+
 org $C26642
 SketchChk:         ; function defined in sketch_fix.asm [?]
 
@@ -1830,6 +1924,54 @@ BlindHelp:
   LDA $11A8        ; hit rate
 .exit
   RTS
+
+; -------------------------------------------------------------------------
+; Helpers for condensed spell list hack
+
+org $C26770         ; 64 bytes needed, used through $C2FAEF
+calcMPCost:
+  CMP #$0C          ; coming in, low byte is command and high byte is spell ID
+  BEQ .lore         ; branch if it's Lore
+.calculateMagic
+  XBA               ; get attack #
+  CMP #$F0          ; is it a Desperation Attack or an Interceptor counter?
+  BCS .returnZero   ; if so, exit
+  STA $F0           ; save our spell ID in scratch memory
+  TDC
+  LDA #$04          ; four bytes per index, and we're starting at the second index in
+                    ; the list (i.e. the first Magic spell)
+.loreEntersHere
+  REP #$20
+  CLC
+  ADC $302C,X       ; get the start of our character's magic list (index #0 is esper)
+  STA $F2           ; this points out our first Magic slot
+  INC #3
+  STA $F4           ; and this points at our first MP cost slot
+  SEP #$20
+  PHY
+  LDY $00
+.findSpell
+  LDA ($F2),Y       ; spell ID in slot
+  CMP $F0           ; does it match our spell?
+  BEQ .getMPCost    ; branch if ^
+  INY #4            ; next spell to check
+  BRA .findSpell    ; loop till spell is found
+.getMPCost
+  LDA ($F4),Y       ; spell's mp cost
+  PLY
+  BRA .exitWithMP   ; exit
+.lore
+  XBA               ; (get attack #), high byte is command and low byte is attack ID
+  SEC
+  SBC #$8B          ; turn our raw spell ID into a 0-23 Lore ID
+  STA $F0           ; set spell ID
+  TDC
+  LDA #$DC          ; this is our first Lore slot in the character's spell list
+  BRA .loreEntersHere
+.returnZero
+  TDC
+.exitWithMP
+  JMP $4F54         ; (clean up stack and exit)
 
 ; #########################################################################
 ; Esper Level and Experience Messages
