@@ -26,6 +26,11 @@ org $C311AD : NOP #2
 org $C31B61 : JSR StChr ; store character ID in $A3 (for esper restrict)
 
 ; #########################################################################
+; Open Equip Menu After Optimizing Gear
+
+org $C31C1D : NOP #3 ; skip optimize routine
+
+; #########################################################################
 ; Initialize Magic Menu
 
 org $C32125 : NOP #3 ; skip drawing MP Cost in Magic Menu
@@ -913,6 +918,87 @@ EquipOptionJumpTable:
   dw $969F     ; "Empty" option
   dw $969F     ; [NOTE: Unused]
 
+; -------------------------------------------------------------------------
+; Handle "Optimum" option
+
+org $C39685 : NOP #3 ; skip optimize routine entirely
+
+; -------------------------------------------------------------------------
+; General Event Command "Optimize Equipment"
+; Rewritten to fix errors when no valid equipment found (assassin)
+
+org $C396E9
+  NOP #3
+  JSR $96F0       ; [unchanged] Optimum command - fully equips standard equipment
+  RTL             ; [unchanged]
+
+; Optimum command
+  JSR $9110       ; [unchanged] Checks equipment by jumping to C2/0E77
+  JSR $96A8       ; [unchanged] Empty command - Removes standard equipment
+  JSR $93F2       ; [unchanged] get character index
+  STY $F3         ; [unchanged] store character index
+  LDA $11D8       ; [unchanged] relic flags
+  AND #$08        ; [unchanged] Check "attack with 2 hands" bit
+  BEQ .no_gaunt   ; [unchanged] branch if not set
+  NOP #2
+  JSR WeaponList  ; generate list of equippable Weapons and Shields.
+  JSR $9795       ; [unchanged] generate list of equippable Weapons
+  JSR $A150       ; [unchanged] sort list of eligible weapons by Battle Power
+  JSR $983F       ; [unchanged] pick best weapon that's compatible with Optimum,
+  LDY $F3         ; [unchanged] load character index
+  STA $001F,Y     ; [unchanged] store to right hand
+  JSR $9D97       ; [unchanged] Remove item from inventory
+  BRA .helmet     ; advance to the helmet slot
+.no_gaunt
+  JSR wpn_common  ; pick the best weapon that's compatible with Optimum
+  STA $001F,Y     ; store to right hand
+  JSR $9D97       ; remove item from inventory
+  LDA $11D8       ; relic flags
+  AND #$10        ; "Dual Wield"
+  BNE .dual       ; branch if ^
+  JSR WeaponList  ; generate list of equippable Weapons and Shields.
+  JSR $97D7       ; generate list of equippable Shields
+  JSR common      ; sort list of shields by Defense, then pick the best
+  STA $0020,Y     ; store to left hand
+  JSR $9D97       ; remove item from inventory
+  BRA .helmet     ; do the helmet slot now
+.dual
+  JSR wpn_common  ; pick the best weapon that's compatible with Optimum
+  STA $0020,Y     ; store to left hand
+  JSR $9D97       ; remove item from inventory
+.helmet
+  JSR stuff_9B59  ; do early parts of Function C3/9B59
+  JSR $9BB2       ; generate list of equippable Helmets
+  JSR common      ; sort list of helmets by Defense, then pick the best
+  STA $0021,Y     ; store to head
+  JSR $9D97       ; remove item from inventory
+  JSR stuff_9B59  ; do early parts of Function C3/9B59
+  JSR $9BEE       ; generate list of equippable Armors
+  JSR common      ; sort list of armors by Defense, then pick the best
+  STA $0022,Y     ; store to body
+  JMP $9D97       ; remove item from inventory
+wpn_common:
+  JSR WeaponList  ; generate list of equippable Weapons and Shields.
+  JSR $9795       ; generate list of equippable Weapons
+common:
+  JSR $A150       ; sort list of eligible gear by Battle Power or Defense
+  LDY $F3         ; load character index
+  JMP $9819       ; pick best gear that's compatible with Optimum,
+stuff_9B59:
+  JSR $9C2A       ; Generate fallback list of 9 FFs, in case none found
+  JSR $9C41       ; set equippability word
+  LDA #$20        ; color: white
+  STA $29         ; set text color to white.  99.5% sure it's pointless here
+  RTS
+WeaponList:       ; TODO: pointless [?]
+  JSR stuff_9B59  ; do early parts of Function C3/9B59
+  JMP $9B72       ; generate list of equippable Weapons and Shields.
+  NOP #20
+
+; #########################################################################
+; Sustain Equip and Relic Menus (continued)
+
+; -------------------------------------------------------------------------
 org $C398C8 : JMP EquipSubSwap : NOP #4
 org $C39908 : JMP EquipSubSwap : NOP #4
 
@@ -931,6 +1017,16 @@ org $C39ABC : JMP DW_Chk_LH ; handle left hand slot
 
 ; -------------------------------------------------------------------------
 org $C39EDC : JSR RelicSwap
+
+; -------------------------------------------------------------------------
+; Test Re-Equip Activiation (in relic menu)
+; Bypasses all relic checks for optimizing - frees up a bunch of space in C3.
+; TODO: Freespace between this BRA
+
+org $C39F5C : BRA EndRequipChk
+org $C39FA9 : EndRequipChk:
+
+; -------------------------------------------------------------------------
 org $C3A047 : JSR RelicSwap
 org $C3A146 : JSR RelicSwap
 
