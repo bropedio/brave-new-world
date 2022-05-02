@@ -12,6 +12,19 @@ hirom
 org $C202A0 : PLA : RTS
 
 ; -------------------------------------------------------------------------
+; MP Critical Helper
+
+MPCritCost:
+  LDA $3C45,y       ; relic effects
+  BIT #$0020        ; "Halve MP Cost"
+  BEQ .exit         ; exit if not ^
+  LSR $EE           ; halve MP cost for MP Crit
+.exit
+  RTS
+
+warnpc $C202DC+1
+
+; -------------------------------------------------------------------------
 ; Note, assumes no more than 1 overflow in $EA from multiplication
 ; (Imp command disabling used as Freespace)
 
@@ -1059,6 +1072,32 @@ PreDanceCmd:
 warnpc $C23C90+1
 
 ; #########################################################################
+; Ogre Nix Effect (now freespace)
+
+org $C23F25
+MPCrit:
+  LDA $B2          ; special attack flags
+  BIT #$02         ; "No Critical"
+  BNE .exit        ; exit if ^
+  LDA $3EC9        ; how many targets
+  BEQ .exit        ; exit if none ^
+  TDC              ; zero A
+  LDA $3B18,Y      ; attacker level
+  LSR              ; lvl / 2
+  REP #$20         ; 16-bit A
+  STA $EE          ; save lvl / 2 in scratch RAM
+  JSR MPCritCost   ; respect MP cost reduction via Gem Box
+  LDA $3C08,Y      ; attacker current MP
+  CMP $EE          ; current MP >= required MP
+  BCC .exit        ; exit if not ^
+  SBC $EE          ; subtract required MP
+  STA $3C08,Y      ; update current MP
+  LDA #$0200       ; "Always Critical" ($B3)
+  TRB $B2          ; set ^
+.exit
+  RTS
+
+; #########################################################################
 ; Golem Wall Effect
 ;
 ; Alters the Golem Wall effect to use the caster's max HP instead of current
@@ -1167,6 +1206,7 @@ warnpc $C242C6+1
 ; #########################################################################
 ; Special Effect (per-strike) Jump Table [C242E1]
 
+org $C242EF : dw MPCrit   ; MP Criticals additional hook
 org $C24341 : dw $3E8A    ; Remove random targeting from Suplex effect
 org $C24383 : dw CoinToss ; Effect $51 ($C33FB7 now unused)
 
