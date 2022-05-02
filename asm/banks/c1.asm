@@ -111,6 +111,12 @@ org $C12EF7
 org $C1353F : AND #$02
 
 ; ########################################################################
+; Keep time frozen during some battle actions
+
+org $C17792 : NOP #3 ; when selecting target via "Fight" command cursor
+org $C17D25 : NOP #3 ; [?]
+
+; ########################################################################
 ; Bushido Menu
 
 org $C17D8A : JSR SwdTechMeter ; add handling for bushido meter scroll
@@ -181,6 +187,12 @@ org $C16031 : LDA $E6F567,X ; decrement starting offset by 1
 
 org $C191A0 : dw $A4B3  ; battle dynamics $05, alias to $0B (cascade)
 org $C191A6 : dw $9609  ; battle dynamics $08, alias to $03 (mass)
+
+; ######################################################################
+; Decode Battle Dynamics Script
+
+org $C1953B : JSL MagicFunction1 ; hook for nATB [$C3](before animation)
+org $C19544 : JSL MagicFunction2 ; hook for nATB [$C3](after animation)
 
 ; ######################################################################
 ; Damage Numbers Animation Handler(s)

@@ -274,6 +274,29 @@ org $C20A6A : LDA #$23 ; update spell ID for SOS Shell
 org $C20A78 : LDA #$22 ; update spell ID for SOS Safe
 
 ; ########################################################################
+; Condemned Counter Initialization
+; Timer starting value reduced due to nATB slowing things down
+
+org $C209BB : NOP #3 ; shorten countdown time by one level count
+org $C209C1 : LDA #$1E ; subtract from 30 instead of 60
+org $C209C8 : ADC #$0A ; add 10 instead of 20
+
+; ########################################################################
+; ATB Multipliers (slow/haste/normal)
+
+; ATB multiplier changes - now handled in speed.asm
+;org $C209D4 : db #$3C ; Slow
+;org $C209DD : db #$4B ; Normal
+;org $C209E3 : db #$5A ; Haste
+; End ATB multiplier changes
+
+;org $C209F3 ; Also now handled in speed.asm
+;  ADC #$14 ; add the constant speed bonus (+20)
+;  XBA
+;  BRA Label1 ; skip some unused code
+;org $C20A00 : Label1:
+
+; ########################################################################
 ; Switch between Morph and Revert
 ; TODO: Some freespace beneath this RTS
 
@@ -439,6 +462,11 @@ org $C21031 : AfterImpEquip:
 ; Called Every Frame (NMI, Sort of)
 
 ; -------------------------------------------------------------------------
+; nATB: pause time during animations (variable repurposed from Wait/Active)
+
+org $C21124 : ORA $3A8F
+
+; -------------------------------------------------------------------------
 ; Skip morph gauge decrement
 
 org $C21143 : BRA BypassMorphCalc
@@ -453,6 +481,11 @@ org $C2114B : BypassMorphCalc:
 ; messages, and animation.
 
 org $C213A1 : JMP BossDeath
+
+; #########################################################################
+; Fight (command)
+
+org $C215D1 : NOP #2 ; Enable desperation attacks at any time (nATB)
 
 ; #########################################################################
 ; Dance (command)
@@ -546,6 +579,14 @@ org $C22358
 org $C2235E : PEA $0004 ; remove evasion penalty from Rerise
 org $C22372 : BRA HitCalc ; skip evasion bonuses from all statuses
 org $C22388 : HitCalc:
+
+; #########################################################################
+; Initialize Many Things at Battle Start
+
+; ------------------------------------------------------------------------
+; Always set "Wait" mode variable (nATB)
+
+org $C2247A : STZ $3A8F : NOP #4
 
 ; #########################################################################
 ; Initialize Characters
@@ -1279,6 +1320,14 @@ OvercastFix:
 
 org $C245E2 : JMP $464C ; changed from JSR
 
+; -------------------------------------------------------------------------
+; Adjust debuff timers (nATB slows things down)
+
+org $C24637 : LDA #$09 ; Sleep
+org $C24680 : LDA #$09 ; Stop
+;org $C2468A : LDA #$0D ; Reflect (no longer has timer, handled in reflect_timer.asm
+org $C24694 : LDA #$0A ; Freeze
+
 ; #########################################################################
 ; Special Checks for End-of-Battle
 ;
@@ -1806,6 +1855,27 @@ org $C2580C
 ; new "Abort on Enemies" helper routine. (Synchysi)
 
 org $C25902 : JSR EnemyAbort ; Add "abort-on-enemies" support
+
+; #########################################################################
+; Time Based Events for Entities
+
+; Double frequency of Regen and Poison ticks
+org $C25AEA
+  dw $5B45 ; Regen
+  dw $5B3B ; Poison
+  dw $5B45 ; Regen
+  dw $5AE8 ; RTS
+  dw $5B45 ; Regen
+  dw $5B3B ; Poison
+  dw $5B45 ; Regen
+  dw $5AE8 ; RTS
+
+; increment battle timers 2 more times per tick
+org $C25AFE
+  dw $5BFC
+  dw $5BFC
+
+org $C25BDE : AND #$30 ; increased chances of running
 
 ; #########################################################################
 ; Victorious Combat (C25D91)

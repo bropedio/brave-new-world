@@ -1196,6 +1196,23 @@ More_Checks:
   JMP Heal            ; jump to check if target needs healing
 
 ; ------------------------------------------------------------------------
+; Helpers for nATB freezing time during animations
+
+org $C3F1A6
+MagicFunction1:
+  LDA ($76)        ; [displaced]
+  CMP #$FF         ; "null" EOL
+  BEQ .exit        ; exit if ^
+  INC $3A8F        ; else, freeze time
+.exit
+  RTL
+MagicFunction2:
+  DEC $3A8F        ; allow time to progress
+  REP #$20         ; [displaced]
+  LDA $76          ; [displaced]
+  RTL
+
+; ------------------------------------------------------------------------
 ; EL/EP/Spell bank text data and helpers
 ; Many new label and text positions and tiles
 org $C3F277
