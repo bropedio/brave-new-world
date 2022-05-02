@@ -306,18 +306,8 @@ org $C20AE5 : RTS ; bypass all morph gauge handling
 ; Damage Modification (per-target)
 
 ; ------------------------------------------------------------------------
-; Change how morphed character damage is modified
 
 org $C20CC9 : BNE Ignore_Def ; Defense ignoring now still modified by Morph
-
-org $C20D15
-Ignore_Def:
-  LDA $3EF9,Y      ; target status byte 4
-  BIT #$08         ; "Morphed"
-  BEQ .done        ; branch if not ^
-  LDA $3B40,Y      ; target stamina
-  JSR MorphDmg     ; modify damage
-.done
 
 ; ------------------------------------------------------------------------
 ; Forces magic attacks to take defending targets into consideration
@@ -331,13 +321,22 @@ org $C20CFF
   ROR $F0         ; dmg / 4
 .row
   PLP             ; restore flags
-  BCC SkipRow     ; branch if not "Physical"
+  BCC IgnoreDef   ; branch if not "Physical"
   BIT #$20        ; "Back Row"
-  BEQ SkipRow     ; branch if not ^
+  BEQ IgnoreDef   ; branch if not ^
   JSR Row_Dmg     ; else lower damage by 25%
   NOP
 
-SkipRow: ; Following is the morph check, handled in morph.asm ($C20D15)
+; ------------------------------------------------------------------------
+; Change how morphed character damage is modified
+
+Ignore_Def:
+  LDA $3EF9,Y      ; target status byte 4
+  BIT #$08         ; "Morphed"
+  BEQ .done        ; branch if not ^
+  LDA $3B40,Y      ; target stamina
+  JSR MorphDmg     ; modify damage
+.done
 
 ; ########################################################################
 ; Atma Weapon Damage (special effect)
