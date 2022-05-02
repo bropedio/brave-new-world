@@ -1146,6 +1146,7 @@ Chakra:
   JMP ChakraHelp ; jump to helper
   NOP #2         ; [unused space]
   RTS            ; preserved in case it's branched to from elsewhere
+warnpc $C2424B+1
 
 ; -------------------------------------------------------------------------
 ; Helper for special effect misses
@@ -1157,9 +1158,6 @@ Clear_Status:
   STZ $3DE8,X    ; clear status-to-set bytes 3/4
   LDA $3018,Y    ; [displaced]
   RTS
-
-; -------------------------------------------------------------------------
-warnpc $C2424B+1
 
 ; #########################################################################
 ; Mantra (per-strike special effect)
