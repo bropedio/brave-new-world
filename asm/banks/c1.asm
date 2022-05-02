@@ -105,6 +105,12 @@ org $C12EF7
 .get_color
 
 ; ########################################################################
+; Fix Vanilla Bug that blocks running animation for Morph instead of
+; the Frozen status. From assassin
+
+org $C1353F : AND #$02
+
+; ########################################################################
 ; Bushido Menu
 
 org $C17D8A : JSR SwdTechMeter ; add handling for bushido meter scroll

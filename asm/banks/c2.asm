@@ -201,7 +201,7 @@ CmdFuncs:
   dw $05D1        ; Rage
   dw $059C        ; Dance
   dw $04F6        ; Lore
-  dw $0557        ; Morph
+  dw $0519        ; Morph (RTS -- always available now)
   dw $0584        ; MagiTek
   dw $058D        ; Tools
   dw RunicCheck   ; Runic
@@ -261,7 +261,27 @@ org $C20A6A : LDA #$23 ; update spell ID for SOS Shell
 org $C20A78 : LDA #$22 ; update spell ID for SOS Safe
 
 ; ########################################################################
+; Switch between Morph and Revert
+; TODO: Some freespace beneath this RTS
+
+org $C20AE5 : RTS ; bypass all morph gauge handling
+
+; ########################################################################
 ; Damage Modification (per-target)
+
+; ------------------------------------------------------------------------
+; Change how morphed character damage is modified
+
+org $C20CC9 : BNE Ignore_Def ; Defense ignoring now still modified by Morph
+
+org $C20D15
+Ignore_Def:
+  LDA $3EF9,Y      ; target status byte 4
+  BIT #$08         ; "Morphed"
+  BEQ .done        ; branch if not ^
+  LDA $3B40,Y      ; target stamina
+  JSR MorphDmg     ; modify damage
+.done
 
 ; ------------------------------------------------------------------------
 ; Forces magic attacks to take defending targets into consideration
@@ -401,6 +421,15 @@ WeapChk:
 
 org $C2101C : BRA AfterImpEquip
 org $C21031 : AfterImpEquip:
+
+; #########################################################################
+; Called Every Frame (NMI, Sort of)
+
+; -------------------------------------------------------------------------
+; Skip morph gauge decrement
+
+org $C21143 : BRA BypassMorphCalc
+org $C2114B : BypassMorphCalc:
 
 ; #########################################################################
 ; Process HP and MP Damage
@@ -789,11 +818,44 @@ org $C23225 : SkipImpMute:
 ; #########################################################################
 ; Combat Routine
 
+org $C2336B : NOP #2                ; remove second INC $BC from morph (+50%)
 org $C233A3 : JSR Imp_Nerf          ; add hook for new Imp damage nerf routine
 org $C233BA : JSR SetTarget         ; Enable target's counterattack, even if we miss
 org $C233EA : BRA NoImpCrit         ; skip Imp critical handling
 org $C233F2 : NoImpCrit:            ; label for BRA above
 org $C2343C : JSR CounterMiss : NOP ; Set counter variables early TODO [overwritten]
+
+; #########################################################################
+; Increment Damage Function ($BC)
+; Rewritten to allow damage increments with defense-ignoring attacks
+
+org $C2370B
+IncDmgFunc:
+  PHY             ; store Y
+  LDY $BC         ; increment count
+  BEQ .exit       ; exit if zero ^
+  PHA             ; store damage
+  SEP #$20        ; 8-bit A
+  LDA $11A7       ; attack flags 4 ($20="No Increments")
+  AND $11A2       ; and attack flags 1 ($20="Ignore Def")
+  ASL #3          ; C: Ignore Def and No Increments on Ignor Def
+  REP #$20        ; 16-bit A
+  PLA             ; restore damage
+  BCS .exit       ; exit if ignore increments
+  STA $EE         ; else, store damage in scratch
+  LSR $EE         ; damage / 2
+.loop
+  CLC             ; clear carry
+  ADC $EE         ; add 50% damage
+  BCC .no_cap     ; branch if no overflow
+  TDC : DEC       ; else, use max dmg $FFFF
+.no_cap
+  DEY             ; decrement increment count
+  BNE .loop       ; loop till all increments done
+  STY $BC         ; zero increment count
+.exit
+  PLY             ; restore Y
+  RTS
 
 ; #########################################################################
 ; Weapon Addition Magic
@@ -1186,6 +1248,11 @@ org $C245E2 : JMP $464C ; changed from JSR
 org $C24816 : NOP #5
 
 ; #########################################################################
+; End-of-Battle (or tier switch) Handling
+
+org $C24903 : NOP #3 ; skip morph gauge reset/update
+
+; #########################################################################
 ; Prepare Counterattacks (C24C5B)
 
 org $C24C5B
@@ -1387,6 +1454,11 @@ org $C25301
   JSR Get_Tgt_Byte  ; update targeting byte if heal rod
   PLP               ; restore flags
   RTS
+
+; #########################################################################
+; Morph Command Disabling
+
+org $C25326 : CLC : RTS ; never disable
 
 ; #########################################################################
 ; Convert or hide commands based on relics or event bits
@@ -1703,7 +1775,10 @@ org $C25902 : JSR EnemyAbort ; Add "abort-on-enemies" support
 ; Make EP gains display after combat
 org $C25E0B : JSR Show_EP
 
-org $C25E31      ; freespace in middle of end-of-battle routine [TODO]
+; The following branch bypasses the function that adjusts Terra's Morph supply.
+org $C25E2F : BRA AfterMorph
+
+; Use freespace from BRA above ($C25E31 - $C25E48)
 SetTarget:
   STY $C0        ; save target index in scratch RAM
   JSR $220D      ; [displaced] miss determination
@@ -1718,6 +1793,8 @@ CounterMiss:
   REP #$20       ; [displaced] 16-bit A
   LDY #$12       ; [displaced] prep entity loop
   RTS
+
+org $C25E49 : AfterMorph:
 
 ; Remove learning spells from post-combat routine
 org $C25E6A : BRA No_Spells
@@ -2170,6 +2247,30 @@ calcMPCost:
   TDC
 .exitWithMP
   JMP $4F54         ; (clean up stack and exit)
+
+; #########################################################################
+; Freespace
+
+; -------------------------------------------------------------------------
+; Morph damage taken helper
+
+org $C2A65A
+MorphDmg:
+  CMP #$60          ; target stamina > 96
+  BCC .store        ; branch if not ^
+  LDA #$60          ; else use max 96
+.store
+  STA $E8           ; store stamina as multiplier
+  REP #$20          ; 16-bit A
+  ASL $F0           ; dmg * 2
+  LDA $F0           ; doubled damage
+  JSR $47B7         ; dmg * 2 * stamina / 256
+  PHA               ; store result ^
+  LDA $F0           ; dmg * 2
+  SBC $01,S         ; dmg * 2 - result from above.
+  STA $F0           ; update damage
+  PLA               ; clean up stack
+  RTS
 
 ; #########################################################################
 ; Esper Level and Experience Messages
