@@ -708,6 +708,8 @@ org $c2265b : JSR StopBlock ; Add hook to give stop immunity
 ; #########################################################################
 ; Load Character Equipment Properties
 
+org $C22872 : BRA NoMog    ; skip turning Moogle Suit wearing into Moogle
+org $C22883 : NoMog:
 org $C228C1 : JSR GauRageStatuses2
 
 ; #########################################################################
