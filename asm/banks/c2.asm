@@ -297,17 +297,72 @@ org $C209C8 : ADC #$0A ; add 10 instead of 20
 ;org $C20A00 : Label1:
 
 ; ########################################################################
-; Switch between Morph and Revert
-; TODO: Some freespace beneath this RTS
+; Switch between Morph and Revert (freespace)
 
 org $C20AE5 : RTS ; bypass all morph gauge handling
+
+; ------------------------------------------------------------------------
+; Helpers for Periodic Effects/Damage
+
+org $C20AEF
+Sap_Chk:
+  LDA $11A7        ; Load special byte 3
+  BIT #$0080       ; Test if bit 8 is set
+  BNE Skip_Halving ; If it is, branch
+  LDA $11A4        ; Else, restore displaced code at $C20D24 and return
+  RTS
+
+Skip_Halving:
+  PLA              ; No longer need to RTS
+  JMP DmgModInc    ; Jump back, skipping the damage halving instruction
+
+Tick_Calc:
+  PHA              ; store A (Max HP)
+  LDA $3EF8,Y      ; current status-3
+  AND #$0002       ; "Regen"
+  BEQ .no_regen    ; branch if no ^
+  SEP #$20         ; 8-bit A
+  LDA $E8          ; Stamina
+  XBA              ; save multiplier
+  LDA $3B18,Y      ; Level
+  JSR $4781        ; Stamina * Level
+  REP #$20         ; 16-bit A
+  LSR #4           ; Stamina * Level / 16
+  STA $E8          ; save total so far
+  PLA              ; restore A (Max HP)
+  LDX #$40         ; divisor: 64
+  JSR $4792        ; Max HP / 64
+  CLC : ADC $E8    ; Max HP / 64 + Stamina * Level / 16
+  BRA .end         ; branch to end
+
+.no_regen
+  SEP #$20         ; 8-bit A
+  LDA $E8          ; Stamina
+  LSR #3           ; Stamina / 8
+  CLC : ADC #$10   ; Stamina / 8 + 16
+  TAX              ; set divisor ^
+  REP #$20         ; 16-bit A
+  PLA              ; restore A (Max HP)
+  JSR $4792        ; Max HP / (Stamina / 8 + 16)
+
+.end
+  PHA              ; store A
+  SEP #$20         ; 8-bit A
+  LDA $11A7        ; special byte 3
+  ORA #$80         ; add "Periodic" flag (new flag in BNW)
+  STA $11A7        ; update special byte 3 TODO: Use TSB instead
+  REP #$20         ; 16-bit A
+  PLA              ; restore A
+  RTS
+
+warnpc $C20B4A+1
 
 ; ########################################################################
 ; Damage Modification (per-target)
 
 ; ------------------------------------------------------------------------
 
-org $C20CC9 : BNE Ignore_Def ; Defense ignoring now still modified by Morph
+org $C20CC9 : BNE IgnoreDef ; Defense ignoring now still modified by Morph
 
 ; ------------------------------------------------------------------------
 ; Forces magic attacks to take defending targets into consideration
@@ -330,13 +385,25 @@ org $C20CFF
 ; ------------------------------------------------------------------------
 ; Change how morphed character damage is modified
 
-Ignore_Def:
+IgnoreDef:
   LDA $3EF9,Y      ; target status byte 4
   BIT #$08         ; "Morphed"
   BEQ .done        ; branch if not ^
   LDA $3B40,Y      ; target stamina
   JSR MorphDmg     ; modify damage
 .done
+
+; ------------------------------------------------------------------------
+
+org $C20D24 : JSR Sap_Chk ; Add hook to halve sap damage on party
+org $C20D34 : DmgModInc:  ; [label] finish with damage increment
+
+; ########################################################################
+; Atlas Armet / Earring Boosts
+
+org $C20D4B : JSR Sap_Chk2 : ASL ; replace "heal" skip with "sap/regen"
+org $C20D6A : NOP #2             ; remove double earring support
+org $C20D85 : AtlasEnd:          ; [label] end of routine
 
 ; ########################################################################
 ; Atma Weapon Damage (special effect)
@@ -707,7 +774,24 @@ org $c2265b : JSR StopBlock ; Add hook to give stop immunity
 ; #########################################################################
 ; Load Character Equipment Properties
 
-org $C22872 : BRA NoMog    ; skip turning Moogle Suit wearing into Moogle
+org $C22872
+  BRA NoMog    ; skip turning Moogle Suit wearing into Moogle
+
+; -------------------------------------------------------------------------
+; Atlas Armlet / Earring and Sap helper in freespace
+
+Sap_Chk2:
+  LDA $B5         ; command ID
+  CMP #$01        ; "Item"
+  BEQ .nope       ; exit if ^
+  LDA $11A7       ; Load special byte 3 (has Periodic flag instead of Heal)
+  RTS
+.nope
+  PLA : PLA       ; clear JSR return offset
+  JMP AtlasEnd    ; jump back instead (to end of routine)
+
+; -------------------------------------------------------------------------
+
 org $C22883 : NoMog:
 org $C228C1 : JSR GauRageStatuses2
 
@@ -1328,6 +1412,7 @@ org $C24637 : LDA #$09 ; Sleep
 org $C24680 : LDA #$09 ; Stop
 ;org $C2468A : LDA #$0D ; Reflect (no longer has timer, handled in reflect_timer.asm
 org $C24694 : LDA #$0A ; Freeze
+org $C246F4 : dw Poison ; reset the damage increment for poison on clear
 
 ; #########################################################################
 ; Special Checks for End-of-Battle
@@ -1379,6 +1464,12 @@ org $C24F24
   REP #$20           ; 16-bit A
 org $C24F47
 .fka_4F47
+
+; #########################################################################
+; Periodic Damage & Healing Calculation
+
+org $C25041 : NOP ; cumulative poison incrementor set to +1, not +2
+org $C2505B : JSR Tick_Calc : NOP #2 ; Re-written formulas for periodic effects
 
 ; #########################################################################
 ; Scan Command
@@ -2669,6 +2760,18 @@ RunicCheck:
   TDC            ; zero A/B (subcommand, to be safe)
   RTS 
 warnpc $C2FACD+1
+
+; -------------------------------------------------------------------------
+; Poison status on-clear helper to reset damage incrementor
+
+org $C2FBC6
+Poison:
+  PHP
+  SEP #$20
+  LDA #$00
+  STA $3E24,Y    ; zero poison damage incrementer
+  PLP
+  RTS
 
 org $C2FBEE
 AtmaStat:
