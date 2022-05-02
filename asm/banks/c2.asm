@@ -1904,6 +1904,14 @@ CounterMiss:
 
 org $C25E49 : AfterMorph:
 
+org $C25E4C
+  LDA $1D4D      ; config option byte
+  BIT #$08       ; "Exp Gain"
+  BEQ .no_exp    ; branch if not ^
+  JSR $6235      ; else, add experience
+  NOP #3         ; excess instructions.
+.no_exp
+
 ; Remove learning spells from post-combat routine
 org $C25E6A : BRA No_Spells
 org $C25E72 : No_Spells:
