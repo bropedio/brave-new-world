@@ -361,9 +361,11 @@ warnpc $C20B4A+1
 ; ########################################################################
 ; Damage Modification (per-target)
 
-; ------------------------------------------------------------------------
-
-org $C20CC9 : BNE IgnoreDef ; Defense ignoring now still modified by Morph
+org $C20CA6 : SEP #$30        ; 8-bit A, X/Y
+org $C20CB0 : JMP NewVariance ; hook for new vigor/stam-based variance
+OldVariance:                  ; [label] for jump back
+org $C20CBA : AfterVar:       ; [label] for after old variance handling
+org $C20CC9 : BNE IgnoreDef   ; Defense ignoring now still modified by Morph
 
 ; ------------------------------------------------------------------------
 ; Forces magic attacks to take defending targets into consideration
@@ -2855,6 +2857,77 @@ GauRageStatuses2:
   AND #$7F        ; no float
   STA $3EF9,X
   RTS
+
+; -------------------------------------------------------------------------
+; Alters the random variance formula to consider the target's vigor or
+; stamina in calculating the variance range
+;
+; Damage = (Damage * [(225 - 3/4 VigStam) .. (255 - VigStam)] / 225) + 1
+
+org $C2A770
+NewVariance:
+  LDA $11A4      ; attack flags-3
+  LSR            ; C: "Healing"
+  BCS .old_var   ; branch if ^
+  CPY #$08       ; target is monster
+  BCS .old_var   ; branch if ^
+  PHP            ; store flags
+  TDC            ; zero A/B
+  LDA $11A2      ; attack flags-1
+  LSR            ; C: "Physical"
+  LDA $3B40,Y    ; target's Stamina
+  BCC .variance  ; use Stamina if not "Physical"
+  LDA $3B2C,Y    ; else, load target's Vigor (x2)
+  LSR            ; / 2 to get real Vigor value
+.variance
+  PHA            ; store defense stat
+  ASL            ; x2
+  ADC $01,S      ; x3
+  LSR #2         ; stat * 3/4
+  STA $E8        ; save in scratch ^
+  LDA #$E1       ; 225
+  SEC            ; set carry
+  SBC $E8        ; 225 - (stat * 3/4)
+  STA $E8        ; save ^
+  PLA            ; restore defense stat
+  EOR #$FF       ; 255 - stat
+  SEC            ; set carry
+  SBC $E8        ; variance cap - floor
+  BCC .multiply  ; branch if floor is larger than the cap
+  INC            ; +1
+  JSR $4B65      ; random(cap - floor + 1)
+  CLC            ; clear carry
+  ADC $E8        ; get variance value
+  STA $E8        ; save multiplier
+.multiply 
+  REP #$20       ; 16-bit A
+  LDA $F0        ; maximum damage
+  JSR $47B7      ; max damage * random variance
+  LDA $E8        ; lower 16-bits of product
+  PHX            ; store X
+  LDX #$E1       ; divisor (225)
+  JSR $4792      ; divide lower 16-bits by ^
+  STA $F0        ; save tentative final dmg
+  CLC            ; clear carry
+  LDX $EA        ; check for overflow from multiplication
+  BEQ .exit      ; exit if none ^
+.loop
+  LDA #$0123     ; overflow increment value: 291 (65536 / 225)
+  ADC $F0        ; add to damage
+  STA $F0        ; update damage
+  DEX            ; decrement overflow iterator
+  BNE .loop      ; loop till all overflow handled
+.exit
+  INC $F0        ; damage + 1
+  PLX            ; restore X
+  PLP            ; restore flags
+  JMP AfterVar   ; jump back to damage mod routine
+.old_var
+  JSR $4B5A      ; random(256)
+  JMP OldVariance; jump back to damage mod routine
+
+
+
 
 ; -------------------------------------------------------------------------
 org $C2A7DD
