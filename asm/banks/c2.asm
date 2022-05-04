@@ -1540,6 +1540,12 @@ org $C24816 : NOP #5
 org $C24903 : NOP #3 ; skip morph gauge reset/update
 
 ; #########################################################################
+; RNG
+
+org $C24B5F : JSL Random
+org $C24B6F : JSL Random
+
+; #########################################################################
 ; Prepare Counterattacks (C24C5B)
 
 org $C24C5B
@@ -2973,6 +2979,12 @@ org $C2ADE1
   db $82,$87,$84,$80,$93,$84,$91,$FF,$FF,$FF    ; Sap, Regen
   db $24,$25,$FF,$20,$26,$27,$28,$FF,$FF,$FF    ; Sap, Rerise
   db $82,$87,$84,$80,$93,$84,$91,$FF,$FF,$FF    ; Sap, Rerise, Regen
+
+; #########################################################################
+; RNG
+
+org $C2BBEC : JSL Random
+org $C2BC9B : JSL Random
 
 ; #########################################################################
 ; Palette Data for Various Animations

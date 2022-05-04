@@ -21,6 +21,11 @@ org $C30C81 : JSR Esp_Lvl ; Also draw EL value
 org $C311AD : NOP #2
 
 ; #########################################################################
+; In Game Time Update
+
+org $C3140D : JSR FrameCounter ; hook to increment RNG frame counter
+
+; #########################################################################
 ; Initialize Skills Menu
 
 org $C31B61 : JSR StChr ; store character ID in $A3 (for esper restrict)
@@ -1808,6 +1813,16 @@ EquipSubSwap:
   BRA HandleLR      ; branch
 warnpc $C3F570+1
 
+; -------------------------------------------------------------------------
+; Keep frame counter updated for RNG algorithm
+
+org $C3F570
+FrameCounter:
+  INC $021E      ; increment frame counter
+  INC $01F0      ; increment RNG frame counter [TODO: Why not use 021E?]
+  RTS
+
+; -------------------------------------------------------------------------
 org $C3F700
 FlipMPDisplay:
   LDA #$FF       ; MP display = on

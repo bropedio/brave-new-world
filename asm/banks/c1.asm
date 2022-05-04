@@ -11,6 +11,11 @@ hirom
 org $C10CFA : JSR CheckSel
 
 ; ########################################################################
+; RNG
+
+org $C11861 : JSL Random
+
+; ########################################################################
 ; Status Graphics (cont.)
 ;
 ; Large portion after $2E69 rewritten by dn to support cycling auras.
@@ -202,6 +207,16 @@ org $C19544 : JSL MagicFunction2 ; hook for nATB [$C3](after animation)
 
 org $C1A5A9 : NOP : JSL SetMPDmgFlag
 org $C1A6E6 : NOP : JSL SetMPDmgFlagMass
+
+; ######################################################################
+; RNG
+
+org $C1CD53 : JSL Random
+
+; ######################################################################
+; RNG
+
+org $C1CECF : JSL Random
 
 ; ######################################################################
 ; Freespace (stats at $C1FFE5)

@@ -5,6 +5,17 @@ hirom
 incsrc ram.asm
 
 ; #########################################################################
+; Local access to RNG routine
+
+org $C0062E : JSL Random : RTS
+org $C00636 : JSL Random ; [TODO: Remove -- redundant with above]
+
+; #########################################################################
+; RNG
+
+org $C04012 : JSL Random
+
+; #########################################################################
 ; Diagonal Movement Handlers
 ;
 ; Modified to add various handling to diagonal movement (eg on stairs)
@@ -68,6 +79,12 @@ org $C0C257 : CMP #$D0 ; increase chance of third/forth formation encounters
 ; Random Encounters (Dungeons)
 
 org $C0C3F0 : CMP #$D0 ; increase chance of third/forth formation encounters
+
+; #########################################################################
+; RNG
+
+;org $C0C48C : JSL Random ; Now handled in Seibaby's compilation patch
+;org $C0C4A9 : JSL Random ; Functionality changed in sei_encounter_rate.asm
 
 ; #########################################################################
 ; Unequip Character (General Action $8D) [end of routine]
@@ -234,6 +251,35 @@ PaletteMP:
   STA $0307,Y        ; store palette [?]
   RTL
 warnpc $C0DEA0+1
+
+; #########################################################################
+; XOR Shift RNG Algorithm (replaces RNG Table)
+; NOTE: The rest of RNG table is cleared out - 192 bytes free!
+
+org $C0FD00
+Random:
+  PHP            ; store flags
+  SEP #$20       ; 8-bit A
+  XBA            ; get B
+  PHA            ; store B
+  REP #$20       ; 16-bit A
+  LDA $01F1      ; last RNG value
+  ASL #2         ; << 2
+  EOR $01F1      ; XOR with RNG
+  STA $01F1      ; update RNG
+  LSR #7         ; >> 7
+  EOR $01F1      ; XOR with RNG
+  STA $01F1      ; update RNG
+  ASL #15        ; << 15
+  EOR $01F1      ; XOR with RNG
+  STA $01F1      ; update RNG
+  SEP #$20       ; 8-bit A
+  PLA            ; restore B
+  XBA            ; put B back
+  LDA $01F1      ; RNG value
+  EOR $01F0      ; XOR with frame counter
+  PLP            ; restore flags
+  RTL
 
 ; #########################################################################
 ; ROM Data for SNES
