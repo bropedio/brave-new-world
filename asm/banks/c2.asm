@@ -227,6 +227,17 @@ warnpc $C204F6+1
 ; Uncontrollable/Muddle Random Attack Selections
 
 ; ------------------------------------------------------------------------
+; Morph random behavior (now freespace)
+
+org $C20557
+ItemMod:
+  BCS .done ; branch if not an actual item
+  STZ $3414 ; ignore damage modification
+.done
+  LDA $3411 ; [displaced]
+  RTS
+
+; ------------------------------------------------------------------------
 ; Changes the odds each dance step shows up.
 
 org $C205CE : dl $104090 ; 10/FF; 30/FF; 60/FF
@@ -601,6 +612,16 @@ BushidoCommand:
   BRA .end       ; branch
 org $C2187D
 .end
+
+; #########################################################################
+; Item (command)
+
+org $C21897 : NOP #3 ; remove instruction that ignores damage modification
+
+; #########################################################################
+; Item and Throw (commands)
+
+org $C218C1 : JSR ItemMod ; hook to disable dmg mod for actual items
 
 ; #########################################################################
 ; GP Rain (command)
