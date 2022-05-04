@@ -683,6 +683,11 @@ org $C3797D : JSR EL_Party  ; draw EL after LV in party select screen
 org $C379E6 : dw $3A75      ; shift LV label to make room for EL display
 
 ; #########################################################################
+; Draw Item Row (used in item menu and colosseum)
+
+org $C37FD0 : JMP ItemNameFork ; hook for colosseum item row
+
+; #########################################################################
 ; [fork] Draw Offensive Properties
 ; Rewritten to always draw "Runic", "2-Hand", "Bushido" but grayed out
 
@@ -1307,6 +1312,123 @@ MagicFunction2:
   REP #$20         ; [displaced]
   LDA $76          ; [displaced]
   RTL
+
+; ------------------------------------------------------------------------
+; Colosseum Item Row drawing helpers
+; Include prize item on line with item row
+
+org $C3F1B8
+ItemNameFork:
+  LDA $26                 ; current system op
+  CMP #$71                ; "Init Colosseum Item Selection"
+  BEQ .colosseum_menu     ; branch if ^
+  CMP #$72                ; "Sustain Colosseum Item Selection"
+  BEQ .colosseum_menu     ; branch if ^
+  JSR $80B9               ; else, do regular "Item Menu" rows
+  JSR $7FD9               ; display text
+  JMP $7FE6               ; display item type
+.colosseum_menu
+  JSR colosseum_setup     ; setup colosseum variables
+  JSR string_init         ; init the string
+  JSR string_bet          ; display bet item
+  JSR string_display      ; display the string
+  JSR position_advance_1A ; advance position for next display
+  JSR string_init         ; init the string
+  JSR string_delimiter    ; dislay delimiter
+  JSR string_display      ; display the string
+  JSR position_advance_02 ; advance position for next display
+  JSR string_init         ; init the string
+  JSR string_reward       ; display reward item
+  JSR string_display      ; display the string
+  JSR position_advance_1A ; advance position for next display
+  RTS
+
+colosseum_setup:
+  TDC                     ; zero A/B
+  LDA $E5                 ; row index in menu
+  TAY                     ; index it
+  LDA $1869,Y             ; item ID in slot
+  STA $0205               ; save item to bet
+  JSR $B22C               ; setup Colosseum variables
+  RTS
+
+string_init:
+  LDX #$9E8B              ; start of text in WRAM buffer
+  STX $2181               ; set WRAM destination
+  RTS
+
+string_display:
+  JSR $7FD9               ; draw string [TODO: remove needless wrapper]
+  RTS
+
+string_fill:
+  LDX #$000D              ; length of item name
+.loop
+  STA $2180               ; write fill character
+  DEX                     ; decrement iterator
+  BNE .loop               ; loop till all written
+  STZ $2180               ; set EOL
+  RTS
+
+position_advance_02:
+  LDX #$0002              ; advance $02 spaces
+  BRA position_advance
+position_advance_1A:
+  LDX #$001A              ; advance $1A spaces
+position_advance:
+  REP #$20                ; 16-bit A
+  TXA                     ; tiles to advance
+  CLC                     ; clear carry
+  ADC $7E9E89             ; add to text tilemap position
+  STA $7E9E89             ; set new text tilemap position
+  SEP #$20                ; 8-bit A
+  RTS
+
+string_reward:
+  LDA $0209               ; mask flag
+  BNE .case_mask          ; branch if hidden prize
+  LDA $0205               ; bet item ID
+  CMP #$FF                ; null?
+  BEQ .case_empty         ; branch if empty item
+.case_default
+  LDA $0207               ; reward item
+  JSR $C068               ; load item name [TODO JMP]
+  RTS
+.case_mask
+  LDA #$BF                ; '?' character
+  JSR string_fill         ; fill item name with '????'
+  RTS
+.case_empty
+  LDA #$FF                ; ' ' character
+  JSR string_fill         ; fill item name with '    '
+  RTS
+
+string_delimiter:
+  LDA $0205               ; bet item ID
+  CMP #$FF                ; null?
+  BEQ .case_empty         ; branch if ^
+.case_default
+  LDA #$D5                ; '>' character (right-facing arrow)
+  BRA .set_char           ; branch and write ^
+.case_empty
+  LDA #$FF                ; ' ' character
+.set_char
+  STA $2180               ; write chosen delimiter
+  STZ $2180               ; end of string
+  RTS
+
+string_bet:
+  LDA $0205               ; item ID to bet
+  CMP #$FF                ; null?
+  BEQ .case_empty         ; branch if ^
+.case_default
+  LDA $0205               ; item ID to bet [TODO: Redundant]
+  JSR $C068               ; load item name [TODO: JMP]
+  RTS
+.case_empty
+  LDA #$FF                ; space character
+  JSR string_fill         ; fill item name with spaces
+  RTS    
 
 ; ------------------------------------------------------------------------
 ; EL/EP/Spell bank text data and helpers
