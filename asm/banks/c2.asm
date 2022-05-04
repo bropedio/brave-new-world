@@ -230,6 +230,7 @@ warnpc $C204F6+1
 ; Changes the odds each dance step shows up.
 
 org $C205CE : dl $104090 ; 10/FF; 30/FF; 60/FF
+org $C20600 : JSR Rage   ; rage selection helper
 
 ; ########################################################################
 ; Command Wait Times
@@ -1077,6 +1078,17 @@ IncDmgFunc:
 ; Weapon Addition Magic
 
 org $C2381D :  JSL AutoCritProcs ; power-up crit doom to x-zone, multitarget quartr
+
+; #########################################################################
+; Discord Effect (now freespace)
+
+org $C23978
+Rage:
+  PHA         ; store A
+  JSR $4B5A		; 0-255 RNG
+  CMP #$AB		; Carry clear 2/3 chance (use common rage move)
+  PLA         ; restore A
+  RTS
 
 ; #########################################################################
 ; Steal Effect (rewritten)
