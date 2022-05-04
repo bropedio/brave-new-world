@@ -52,9 +52,11 @@ org $C04E33
 ; #########################################################################
 ; General Actions pointer updates
 ;
+; Action $67 is now used to reset ELs for current party
 ; Action $7F (Change Character Name) is optimized and shifted to make
 ; room for a fix to Action $8D (Unequip Character).
 
+org $C09928 : dw RespecELs
 org $C09958 : dw CharName
 
 ; #########################################################################
@@ -141,6 +143,46 @@ org $C0BE03
 ; #########################################################################
 ; Freespace
 
+; -------------------------------------------------------------------------
+; Helper for Respec general action
+
+org $C0D636
+RespecELs:
+  LDA #$16         ; length of character base stats data
+  STA $4202        ; set multiplier
+  LDA $EB          ; character ID
+  STA $4203        ; set multiplicand
+  TAY              ; index character ID
+  LDA !EL,Y        ; character's esper level
+  STA !EL_bank,Y   ; set in unspent esper levels
+  NOP              ; wait for multiplication
+  LDX $4216        ; get offset to character base stats
+  PHX              ; store ^
+  JSR $9DAD        ; Y: offset to character's info block
+  PLX              ; restore offset to character base stats
+  LDA $ED7CA6,X    ; character base vigor
+  STA $161A,Y      ; reset current vigor
+  LDA $ED7CA7,X    ; character base speed
+  STA $161B,Y      ; reset current speed
+  LDA $ED7CA8,X    ; character base stamina
+  STA $161C,Y      ; reset current stamina
+  LDA $ED7CA9,X    ; character base magic
+  STA $161D,Y      ; reset current magic
+  LDA $ED7CA0,X    ; character base level 1 MaxHP
+  STA $160B,Y      ; reset current MaxHP (lobyte)
+  LDA $ED7CA1,X    ; character base level 1 MaxMP
+  STA $160F,Y      ; reset current MaxMP (lobyte)
+  TDC              ; zero A/B
+  STA $160C,Y      ; zero current MaxHP (hibyte)
+  STA $1610,Y      ; zero current MaxMP (hibyte)
+  STZ $20          ; zero scratch RAM
+  STZ $21          ; zero scratch RAM
+  LDA $1608,Y      ; character level
+  JMP $9F4A        ; run level averaging to set new max HP/MP and check
+  LDA #$02         ; [unused] TODO Remove this
+  JMP $9B5C        ; [unused] TODO Remove this
+
+; -------------------------------------------------------------------------
 org $C0DE5E
 SetMPDmgFlag:
   ORA #$01           ; [moved] Add "enable dmg numeral" flag
