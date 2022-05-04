@@ -551,7 +551,8 @@ org $C213A1 : JMP BossDeath
 ; #########################################################################
 ; Fight (command)
 
-org $C215D1 : NOP #2 ; Enable desperation attacks at any time (nATB)
+org $C215D1 : NOP #2   ; Enable desperation attacks at any time (nATB)
+org $C21624 : LDA #$03 ; reduce Offering hits from 4 to 2
 
 ; #########################################################################
 ; Dance (command)
@@ -567,6 +568,20 @@ org $C2179D : JSR DanceChance ; use stamina to get dance chance
 ; command. Further modified by Synchysi so ensure row is ignored still.
 
 org $C2180B : JSL C3_BlindJump : NOP ; helper routine in C3
+
+; -------------------------------------------------------------------------
+; Change the odds of additional bounces from the Dragon Horn effect.
+
+org $C21823 : BPL EndJump
+org $C2182B
+  CMP #$40        ; random(256) >= $40
+  BCS EndJump     ; branch if ^ (3/4 chance)
+  INC $3A70       ; else, add second jump
+EndJump:
+  LDA $3EF9,X     ; status-4
+  AND #$DF        ; omit "Hide"
+  STA $3EF9,X     ; update status-4
+  JMP $317B       ; execute hit
 
 ; #########################################################################
 ; Bushido (command)
@@ -887,12 +902,71 @@ org $C22ACD
   TSB $BA : NOP
 
 ; #########################################################################
-; Load Monster Stats
+; Damage Formulas
 
 ; -------------------------------------------------------------------------
-; Removes the 1.5x spell power enemies get
+; Physical Damage Rewrite
+; New physical damage formula for characters only, plus handling for
+; Bushido leveraging equipped weapon battle power.
+; Also modifies Offering, Genji Glove, and Gauntlet multipliers.
 
-org $C22D30 : NOP #3
+org $C22BB3
+PhysDmg:
+  CPX #$08        ; attacker is a monster
+  BCS .enemy      ; branch if ^
+  JMP PlayerPhys  ; else, use player formula
+.enemy
+  ASL #2          ; BatPwr * 4
+  ADC #$003C      ; +60 (instead of enemy vigor)
+  SEP #$20        ; 8-bit A
+  JSR $47B7       ; Level * ((BatPwr * 4) + 60)
+  LDA $E8         ; load product ^
+  STA $EA         ; store low byte for later
+  PLA             ; restore A (Level)
+  STA $E8         ; save multiplier ^
+  REP #$20        ; 16-bit A
+  LDA $E9         ; Level * ModifiedBatPwr (big endian)
+  XBA             ; get ^ little endian
+  JSR $47B7       ; multiply by level / 256
+  STA $11B0       ; save damage
+  PLP             ; restore flags
+  RTS
+
+org $C22BDA
+PhysDmgJump:
+  SEP #$20        ; 8-bit A
+  LDA $B5         ; command ID
+  CMP #$07        ; "Bushido" or higher
+  REP #$20        ; 16-bit A
+  BCS .exit       ; branch if ^ (not Fight/Item/Magic/Morph/Revert/Steal/Mug)
+  LDA $3C58,X     ; relic flags
+  LSR             ; C: "Offering"
+  BCC .dual       ; branch if not ^
+  JSR DmgQtr      ; else, damage - 25%
+.dual
+  BIT #$0008      ; "Genji Glove" (shifted from $10)
+  BEQ .exit       ; branch if not ^
+  JSR DmgQtr      ; else, damage - 25%
+.exit
+  PLP             ; restore flags
+  RTS
+
+DmgQtr:
+  PHA             ; store A (relic flags)
+  LDA $11B0       ; damage
+  LSR #2          ; damage / 4
+  EOR #$FFFF      ; toggle bits
+  SEC             ; essentially * -1
+  ADC $11B0       ; add -25%
+  STA $11B0       ; update damage (75%)
+  PLA             ; restore A (relic flags)
+  RTS
+
+; #########################################################################
+; Load Monster Stats
+
+org $C22D30 : NOP #3    ; remove 1.5x spell power from enemies
+org $C22D65 : ADC #$18  ; Add 24 to enemy's vigor, giving them a range of 24-30
 
 ; #########################################################################
 ; Load Monster Properties
@@ -958,6 +1032,9 @@ org $C23225 : SkipImpMute:
 ; Combat Routine
 
 org $C2336B : NOP #2                ; remove second INC $BC from morph (+50%)
+org $C23392
+  LDA $11A7                         ; Special byte 3
+  JSR Row_Chk                       ; check for row respecting flags (eg. Aurabolt)
 org $C233A3 : JSR Imp_Nerf          ; add hook for new Imp damage nerf routine
 org $C233BA : JSR SetTarget         ; Enable target's counterattack, even if we miss
 org $C233EA : BRA NoImpCrit         ; skip Imp critical handling
@@ -2227,6 +2304,115 @@ org $C263BB : JSR DmgCmdAliasMass
 
 ; #########################################################################
 ; Freespace (C26469-C26800)
+
+; -------------------------------------------------------------------------
+; New player character physical damage formula
+
+org $C26469
+PlayerPhys:
+  PHA             ; store A (BatPwr)
+  SEP #$20        ; 8-bit A
+  LDA $B5         ; command ID
+  CMP #$07        ; "Bushido"
+  BNE .two_hand   ; branch if not ^
+.bushido          ; else, include user's weapon(s) and skill modifier
+  LDA $01,S       ; BatPwr
+  STA $E8         ; save multiplier
+  LDA $3B68,X     ; righthand weapon power
+  CLC             ; clear carry
+  ADC $3B69,X     ; add lefthand weapon power (usually 0 for Cyan)
+  XBA             ; hibyte of sum
+  ADC #$00        ; add carry if overflow
+  XBA             ; 16-bit BatPwr sum
+  REP #$20        ; 16-bit A
+  LSR #3          ; BatPwr / 8
+  JSR $47B7       ; (BP / 8) * $E8 (for Bushido, is multiplier)
+  LDA $E8         ; modified BatPwr
+  STA $01,S       ; replace BatPwr on stack
+.two_hand
+  REP #$20        ; 16-bit A
+  LDA $B2         ; special attack flags
+  BIT #$4000      ; "Two-Handed"
+  BNE .formula    ; branch if not ^
+  LDA $01,S       ; BatPwr
+  LSR             ; / 2
+  CLC : ADC $01,S ; add to BatPwr (x1.5)
+  STA $01,S       ; replace BatPwr on stack
+.formula
+  PLA             ; BatPwr
+  STA $D0         ; store in scratch RAM
+  LSR #4          ; BatPwr / 16
+  STA $11B0       ; save temporarily
+  SEP #$20        ; 8-bit A
+  LDA $11AE       ; attack stat (Vigor * 2)
+  LSR             ; / 2 (Vigor is stored doubled)
+  XBA             ; store Vigor in B
+  PLA             ; get Level from stack (pushed long ago)
+  STA $E8         ; save multiplier ^ for later
+  JSR $4781       ; Level * Vigor
+  REP #$20        ; 16-bit A
+  LSR #4          ; Level * Vigor / 16
+  JSR $47B7       ; Level * (Level * Vigor / 16)
+  SEP #$20        ; 8-bit A
+  LDA $EA         ; overflow from multiplication ^
+  BNE .dmg_cap    ; branch if ^ (max dmg)
+  LDA $11B0       ; BatPwr / 16
+  PHA             ; store ^
+  REP #$20        ; 16-bit A
+  LDA $E8         ; Level * Level * Vigor / 16
+  STA $11B0       ; save damage so far
+  SEP #$20        ; 8-bit A
+  PLA             ; restore BatPwr / 16
+  STA $E8         ; set multiplier
+  REP #$20        ; 16-bit A
+  LDA $11B0       ; damage so far
+  JSR $47B7       ; (BatPwr / 16) * (Level * Level * Vigor / 16)
+  LDA $E8         ; product ^
+  PHX             ; store X (attacker index)
+  LDX #$18        ; set divisor to #24
+  JSR $4792       ; divide damage by ^
+  STA $11B0       ; set final damage
+  TDC             ; zero A/B
+  SEP #$20        ; 8-bit A
+  LDA $EA         ; overflow from last multiplication
+  BEQ .finish     ; branch if none ^
+  CMP #$07        ; is overflow >= 7 (~19k dmg) TODO Should be CMP #$08 [?]
+  BCS .dmg_cap    ; branch if ^ to use max dmg (~19k+9999=30000)
+  TAY             ; set iterator
+  REP #$20        ; 16-bit A
+.loop
+  LDA #$0AAB      ; 65536 / 24 [#$10000 / #$18]
+  ADC $11B0       ; add overflow to damage
+  STA $11B0       ; update damage
+  DEY             ; decrement iterator
+  BNE .loop       ; loop till done
+  TDC             ; zero A/B
+.finish
+  SEP #$20        ; 8-bit A
+  LDA $D0         ; BatPwr (lobyte)
+  ADC $11AE       ; BatPwr + Vigor * 2
+  XBA             ; store lobyte in B
+  LDA $D1         ; BatPwr (hibyte)
+  ADC #$00        ; add overflow if carry set
+  XBA             ; swap bytes back
+  REP #$20        ; 16-bit A
+  ADC $11B0       ; add BatPwr + Vigor * 2 to total damage
+  STA $11B0       ; update final damage
+  BRA .exit       ; branch to exit
+.dmg_cap
+  REP #$20        ; Set 16-bit accumulator
+  LDA #$7530      ; 30000 maximum damage (leave room for crits)
+  STA $11B0       ; set max damage
+.exit
+  PLX             ; restore X (attacker index)
+  JMP PhysDmgJump ; jump back to physical damage fork
+
+Row_Chk:
+  EOR #$FF        ; flip bits so bit 4 is now "respect row"
+  ASL             ; move to bit 5 to match $B3
+  ORA $B3         ; combine row-respecting bytes
+  AND #$20        ; if attack respects row, bit 5 should be set
+  RTS
 
 ; -------------------------------------------------------------------------
 ; Condensed Spell List helper.
