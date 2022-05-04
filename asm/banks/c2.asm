@@ -1043,6 +1043,11 @@ org $C233F2 : NoImpCrit:            ; label for BRA above
 org $C2343C : JSR CounterMiss : NOP ; Set counter variables early TODO [overwritten]
 
 ; #########################################################################
+; Weapon "Addition" Magic
+
+org $C23651 : JSR RandomCast : NOP #2 ; add hook for better procrate
+
+; #########################################################################
 ; Increment Damage Function ($BC)
 ; Rewritten to allow damage increments with defense-ignoring attacks
 
@@ -1085,8 +1090,8 @@ org $C2381D :  JSL AutoCritProcs ; power-up crit doom to x-zone, multitarget qua
 org $C23978
 Rage:
   PHA         ; store A
-  JSR $4B5A		; 0-255 RNG
-  CMP #$AB		; Carry clear 2/3 chance (use common rage move)
+  JSR $4B5A   ; 0-255 RNG
+  CMP #$AB    ; Carry clear 2/3 chance (use common rage move)
   PLA         ; restore A
   RTS
 
@@ -1143,6 +1148,24 @@ StealFunction:
 
 org $C23A01 : failSteal:
 org $C23A09 : enemySteal:
+
+; #########################################################################
+; Metamorph Special Effect (now freespace)
+
+org $C23A3C
+RandomCast:
+  JSR $4B5A       ; random(256)
+  PHA             ; store ^
+  LDA $3C58,X     ; relic effects byte 2
+  BIT #$80        ; "High Proc Rate"
+  BEQ .nope       ; branch if no ^
+  PLA             ; restore random(256)
+  CMP #$80        ; 1/2 chance of activating random weapon cast
+  RTS
+.nope
+  PLA             ; restore random(256)
+  CMP #$40        ; 1/4 chance of activating random weapon cast
+  RTS
 
 ; #########################################################################
 ; Debilitator Special Effect (now freespace)
