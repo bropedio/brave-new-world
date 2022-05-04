@@ -39,15 +39,18 @@ warnpc $C202B8+1
 
 ; #########################################################################
 ; Adding Command to Wait Queue + Swap Roulette to Enemy Roulette
-;
-; End of adding command routine is overwritten by "Dies like a Boss" hack,
-; which appears to be using it as freespace. This space is made available
-; by the "roulette" patch, which has not been incorporated here yet. TODO
-;
-; Note that the "Swap Roulette" routine portion is definitely freespace
-; in BNW, as roulette is unused.
 
-org $C203B6
+; -------------------------------------------------------------------------
+; Removes the check for enemy Roulette
+; NOTE: Creates freespace below
+
+org $C203B0
+  JSR $03E4        ; [moved] determine time to wait
+  JMP $4ECB        ; [moved] queue chosen command
+
+; -------------------------------------------------------------------------
+; Helper for Boss death ignoring HP reduction
+
 BossDeath:
   LDA $3C95,Y      ; special monster flags
   AND #$0040       ; "Boss" (formerly "Auto crit if Imp")
@@ -634,6 +637,14 @@ org $C21908 : JSR CoinHelp
 ; Code Pointers for Commands
 
 org $C219ED : dw PreDanceCmd ; changed to add Moogle Charm hook
+
+; #########################################################################
+; AI Command Scripts
+
+; -------------------------------------------------------------------------
+; Script $F0
+
+org $C21B3B : NOP #3 ; don't swap roulette with enemy roulette
 
 ; #########################################################################
 ; Hit Determination
