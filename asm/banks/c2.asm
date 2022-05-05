@@ -1077,6 +1077,11 @@ org $C233F2 : NoImpCrit:            ; label for BRA above
 org $C2343C : JSR CounterMiss : NOP ; Set counter variables early TODO [overwritten]
 
 ; #########################################################################
+; Runic Function
+
+;org $C23598 : JSR RunicHelper ; The JSR is now part of sei_repo_hacks.asm
+
+; #########################################################################
 ; Weapon "Addition" Magic
 
 org $C23651 : JSR RandomCast : NOP #2 ; add hook for better procrate
@@ -3086,9 +3091,19 @@ ATBInitHelp:
   JMP InitializeATBTimers_after_help
 .cap
   JMP InitializeATBTimers_max_atb
-warnpc $C2FAB4+1
 
-org $C2FAC0
+; -------------------------------------------------------------------------
+; Runic helper to ignore elemental effects and +25% magic dmg flag
+
+RunicHelper:
+  STZ $3414       ; Skip damage modification
+  STZ $11A1       ; Zero out elemental properties
+  LDA #$80
+  STA $11A7       ; Zero out special byte 3
+  RTS
+
+; -------------------------------------------------------------------------
+
 RunicCheck:
   LDA $3BA4,Y    ; right-hand special properties
   ORA $3BA5,Y    ; left-hand special properties
