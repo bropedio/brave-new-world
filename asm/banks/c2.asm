@@ -3132,6 +3132,16 @@ Poison:
   PLP
   RTS
 
+; -------------------------------------------------------------------------
+; Long access to random in range routine
+
+org $C2FBEA
+RandomRange:
+  JSR $4B65
+  RTL
+
+; -------------------------------------------------------------------------
+
 org $C2FBEE
 AtmaStat:
   STA $11A9      ; [moved] Set special effect

@@ -81,10 +81,28 @@ org $C0C257 : CMP #$D0 ; increase chance of third/forth formation encounters
 org $C0C3F0 : CMP #$D0 ; increase chance of third/forth formation encounters
 
 ; #########################################################################
-; RNG
+; Random Encounters Helpers
 
-;org $C0C48C : JSL Random ; Now handled in Seibaby's compilation patch
-;org $C0C4A9 : JSL Random ; Functionality changed in sei_encounter_rate.asm
+; -------------------------------------------------------------------------
+; Encounter chance RNG
+; Should raise the minimum number of steps for a random encounter to 10,
+; while still maintaining the overall rate
+
+org $C0C48C
+  LDA #$E9          ; 233
+  JSR RandomRangeC0 ; random(233) [uses C2 routine]
+  CLC               ; clear carry
+  ADC #$04          ; random(4..236)
+
+; -------------------------------------------------------------------------
+; Formation selection RNG
+; TODO: This RNG change is a bug, which is fixed by a later bropedio patch
+
+org $C0C4A9
+  LDA #$E9          ; 233
+  JSR RandomRangeC0 ; random(233) [uses C2 routine]
+  CLC               ; clear carry
+  ADC #$04          ; random(4..236)
 
 ; #########################################################################
 ; Unequip Character (General Action $8D) [end of routine]
@@ -280,6 +298,14 @@ Random:
   EOR $01F0      ; XOR with frame counter
   PLP            ; restore flags
   RTL
+
+; #########################################################################
+; Freespace
+
+org $C0FF90
+RandomRangeC0:
+  JSL RandomRange ; leverage C2 random in range routine
+  RTS
 
 ; #########################################################################
 ; ROM Data for SNES
