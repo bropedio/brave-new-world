@@ -648,13 +648,36 @@ org $C219ED : dw PreDanceCmd ; changed to add Moogle Charm hook
 org $C21B3B : NOP #3 ; don't swap roulette with enemy roulette
 
 ; -------------------------------------------------------------------------
-; Script $FC, command $07
+; Script $FC, command $06 (unsed to be HP Low Counter)
+; Now used for both HP and MP low.
 
-org $C21BD1
+org $C21BB7
+MPLowCounter:
+  JSR $1D34
+  BCC .exit
+  TDC
+  LDA $3A2F
+  XBA
+  REP #$20
+  LSR
+  CPX #$0E          ; is it command $07 - MP low counter?
+  BCC .hp           ; branch if it's not (ie. it's $06 - HP low counter)
+  CMP $3C08,Y       ; MP
+  BRA .exit         ; TODO: RTS
+.hp
+  CMP $3BF4,Y       ; HP
+.exit
+  RTS
+
+; -------------------------------------------------------------------------
+; Script $FC, command $07 (used to be MP Low Counter)
+; Now repurposed for extra "Hit at All" code path
+
 MeleeParams:
   JML MeleeParamsLong
 RTS_C2:
   RTS
+warnpc $C21BD7+1
 
 ; -------------------------------------------------------------------------
 ; Script $FC, command $05
@@ -664,7 +687,9 @@ org $C21C70 : doCounter: ;[label] FC command $05 (Counter if damaged)
 ; -------------------------------------------------------------------------
 ; Script $FC, command pointers
 
-org $C21D5F : dw MeleeParams ; Redirect pointer for FC command $05
+org $C21D5F : dw MeleeParams  ; FC command $05 (hit at all)
+org $C21D61 : dw MPLowCounter ; FC command $06 (HP low counter)
+org $C21D63 : dw MPLowCounter ; FC command $07 (MP low counter)
 
 ; #########################################################################
 ; Hit Determination
