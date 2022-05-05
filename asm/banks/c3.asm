@@ -1837,6 +1837,53 @@ FrameCounter:
   RTS
 
 ; -------------------------------------------------------------------------
+; Helpers for new Counterattack variable triggers
+    
+org $C3F577
+InitAttackVars:
+  TXA                ; [displaced]
+  STA $3290,Y        ; [displaced]
+  LDA $B3            ; If Bit 5 is set it ignores attacker row
+  EOR #$FF           ; Invert it so bit 5 is set if melee
+  LSR                ; Shift it to bit 4
+  ORA $11A7          ; Merge with bit 4 of $11A7 ("respects row")
+  AND #$10           ; Isolate bit 4 (1 = respects row)
+  PHA        
+  LDA $11A2          ; Bit 0 = physical damage if set
+  LSR                ; Carry = 1 if physical damage
+  PLA        
+  ROL                ; Bit 1 = physical, Bit 5 = melee
+  ASL                ; Shift again
+  PHA        
+  LDA $11A3     
+  ROL                ; Carry = 1 if affects MP
+  PLA        
+  ROR                ; bit 1: physical, bit 5: melee, bit 7: affects MP    
+  STA $327D,Y        ; Save attack properties to unused var $327D,index
+.exit
+  RTL
+
+MeleeParamsLong:
+  LDA $3A2F          ; Script command byte 4
+  LSR                ; Check if it's 1 (melee counter)
+  BCS .melee        
+  LSR                ; Check if it's 2 (MP damage counter)
+  BCC .omni          ; If not set, it's a normal counter
+  LDA $327D,Y        
+  CMP #$80           ; Check if attack affects MP
+  BNE .exit          ; Exit if not
+  BRA .omni          ; Counter if attack affects MP      
+.melee
+  LDA $327D,Y        ; Attack properties
+  CMP #$21           ; Check respect row, physical
+  BNE .exit          ; Exit if not both are set
+.omni
+  JML doCounter
+.exit
+  CLC
+  JML RTS_C2
+
+; -------------------------------------------------------------------------
 org $C3F700
 FlipMPDisplay:
   LDA #$FF       ; MP display = on

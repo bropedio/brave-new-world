@@ -647,6 +647,25 @@ org $C219ED : dw PreDanceCmd ; changed to add Moogle Charm hook
 
 org $C21B3B : NOP #3 ; don't swap roulette with enemy roulette
 
+; -------------------------------------------------------------------------
+; Script $FC, command $07
+
+org $C21BD1
+MeleeParams:
+  JML MeleeParamsLong
+RTS_C2:
+  RTS
+
+; -------------------------------------------------------------------------
+; Script $FC, command $05
+
+org $C21C70 : doCounter: ;[label] FC command $05 (Counter if damaged)
+
+; -------------------------------------------------------------------------
+; Script $FC, command pointers
+
+org $C21D5F : dw MeleeParams ; Redirect pointer for FC command $05
+
 ; #########################################################################
 ; Hit Determination
 ;
@@ -1081,6 +1100,12 @@ org $C2343C : JSR CounterMiss : NOP ; Set counter variables early TODO [overwrit
 ; Runic Function
 
 ;org $C23598 : JSR RunicHelper ; The JSR is now part of sei_repo_hacks.asm
+
+; #########################################################################
+; Initialize Variables for Counterattack Purposes
+; New var $327D contains flags for physical, respects row, and MP dmg
+
+org $C235E9 : JSL InitAttackVars ; hook to track more counterattack vars
 
 ; #########################################################################
 ; Weapon "Addition" Magic
