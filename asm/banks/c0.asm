@@ -156,6 +156,21 @@ padbyte $EA : pad $C0A07C
 warnpc $C0A07C+1
 
 ; #########################################################################
+; HP and MP Addition/Subtraction Actions
+; Fix so HP refill also refills MP, eg. in the Lineup Menu
+
+org $C0AE83
+HPChangeAction:
+.exit
+  JMP $AF90        ; exit via MP change code instead
+org $C0AEAC
+  BRA .exit        ; update exit branch
+org $C0AEC7
+  BRA .exit        ; update exit branch
+org $C0AED5
+  JMP $AF3E        ; after maxing HP, jump to MP code
+
+; #########################################################################
 ; Initializing SRAM on Game Creation
 ;
 ; Modified to free up SRAM for EL/EP/SP system (synchysi)
