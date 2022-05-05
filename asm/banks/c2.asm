@@ -1648,10 +1648,11 @@ warnpc $C242C6+1
 ; #########################################################################
 ; Special Effect (per-strike) Jump Table [C242E1]
 
-org $C242EF : dw MPCrit   ; MP Criticals additional hook
-org $C24315 : dw BlowFish ; Effect $1A - Blow Fish
-org $C24341 : dw $3E8A    ; Remove random targeting from Suplex effect
-org $C24383 : dw CoinToss ; Effect $51 ($C33FB7 now unused)
+org $C242EF : dw MPCrit    ; MP Criticals additional hook
+org $C24315 : dw BlowFish  ; Effect $1A - Blow Fish
+org $C2432B : dw GroundDmg ; Effect $25 - Quake
+org $C24341 : dw $3E8A     ; Remove random targeting from Suplex effect
+org $C24383 : dw CoinToss  ; Effect $51 ($C33FB7 now unused)
 
 ; #########################################################################
 ; Status Setting/Clearing Routine
@@ -3485,6 +3486,35 @@ ItemAbortEnemy:
   TSB $11A4      ; set ^
   RTS
 warnpc $C2FC3F+1
+
+; -------------------------------------------------------------------------
+; Quake Special Effect (per-strike)
+; Untarget Floating targets, except if all targets are Floating
+
+GroundDmg:
+  REP #$20        ; 16-bit A
+  LDA $A2         ; targets
+  STA $EE         ; backup ^ in scratch
+  LDX #$12        ; iterator for all entities
+.loop
+  LDA $3EF8,X     ; entity status bytes 3-4
+  BPL .next       ; branch if no "Float"
+  LDA $3018,X     ; entity bit
+  TRB $EE         ; remove ^ from targets
+.next
+  DEX #2          ; next entity
+  BPL .loop       ; loop through all 10 entities
+  LDA $EE         ; remaining targets
+  BNE .save       ; branch if any ^ (and use as targets)
+  LDA #$0080      ; "Respect Clear"
+  TRB $B3         ; else, remove ^
+  LDA $A2         ; and use all original targets
+.save
+  STA $B8         ; set filtered targets
+  TYX             ; attacker index
+  JMP $57C2       ; update targets [?]
+
+; -------------------------------------------------------------------------
 
 org $C2FCCD
 LongByteMod:
