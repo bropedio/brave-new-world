@@ -1125,6 +1125,22 @@ IncDmgFunc:
 org $C2381D :  JSL AutoCritProcs ; power-up crit doom to x-zone, multitarget quartr
 
 ; #########################################################################
+; Stone Effect (now freespace)
+; Damage = rand(250..500)
+
+org $C23922
+NewLife:
+  TDC             ; A = $0000
+  PHA             ; Push to stack
+  LDA #$FB        ; 251
+  JSR $4B65       ; Random number 0..250
+  PHA             ; Push rand(0..250)
+  JSR $3F54       ; Pearl Wind (sets 16-bit A, clears Carry, sets no split loss and ITD)
+  PLA             ; Pull 16-bit rand(0..250)
+  ADC #$00FA      ; Carry is clear, so add 250
+  JMP StoreDamage ; use end of Step Mine effect to store damage and RTS
+
+; #########################################################################
 ; Discord Effect (now freespace)
 
 org $C23978
@@ -1351,6 +1367,20 @@ PreDanceCmd:
 warnpc $C23C90+1
 
 ; #########################################################################
+; Special Effect (per-target) Jump Table [C23DCD]
+
+org $C23E11 : dw NewLife  ; Effect $22 - Life (was Stone)
+
+; #########################################################################
+; Step Mine (unchanged)
+; End of routine labeled for reuse
+
+org $C23EC6
+StoreDamage:
+  STA $11B0        ; Store Damage
+  RTS
+
+; #########################################################################
 ; Ogre Nix Effect (now freespace)
 
 org $C23F25
@@ -1377,6 +1407,12 @@ MPCrit:
   RTS
 
 ; #########################################################################
+; Holy Wind Effect
+
+org $C23F54 : HolyWind:
+org $C23F5C : REP #$21 ; modify to also clear carry (for reuse elsewhere)
+
+; #########################################################################
 ; Golem Wall Effect
 ;
 ; Alters the Golem Wall effect to use the caster's max HP instead of current
@@ -1388,6 +1424,21 @@ org $C23F67 : LDA $3C1C,Y
 
 org $C23FB7
 warnpc $C23FFC+1
+
+; #########################################################################
+; Blowfish Effect
+; Damage = Spell Power * 50
+
+org $C240FE
+BlowFish:
+  LDA $11A6       ; Spell Power
+  PHA             ; Push to stack
+  LDA #$32        ; 50
+  PHA             ; Push to stack
+  JSR HolyWind    ; Pearl Wind (sets 16-bit A, clears Carry, sets no split loss and ITD)
+  PLA             ; Pull 16-bit A
+  JSR $4781       ; Spell Power * 50
+  JMP StoreDamage ; use end of Step Mine effect to store damage and RTS
 
 ; #########################################################################
 ; Old Revenge Routine (now freespace)
@@ -1484,6 +1535,7 @@ warnpc $C242C6+1
 ; Special Effect (per-strike) Jump Table [C242E1]
 
 org $C242EF : dw MPCrit   ; MP Criticals additional hook
+org $C24315 : dw BlowFish ; Effect $1A - Blow Fish
 org $C24341 : dw $3E8A    ; Remove random targeting from Suplex effect
 org $C24383 : dw CoinToss ; Effect $51 ($C33FB7 now unused)
 
@@ -1566,6 +1618,12 @@ org $C24680 : LDA #$09 ; Stop
 ;org $C2468A : LDA #$0D ; Reflect (no longer has timer, handled in reflect_timer.asm
 org $C24694 : LDA #$0A ; Freeze
 org $C246F4 : dw Poison ; reset the damage increment for poison on clear
+
+; #########################################################################
+; Field Item Usage
+
+org $C2474F : JMP FieldLifeHelp ; handle new "life" spell effect in field
+FieldItemReturn:
 
 ; #########################################################################
 ; Special Checks for End-of-Battle
@@ -2500,6 +2558,19 @@ Row_Chk:
   ORA $B3         ; combine row-respecting bytes
   AND #$20        ; if attack respects row, bit 5 should be set
   RTS
+
+; -------------------------------------------------------------------------
+; Field Item Usage Helper
+
+org $C265BE
+FieldLifeHelp:
+  JSR $2966       ; [displaced] load spell data
+  LDA $11A9       ; special effect x2
+  CMP #$44        ; is it "Life" spell
+  BNE .exit       ; exit if not ^ ($22, was "Stone")
+  JMP NewLife     ; do "Life" spell effect
+.exit
+  JMP FieldItemReturn
 
 ; -------------------------------------------------------------------------
 ; Condensed Spell List helper.
