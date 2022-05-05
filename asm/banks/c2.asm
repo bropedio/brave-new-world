@@ -1143,6 +1143,7 @@ org $C233BA : JSR SetTarget         ; Enable target's counterattack, even if we 
 org $C233EA : BRA NoImpCrit         ; skip Imp critical handling
 org $C233F2 : NoImpCrit:            ; label for BRA above
 org $C2343C : JSR CounterMiss : NOP ; Set counter variables early TODO [overwritten]
+org $C23447 : NOP #7                ; remove back-attack damage increment
 
 ; #########################################################################
 ; Runic Function
