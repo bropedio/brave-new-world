@@ -704,6 +704,14 @@ org $C21D5F : dw MeleeParams  ; FC command $05 (hit at all)
 org $C21D61 : dw MPLowCounter ; FC command $06 (HP low counter)
 org $C21D63 : dw MPLowCounter ; FC command $07 (MP low counter)
 
+; -------------------------------------------------------------------------
+; Script $F1, Target $45 - Last Character or Enemy to Attack
+; Previously, this targeting would include muddled monsters who recently
+; attacked. Now, vindictive targeting is only used when the last entity
+; who attacked the target is a character (0-3)
+
+org $C22002 : CMP #$04 ; Vindictive Targeting Fix
+
 ; #########################################################################
 ; Hit Determination
 ;
