@@ -1540,6 +1540,19 @@ org $CCC285 : db $4B,$90,$03
 org $CCC2BB : db $4B,$28,$05
 
 ; ------------------------------------------------------------------------
+; Kefka at Narshe - Change number of parties to 2
+
+org $CCC665 : db $99,$82,$00,$00 ; Invoke party selection screen (2 groups)
+
+org $CCC69B : db $D5,$13,$0A     ; Set party 1 position before Kefka arrival
+org $CCC6AA : db $D5,$15,$0A     ; Set party 2 position before Kefka arrival
+org $CCC6B3 : padbyte $FD : pad $CCC6C2 ; NOP party 3 handling
+
+org $CCC85D : db $D5,$13,$0A     ; Set party 1 position after Kefka arrival
+org $CCC86C : db $D5,$15,$0A     ; Set party 2 position after Kefka arrival
+org $CCC875 : padbyte $FD : pad $CCC884 ; NOP party 3 handling
+
+; ------------------------------------------------------------------------
 ; Change Arvis' caption to act as an unequipper after the Battle of Narshe
 
 org $CCD1E7 : db $4B,$DC,$06
