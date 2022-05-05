@@ -237,3 +237,67 @@ org $EEB14A
 org $EEB156
   db $35,$30,$35,$31               ; Displaced from JSR above
   db $B2,$BD,$CF,$00,$FE           ; JSR $CACFBD, then RTS
+
+; ------------------------------------------------------------------------
+; Helpers for Status Colored ATB Gauges
+;
+; $2EAF01: Palette #1: $21 - White text
+; $2EAF09: Palette #2: $25 - Grey text
+; $2EAF11: Palette #3: $29 - Yellow text / Full ATB gauge
+; $2EAF19: Palette #4: $2D - Blue
+; $2EAF21: Palette #5: $31 - All black (???)
+; $2EAF29: Palette #6: $35 - White (charging) ATB gauge
+; $2EAF31: Palette #7: $39 - Green Morph gauge
+; $2EAF39: Palette #8: $3D - Red Condemned gauge (unused)
+
+org $EEB15F
+Palettes:
+  incbin bin/palettes-bnw.bin ; include binary palette data
+
+StatusATB:
+  TAX              ; Character index (0-6)
+  LDA $3EF8,X      ; Status byte 3
+  BIT #$10         ; Is Stop status set?
+  BEQ .slow        ; Branch if not Stopped
+  LDA #$3D         ; Select palette #8           STOPPED
+  BRA .store       ; Store palette
+.slow
+  LDA $3EF8,X      ; Status byte 3
+  BIT #$04         ; Is Slow status set?
+  BEQ .haste       ; Branch if not Slowed
+  LDA #$2D         ; Select palette #4           SLOW
+  BRA .store       ; Store palette
+.haste
+  LDA $3EF8,X      ; Status byte 3
+  BIT #$08         ; Is Haste status set?
+  BEQ .normal      ; Branch if not Hasted
+  LDA #$39         ; Select palette #7           HASTE
+  BRA .store       ; Store palette
+.normal
+  LDA #$35         ; Select palette #6           NORMAL
+.store
+  RTL
+
+LeftCap:
+  LSR A
+  AND #$FC
+  TAX
+  LDA $04,S
+  INC
+  BEQ .leftfull
+  LDA #$F9
+  BRA .drawleftcap
+.leftfull
+  LDA #$FB
+.drawleftcap
+  RTL
+
+RightCap:
+  INC
+  BEQ .rightfull
+  LDA #$FA
+  BRA .drawrightcap
+.rightfull
+  LDA #$FC         ; Draw tail end of ATB gauge
+.drawrightcap
+  JML $C166F3      ; Draw tile A

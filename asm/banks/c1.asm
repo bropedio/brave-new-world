@@ -149,6 +149,13 @@ org $C12D2B : NOP : NOP : JSL PaletteMP
 org $C12B9B : NOP : NOP : JSL PaletteMP_mass
 
 ; #######################################################################
+; Relocate 2bpp palettes
+
+org $C140A8 : LDA Palettes,X     ; Load battle text palettes white and gray
+org $C140AF : LDA Palettes+16,X  ; Load battle text palettes yellow and cyan
+org $C14100 : LDA Palettes+40,X  ; Load battle gauge palette
+
+; #######################################################################
 ; Status Text Display for targeting window
 
 org $C14587
@@ -183,6 +190,66 @@ padbyte $FF : pad $C145B3
 
 org $C1602E : NOP #3 ; skip decrementing spell name length
 org $C16031 : LDA $E6F567,X ; decrement starting offset by 1
+
+; #######################################################################
+; Draw HP or ATB Gauge
+
+; -----------------------------------------------------------------------
+; Gauge drawing
+; Change the endcaps on the ATB bar based on whether ATB is full or not.
+; Requires two new glyphs in the 8x8 font tileset (the two tiles
+; immediately following the ATB endcaps, left and right). The endcaps
+; are changed so that the uncharged ones don't use colors 2 or 4, just
+; the grey and transparency. Then the charged endcaps use colors 4
+; (the brightest) and optionally color 2 like the vanilla endcaps did.
+
+org $C16854
+ATBEndCaps:
+  PHA
+  JSL LeftCap
+  JSR $66F3        ; Draw opening end of ATB gauge
+  LDA #$04
+  STA $1A
+.loop
+  LDA $C168AC,X    ; Get the ATB gauge character
+  JSR $66F3        ; Draw tile A
+  INX
+  DEC $1A          ; Decrement tiles to do
+  BNE .loop        ; Branch if we haven't done 4
+  PLA
+  JML RightCap
+  NOP
+
+; -----------------------------------------------------------------------
+; Add checks for statuses to ATB drawing routine
+
+org $C16872
+drawGauge:
+  LDA $2021        ; ATB gauge setting
+  LSR              ; Gauge enabled?
+  BCC .draw_hp     ; Branch if disabled
+  LDA $3A8F        ; nATB: is ATB paused?
+  LSR              ; (01 = paused)
+  BCS .exit        ; Don't update bars while ATB is paused
+  LDA $4E          ; Text color
+  PHA              ; Save it
+  LDA $18          ; Which character is it (0-3)
+  TAX              ; Index it
+  LDA $619E,X      ; Character's ATB gauge value
+  PHA              ; Save it for later
+  TXA              ; A = character 0-3
+  ASL              ; Double it
+  JSL StatusATB    ; get palette based on status
+  STA $4E          ; Store palette
+  PLA              ; Restore ATB gauge value
+  JSR $6854        ; Draw the gauge
+  PLA              ; Get saved text color
+  STA $4E          ; Store text color
+.exit
+  RTS
+org $C16898
+.draw_hp
+  LDA #$C0         ; Draw a "/" as HP divider
 
 ; #######################################################################
 ; Battle Dynamics Commands Jump Table
