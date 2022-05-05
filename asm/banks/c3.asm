@@ -740,9 +740,18 @@ SummonDescription:    ; Load Esper summon description
                       ;   a region of memory where there will be a large swath of
                       ;   values below #$80 /shrug
 
-
 padbyte $FF : pad $C38795
 
+; ------------------------------------------------------------------------
+; Resume equipment properties code
+; Modify IDs that do not display battle power
+
+org $C387A3 : CMP #$1C       ; Atma Weapon
+org $C387A7 : CMP #$17       ; Omega Weapon
+org $C387AB : CMP #$51       ; Dice
+org $C387AF : CMP #$52       ; Fixed Dice
+
+; ------------------------------------------------------------------------
 ; dn's "Shop Hack" patch changes where to write elemental effects
 org $C388CE : LDX #$7B65 ; where to write resisted elements
 org $C388DA : LDX #$7BE5 ; where to write absorbed elements

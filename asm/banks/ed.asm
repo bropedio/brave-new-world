@@ -3,6 +3,27 @@ hirom
 ; ED Bank
 
 ; #########################################################################
+; Optimize-Excluded Gear
+
+org $ED82E4
+  db $66      ; 102 Hero Shield (cursed)
+  db $24      ; 36  Pointy Stick
+  db $65      ; 101 Multiguard
+  db $9B      ; 155 Lazy Shell
+  db $1C      ; 28  Atma Weapon
+  db $33      ; 51  Spook Stick
+  db $17      ; 23  Omega Weapon
+  db $FF
+  db $FF
+  db $FF
+  db $FF
+  db $FF
+  db $FF
+  db $FF
+  db $FF
+  db $FF
+
+; #########################################################################
 ; Esper level experience chart
 org $ED8BCA
 EP_Chart:
