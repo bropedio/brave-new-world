@@ -1146,8 +1146,25 @@ org $C2343C : JSR CounterMiss : NOP ; Set counter variables early TODO [overwrit
 
 ; #########################################################################
 ; Runic Function
+; Set Runicked attacks to Ignore Clear
 
-;org $C23598 : JSR RunicHelper ; The JSR is now part of sei_repo_hacks.asm
+org $C2357E
+  LDA #$2182       ; "Concern MP", "Unreflectable", "Unblockable", "Healing"
+  STA $11A3        ; set ^
+  LDA #$8040       ; "Runic Animation", "Ignore Clear"
+  TRB $B2          ; set ^ ($B3, too)
+  SEP #$20         ; 8-bit A
+  LDA #$60         ; "Ignore Defense", "No Split Damage"
+  STA $11A2        ; set ^
+  TDC              ; clear A/B
+  LDA $11A5        ; MP cost of spell
+  JSR $4792        ; divide ^ by number of Runickers
+  STA $11A6        ; save as Battle Power (fixed dmg/healing)
+  JSR $385E        ; set level, magic power to 0
+  JSR RunicHelper  ; ignore elemental effects and +25% dmg flags
+  LDA #$04         ; "Don't Retarget if Target Invalid"
+  STA $BA          ; set targeting flag ^
+  DEC A            ; "Text on Hit", "Miss if Status not Set" (will be cleared)
 
 ; #########################################################################
 ; Initialize Variables for Counterattack Purposes
