@@ -283,12 +283,6 @@ CommandWaitTimes:
   db $00   ; MagiTek
 
 ; ########################################################################
-; SOS Equipment Activations
-
-org $C20A6A : LDA #$23 ; update spell ID for SOS Shell
-org $C20A78 : LDA #$22 ; update spell ID for SOS Safe
-
-; ########################################################################
 ; Condemned Counter Initialization
 ; Timer starting value reduced due to nATB slowing things down
 
@@ -312,14 +306,28 @@ org $C209C8 : ADC #$0A ; add 10 instead of 20
 ;org $C20A00 : Label1:
 
 ; ########################################################################
+; SOS Equipment Activations
+
+org $C20A6A : LDA #$23 ; update spell ID for SOS Shell
+org $C20A78 : LDA #$22 ; update spell ID for SOS Safe
+
+; ########################################################################
 ; Switch between Morph and Revert (freespace)
 
 org $C20AE5 : RTS ; bypass all morph gauge handling
 
 ; ------------------------------------------------------------------------
+; Helper for reflect removal via hit/miss
+
+ReflectClear3:
+  LDA $3E10,Y          ; status-to-clear-3
+  ORA #$80             ; add "Reflect"
+  STA $3E10,Y          ; update status-to-clear-3
+  RTS
+
+; ------------------------------------------------------------------------
 ; Helpers for Periodic Effects/Damage
 
-org $C20AEF
 Sap_Chk:
   LDA $11A7        ; Load special byte 3
   BIT #$0080       ; Test if bit 8 is set
@@ -702,6 +710,8 @@ org $C21D63 : dw MPLowCounter ; FC command $07 (MP low counter)
 ; Modified by Synchysi's "Blind" patch
 ;   Have Blind status apply on skills with 255 hit rate and sets the
 ;   accuracy of a blinded attacker to 50%
+
+org $C22256 : JMP ReflectClear ; Handle reflect behavior
 
 org $C222D1 : Miss:   ; Code for missed attack
 
@@ -1678,13 +1688,40 @@ OvercastFix:
 org $C245E2 : JMP $464C ; changed from JSR
 
 ; -------------------------------------------------------------------------
-; Adjust debuff timers (nATB slows things down)
+; Sleep on-set
 
-org $C24637 : LDA #$09 ; Sleep
-org $C24680 : LDA #$09 ; Stop
-;org $C2468A : LDA #$0D ; Reflect (no longer has timer, handled in reflect_timer.asm
-org $C24694 : LDA #$0A ; Freeze
-org $C246F4 : dw Poison ; reset the damage increment for poison on clear
+org $C24637 : LDA #$09      ; Sleep (adjust timer for nATB)
+
+; -------------------------------------------------------------------------
+; Stop on-set
+
+org $C24680 : LDA #$09      ; Stop (adjust timer for nATB)
+
+; -------------------------------------------------------------------------
+; Reflect on-clear (no longer used for status clear, now freespace helper)
+
+org $C24687
+ReflectClear:
+  SEP #$20             ; 8-bit A
+  JSR $4B5A            ; RNG: 0..255
+  CMP #$55             ; 1 in 3 chance to clear Rflect status
+  JMP ReflectClear2    ; (continued...)
+
+; -------------------------------------------------------------------------
+; Freeze on-set
+
+org $C24694 : LDA #$0A      ; Freeze (adjust timer for nATB)
+
+; -------------------------------------------------------------------------
+; Empty on-set / on-clear
+
+org $C2469B : NoStatusHook: ; [label] RTS for empty status clear/set hooks
+
+; -------------------------------------------------------------------------
+; Status on-clear and on-set jump tables
+
+org $C246DE : dw NoStatusHook ; "Reflect" on-set - removed
+org $C246F4 : dw Poison       ; "Poison" on-clear - reset increment
 
 ; #########################################################################
 ; Field Item Usage
@@ -2240,6 +2277,8 @@ org $C25902 : JSR EnemyAbort ; Add "abort-on-enemies" support
 ; #########################################################################
 ; Time Based Events for Entities
 
+org $C25AE9 : TimerRTS: ; [label] existing RTS for reuse
+
 ; Double frequency of Regen and Poison ticks
 org $C25AEA
   dw $5B45 ; Regen
@@ -2251,10 +2290,50 @@ org $C25AEA
   dw $5B45 ; Regen
   dw $5AE8 ; RTS
 
-; increment battle timers 2 more times per tick
+; Increment battle timers 2 more times per tick
 org $C25AFE
   dw $5BFC
   dw $5BFC
+
+; -------------------------------------------------------------------------
+; Decrement Status Timers, Handle Expiration
+; Code rewritten to remove "Reflect" timer and create freespace for helper
+
+org $C25B06
+  STA $B8              ; set status removals so far (maybe $01 - Stop)
+  LDA $3F0D,X          ; time until Freeze wears off
+  BEQ .sleep           ; branch if no ^
+  DEC $3F0D,X          ; else, decrement Freeze timer
+  BNE .sleep           ; branch if not expired
+  LDA #$04             ; "Remove Freeze" flag
+  TSB $B8              ; set ^
+.sleep
+  LDA $3CF9,X          ; time until Sleep wears off
+  BEQ .end             ; branch if no ^
+  DEC $3CF9,X          ; else, decrement Sleep timer
+  BNE .end             ; branch if not expired
+  LDA #$08             ; "Remove Sleep" flag
+  TSB $B8              ; set ^
+.end
+  LDA $B8              ; statuses to be auto-removed
+  BEQ TimerRTS         ; exit if none ^
+  LDA #$29             ; "Status Expiration" special action command
+  JMP $4E91            ; queue ^
+
+; -------------------------------------------------------------------------
+; Helper for new Reflect %-chance to remove
+
+ReflectClear2:
+  BCS .end             ; exit 2/3 times
+  LDA $3330,Y          ; vulnerable-status-3
+  BPL .end             ; branch if not vulnerable to "Reflect"
+  JSR ReflectClear3    ; else, handle removal
+.end
+  JMP $22E5            ; make attack miss
+  NOP                  ; (padding)
+
+; -------------------------------------------------------------------------
+; Running timer/counter
 
 org $C25BDE : AND #$30 ; increased chances of running
 
