@@ -1323,7 +1323,8 @@ org $C23C5B
 ScanEffect:
   TYX
   LDA #$27
-  JMP $4E91
+  STZ $341A        ; prevent enemies from countering scan
+  JMP $4E91        ; queue command in special action queue
 padbyte $FF
 pad $C23C6E
 warnpc $C23C6E+1
@@ -1632,8 +1633,12 @@ org $C2505B : JSR Tick_Calc : NOP #2 ; Re-written formulas for periodic effects
 ; Scan Command
 
 ; -------------------------------------------------------------------------
-; Some portion of previous routine is now overwritten as freespace. Unsure
-; exactly where/how this space is made available.
+; Branches past HP/MP display for scan (now freespace)
+
+org $C250F2 : BRA Scan
+
+; -------------------------------------------------------------------------
+; Some portion of previous routine is now overwritten as freespace
 
 org $C250F4
 Row_Dmg:
@@ -1672,6 +1677,7 @@ Get_Tgt_Byte:
 ; "Scan Status" code.
 
 org $C25138
+Scan:
   JSL ScanWeakness
   JSL ScanStatus
   RTS
