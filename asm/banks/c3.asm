@@ -1119,9 +1119,9 @@ org $C3B95A
 warnpc $C3B986+1
 
 org $C3B989 : LDY #HelpText
-org $C3C037 : db $2F,$06,$00      ; change text shifting for shop "Shop Hack"
 org $C3BABA : NOP #3 ; skip drawing "Power" info on buy order menu
 org $C3BAC9 : JSR DrawItemNameNMI ; refresh screen before name draw
+org $C3C037 : db $2F,$06,$00      ; change text shifting for shop "Shop Hack"
 
 ; #########################################################################
 ; Shop Menu equippability UI
@@ -1129,11 +1129,16 @@ org $C3BAC9 : JSR DrawItemNameNMI ; refresh screen before name draw
 org $C3C29C : BRA $3F ; Never show equipped/up/down/equal icons
 
 ; #########################################################################
-; Draw "Owned" and "Equippped" window
+; Draw "Owned" and "Equipped" window
 ;
 ; dn's "Shop Hack" interrupts drawing "Owned and "Equipped" window
 
 org $C3C2E1 : JSR DrawDetailsLabels
+
+; #########################################################################
+; Positioned Text for Shop Menu
+
+org $C3C357 : dw $7B8F : db "Attack",$00
 
 ; #########################################################################
 ; Freespace Helpers
@@ -2113,11 +2118,11 @@ DrawDetailsLabels:
   JSR $C2F7        ; [displaced] color: blue
   LDY #VigorText   ; text: vigor
   JSR $02F9        ; draw text
-  LDY #MagicText   ; text: magic
+  LDY #SpeedText   ; text: speed
   JSR $02F9        ; draw text
   LDY #StaminaText ; text: stamina
   JSR $02F9        ; draw text
-  LDY #SpeedText   ; text: speed
+  LDY #MagicText   ; text: magic
   JSR $02F9        ; draw text
   LDY #DefText     ; text: defense
   JSR $02F9        ; draw text
@@ -2155,7 +2160,7 @@ check_stats:
   ASL A             ; Double it
   JSR $8836         ; Draw modifier
   REP #$20          ; 16-bit A
-  LDA #$82a3        ; Tilemap ptr
+  LDA #$8323        ; Tilemap ptr
   STA $7E9E89       ; Set position
   SEP #$20          ; 8-bit A
   TDC               ; Clear A
@@ -2166,7 +2171,7 @@ check_stats:
   LSR A             ; Put in b1-b4
   JSR $8836         ; Draw modifier
   REP #$20          ; 16-bit A
-  LDA #$8241        ; Tilemap ptr
+  LDA #$83A3        ; Tilemap ptr
   STA $7E9E89       ; Set position
   SEP #$20          ; 8-bit A
   LDX $2134         ; Item index
@@ -2177,7 +2182,7 @@ check_stats:
   ASL A             ; Double it
   JSR $8836         ; Draw modifier
   REP #$20          ; 16-bit A
-  LDA #$82c1        ; Tilemap ptr
+  LDA #$82A3        ; Tilemap ptr
   STA $7E9E89       ; Set position
   SEP #$20          ; 8-bit A
   TDC               ; Clear A
@@ -2199,12 +2204,12 @@ check_stats:
   BEQ not_weapon    ; branch if so
   LDA $D85014,X     ; Defense
   JSR $04E0         ; Turn into text
-  LDX #$83A1        ; Text position
+  LDX #$823F        ; Text position
   JSR $04C0         ; Draw 3 digits
   LDX $2134         ; Item index
   LDA $D85015,X     ; Mag.Def
   JSR $04E0         ; Turn into text
-  LDX #$83BF        ; Text position
+  LDX #$833F        ; Text position
   JSR $04C0         ; Draw 3 digits
   LDY #PowerDash
   JSR $02f9
@@ -2237,7 +2242,7 @@ hide_bpow:
 not_weapon:
   JSR all_dashes
   REP #$20       ; 16-bit A
-  LDA #$8321     ; Tilemap ptr
+  LDA #$82BF     ; Tilemap ptr
   STA $7E9E89    ; Set position
   SEP #$20       ; 8-bit A
   LDX $2134      ; Item index
@@ -2249,7 +2254,7 @@ not_weapon:
   ASL A          ; x4
   JSR $881A      ; Draw modifier
   REP #$20       ; 16-bit A
-  LDA #$833f     ; Tilemap ptr
+  LDA #$83BF     ; Tilemap ptr
   STA $7E9E89    ; Set position
   SEP #$20       ; 8-bit A
   LDX $2134      ; Item index
@@ -2339,33 +2344,33 @@ gear_desc2:
   JMP $A783      ; Do line 2, row 2
 
 HelpText:
-  dw $791f : db "Hold Y for details.",$00
+  dw $791F : db "Hold",$FE,"Y",$FE,"for",$FE,"details.",$00 ; TODO: Why FE?
 VigorText:
-  dw $820d : db "Vigor",$00 ; +12 = $821f
-MagicText:
-  dw $828d : db "Speed",$00 ; +12 = $829f
-StaminaText:
-  dw $822b : db "Stamina",$00 ; +12 = $823d
+  dw $820D : db "Vigor",$00
 SpeedText:
-  dw $82ab : db "Magic",$00 ; +12 = $82bd
+  dw $830D : db "Speed",$00
+StaminaText:
+  dw $838D : db "Stamina",$00
+MagicText:
+  dw $828D : db "Magic",$00
 DefText:
-  dw $838d : db "Defense",$00 ; +12 = $819f
+  dw $822B : db "Defense",$00
 MDefText:
-  dw $83ab : db "M.Def.",$00 ; +12 = $81bd
+  dw $832B : db "M.Def.",$00
 EvadeText:
-  dw $830d : db "Evade",$00 ; +12 = $831f
+  dw $82AB : db "Evade",$00
 MEvadeText:
-  dw $832b : db "M.Evade",$00 ; +12 = $833f
+  dw $83AB : db "M.Evade",$00
 PowerText:
-  dw $812b : db "B.Power",$00 ; + 12 = $813d
+  dw $812B : db "Attack",$00,$00 ; TODO Remove extra $00 here
 UnknownTxt:
-  dw $813f : db "???",$00
+  dw $813F : db "???",$00
 PowerDash:
-  dw $813f : db "---",$00
+  dw $813F : db "---",$00
 DefDash:
-  dw $83a1 : db "---",$00
+  dw $823F : db "---",$00
 MDefDash:
-  dw $83bf : db "---",$00
+  dw $833F : db "---",$00
 EleResist:
   dw $7B8D : db "Resist:",$00
 EleAbsorb:
