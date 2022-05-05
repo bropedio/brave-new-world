@@ -556,6 +556,11 @@ org $C21124 : ORA $3A8F
 org $C21143 : BRA BypassMorphCalc
 org $C2114B : BypassMorphCalc:
 
+; -------------------------------------------------------------------------
+; Update ATB, check for "ATB Autofill"
+
+org $C211C3 : JSR CheckCantrip ; C: whether ATB filled/overflowed
+
 ; #########################################################################
 ; Process HP and MP Damage
 ;
@@ -1244,7 +1249,7 @@ StealFunction:
   BEQ failSteal   ; branch if ^ (fail)
   STA $2F35       ; save stolen item ID for message template
   STA $32F4,X     ; store in "Acquired Item"
-  LDA $3018,X     ; attacker bit
+  JSR SetCantrip  ; hook to set "ATB Autofill" flag
   TSB $3A8C       ; flag ^ to process reserve item at end of turn
   LDA #$FF        ; "null"
   STA $3308,Y     ; remove stealable item
@@ -1415,6 +1420,18 @@ PreDanceCmd:
 .exit
   JMP DanceCmd2    ; do Dance cmd w/o setting Dance status
 warnpc $C23C90+1
+
+; #########################################################################
+; Pep Up Routine (now freespace)
+; Helper for "ATB Autofill" flag, for Steal
+
+org $C23CB8
+SetCantrip:
+  LDA $3AA1,X      ; special state flags
+  ORA #$08         ; "ATB Autofill" (new flag)
+  STA $3AA1,X      ; update special state flags
+  LDA $3018,X      ; [displaced] attacker bit
+  RTS
 
 ; #########################################################################
 ; Special Effect (per-target) Jump Table [C23DCD]
@@ -2849,6 +2866,23 @@ calcMPCost:
   TDC
 .exitWithMP
   JMP $4F54         ; (clean up stack and exit)
+
+; -------------------------------------------------------------------------
+; Helper for ATB Autofill (for Quicksteal)
+
+org $C267B0
+CheckCantrip:
+  PHA               ; save A (new ATB value)
+  LDA $3AA1,X       ; special state flags
+  BIT #$0008        ; "ATB Autofill"
+  BEQ .exit         ; exit if no ^
+  AND #$FFF7        ; clear "ATB Autofill" flag
+  STA $3AA1,X       ; update special state flags
+  SEC               ; Set ATB to fill immediately
+.exit
+  PLA               ; restore A (new ATB value)
+  STA $3218,X       ; [displaced] save new ATB value
+  RTS
 
 ; #########################################################################
 ; Freespace
