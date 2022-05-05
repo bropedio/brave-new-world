@@ -1543,6 +1543,18 @@ BlowFish:
   JMP StoreDamage ; use end of Step Mine effect to store damage and RTS
 
 ; #########################################################################
+; North Cross Effect ($29)
+; One or two targets will be picked randomly
+
+org $C2414D
+  REP #$20        ; Set 16-bit A
+  LDA $A4         ; targets
+  PHA             ; store ^
+  JSR $522A       ; randomly pick an entity from among the targets
+  JMP NCross2     ; jump to second half of routine
+
+
+; #########################################################################
 ; Old Revenge Routine (now freespace)
 
 org $C241E6
@@ -2811,6 +2823,17 @@ condenseSpellLists:
   PLP                 ; restore flags
   PLX                 ; restore X (character slot index)
   JMP $532C           ; [displaced] modify commands
+
+; --------------------------------------------------------------------------
+
+org $C2661B
+NCross2:
+  STA $A4          ; Save new target
+  PLA              ; Get original targets again
+  JSR $522A        ; Pick one at random
+  TSB $A4          ; Save new target(s)
+  SEP #$20         ; Set 8-bit A
+  RTS
 
 ; --------------------------------------------------------------------------
 
