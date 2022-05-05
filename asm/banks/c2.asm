@@ -380,6 +380,7 @@ org $C20CB0 : JMP NewVariance ; hook for new vigor/stam-based variance
 OldVariance:                  ; [label] for jump back
 org $C20CBA : AfterVar:       ; [label] for after old variance handling
 org $C20CC9 : BNE IgnoreDef   ; Defense ignoring now still modified by Morph
+org $C20CE0 : LDA #$81        ; Set Golem's Defense to 128
 
 ; ------------------------------------------------------------------------
 ; Forces magic attacks to take defending targets into consideration
