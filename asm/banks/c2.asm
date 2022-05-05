@@ -1849,6 +1849,15 @@ pad $C25161
 warnpc $C25161+1
 
 ; #########################################################################
+; Probabilities for Side/Pincer/Back/Normal attacks
+
+org $C25279
+  db $20    ; Side attack (32/255)
+  db $20    ; Pincer (32/255)
+  db $20    ; Back attack (32/255)
+  db $9B    ; Normal (155/255)
+
+; #########################################################################
 ; Determine which menu commands are disabled
 ;
 ; Largely rewritten as part of Assassin's "Brushless Sketch" patch to
