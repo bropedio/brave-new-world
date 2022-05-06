@@ -1529,6 +1529,13 @@ org $C23FB7
 warnpc $C23FFC+1
 
 ; #########################################################################
+; Exploder Effect
+; Add a multiplier for Exploder when used by a player character
+; 1 Spell Power = +50% damage
+
+org $C23FFC : JSR ExploderHelp ; hook for exploder multiplier
+
+; #########################################################################
 ; Blowfish Effect
 ; Damage = Spell Power * 50
 
@@ -3300,6 +3307,21 @@ DmgCmdAliasMass:
 .exit
   JMP $629B          ; finish up
 warnpc $C2A800+1
+
+; #########################################################################
+; TODO: This is not freespace -- it is data. This helper should be
+; moved to actual freespace ASAP
+
+org $C2A8D2
+ExploderHelp:
+  TDC                ; zero A/B
+  CPY #$08           ; Check if monster
+  BCS .exit          ; branch if ^
+  LDA $11A6          ; else, use Spell Power as multiplier
+.exit
+  STA $BC            ; store multiplier (incrementer)
+  TYX                ; attacker index
+  RTS
 
 ; #########################################################################
 ; Status Text Tile Data
