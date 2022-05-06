@@ -56,6 +56,22 @@ org $D0C51D
   db $FF      ; End event
 
 ; -------------------------------------------------------------------------
+; Freespace
+; Helper for Sr. Behemoth Battle Event Script
+
+org $D0CF4A
+anim_script_025c:
+  db $00,$20                ; speed 1, align to center of character/monster
+  db $D1,$01                ; invalidate character/monster sprite priority
+  db $C7,$0B,$10,$14,$FF    ; SPC command $10, $14, $FF (play boss music)
+  db $89,$37                ; loop start (55 times)
+  db $80,$79                ; command $80/$79
+  db $0F                    ; [$0F]
+  db $8A                    ; loop end
+  db $80,$7B                ; command $80/$7B
+  db $FF                    ; end of script
+
+; -------------------------------------------------------------------------
 ; Related to Ziegfried's heart attack on the Phantom Train (battle event) [?]
 
 org $D0FE24 : db $FF,$FF,$FF,$FF,$FF

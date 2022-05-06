@@ -9,6 +9,14 @@ table vwf.tbl,rtl
 org $D1C649 : db $35,$07 ; Fixes Tritoch animation
 
 ; #########################################################################
+; Misc. Animation Script Data
+
+; -------------------------------------------------------------------------
+; Update Sr. Behemoth entry script to change battle music
+
+org $D1EF90 : dw anim_script_025c
+
+; #########################################################################
 ; Battle Message Pointers
 ;
 ; From dn's "Wrexsoul Fix" patch, which appears to have been added to
