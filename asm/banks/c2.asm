@@ -1804,9 +1804,9 @@ org $C24CE5 : JSR ShadowChk : NOP ; change Interceptor spell for Relm
 
 org $C24CFC : .counter
 org $C24D03
-  JSR $4B53         ; C: 50% chance to counter (75% in vanilla)
-  BCS .no_counter   ; branch ^
-  NOP #2            ; [unused]
+  JSR StamCounter    ; blackbelt counter algorithm
+  CMP $10            ; compare random() to Stamina + 32 (in scratch)
+  BCS .no_counter    ; exit if (0..128) was larger than (Stam + 32)
 
 ; #########################################################################
 ; Determine MP Cost of Spell
@@ -3027,6 +3027,19 @@ CheckCantrip:
 .exit
   PLA               ; restore A (new ATB value)
   STA $3218,X       ; [displaced] save new ATB value
+  RTS
+
+; -------------------------------------------------------------------------
+; Helper for Blackbelt Counter chance
+
+org $C267F2
+StamCounter:
+  LDA $3B40,X       ; Stamina
+  CLC               ; clear carry
+  ADC #$20          ; Stamina + 32
+  STA $10           ; store in scratch RAM ^
+  LDA #$81          ; 129
+  JSR $4B65         ; random(0..128)
   RTS
 
 ; #########################################################################
