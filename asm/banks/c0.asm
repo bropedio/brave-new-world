@@ -63,10 +63,12 @@ org $C04E33
 ; #########################################################################
 ; General Actions pointer updates
 ;
+; Action $66 now used to set character lvl to Max(lvl, 18)
 ; Action $67 is now used to reset ELs for current party
 ; Action $7F (Change Character Name) is optimized and shifted to make
 ; room for a fix to Action $8D (Unequip Character).
 
+org $C09926 : dw Level18
 org $C09928 : dw RespecELs
 org $C09958 : dw CharName
 
@@ -192,6 +194,28 @@ org $C0BE03
 
 ; #########################################################################
 ; Freespace
+
+; -------------------------------------------------------------------------
+; Helper for "Raise Lvl to 18" general action
+
+org $C0D613
+Level18:
+  LDA $1D4D        ; config settings
+  BIT #$08         ; "Experience On"
+  BEQ .exit        ; exit if not ^
+  JSR $9DAD        ; Y: charcter data offset
+  LDA $1608,Y      ; character Level
+  CMP #$12         ; >= 18
+  BCS .exit        ; exit if ^
+  DEC              ; Level index
+  STA $20          ; save ^ [for HP/MP routine]
+  STZ $21          ; zero   [for HP/MP routine]
+  LDA #$12         ; 18
+  STA $1608,Y      ; set level 18
+  JMP $9F4A        ; set new max HP/MP, learn natural spells
+.exit
+  LDA #$02         ; # params to skip
+  JMP $9B5C        ; done
 
 ; -------------------------------------------------------------------------
 ; Helper for Respec general action
