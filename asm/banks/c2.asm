@@ -570,6 +570,115 @@ org $C2114B : BypassMorphCalc:
 org $C211C3 : JSR CheckCantrip ; C: whether ATB filled/overflowed
 
 ; #########################################################################
+; Decrease Morph Timer (freespace)
+
+; #########################################################################
+; True Knight and Love Token
+; Changes the True Knight effect to trigger with a Stamina / 192 chance
+;   even if the target isn't in Near Fatal status.
+; Modify which statuses prevent cover.
+; Only allows back row targets for Stamina-based cover
+; Removes support for monster guards
+
+org $C2123B
+TrueKnight:
+  PHX                 ; store attacker index
+  LDA $B2             ; attack flags
+  BIT #$0002          ; "Ignore True Knight"
+  BNE .exit           ; exit if ^
+  LDA $B8             ; intended target (no True Knight for multi-target)
+  JMP SmartCover      ; jump to new helper
+.jmp
+  LDX #$12            ; iterator for all entities
+.loop
+  LDA $3C57,X         ; potential guard relic flags 3 ($3C58,X)
+  ASL #2              ; C: "True Knight"
+  BCC .next           ; branch if no ^
+  LDA $3018,X         ; potential guard bit
+  BIT $F0             ; check bodyguard pool
+  BEQ .next           ; branch if not in pool (on same team as target)
+  JSR EvalKnight      ; validate guard, use if HP higher than current guard
+.next
+  DEX #2              ; decrement entity index iterator
+  BPL .loop           ; check all characters and monsters
+  LDA $F2             ; valid (tentative) bodyguard's HP
+  BEQ .exit           ; exit if none ^
+  JSR Intercept       ; make bodyguard intercept attack
+.exit
+  PLX                 ; return attacker index
+  RTS
+
+Intercept:
+  LDX $F4             ; chosen bodyguard
+  BMI .exit           ; exit if no bodyguard (null)
+  CPY $F8             ; compare original target (Y) to current target ($F8)
+  BNE .exit           ; exit if target has already been replaced (love token)
+  STX $F8             ; update target to bodyguard's index
+  STY $A8             ; save original (covered) target for animation
+  LSR $A8             ; convert index for animation code (0..A)
+  LDA $3018,X         ; bodyguard bit
+  STA $B8             ; set bodyguard as new target
+  SEP #$20            ; 8-bit A
+  LDA $3AA1,X         ; bodyguard special state flags
+  BIT #$02            ; "Defending"
+  BEQ .noDef          ; exit if not ^
+  JSR $0A41           ; else, remove "Defending" flag
+  JSR $0A3C           ; and update sprite graphic
+.noDef
+  REP #$20            ; 16-bit A
+.exit
+  RTS
+
+EvalKnight:
+  LDA #$0020          ; "Back Row"
+  BIT $3AA1,X         ; check ^ guard's special state flags
+  BNE .exit           ; exit if guard ^
+  LDA $3EE5,Y         ; target status-2
+  LSR #2              ; C: "Near Fatal"
+  BCS .skip           ; branch to auto-cover if target ^
+  LDA $3AA1,Y         ; target's special state flags
+  BIT #$0020          ; "Back Row"
+  BEQ .exit           ; exit if target not ^
+  LDA $3EE5,X         ; guard status-2
+  LSR #2              ; "Near Fatal"
+  BCS .exit           ; exit if guard ^
+  SEP #$20            ; 8-bit A
+  LDA #$C0            ; 192
+  JSR $4B65           ; random(0..191)
+  CMP $3B40,X         ; greater than guard stamina (max 128)
+  REP #$20            ; 16-bit A
+  BCS .exit           ; exit if Stamina too low
+.skip                 ; Love Token enters here
+  LDA $3AA0,X         ; guard special state flags
+  LSR                 ; C: "Present and Alive"
+  BCC .exit           ; exit if not ^
+  LDA $3358,X         ; guard "Seized By" entity ($3359)
+  BPL .exit           ; exit if ^
+  LDA $336B,Y         ; target "Love Token Guard" ($336C)
+  BMI .noLove         ; branch if no ^
+  LDA $3EE4,X         ; guard status-1/status-2
+  BIT #$A0DA          ; "Death", "Petrify", "Clear", "Zombie", "Magitek"
+  BNE .exit           ; exit if any ^ > "Sleep", "Muddle"
+  BRA .love           ; else continue
+.noLove
+  LDA $3EE4,X         ; guard status-1/status-2
+  BIT #$B4DB          ; "Death", "Petrify", "Clear", "Zombie", "Magitek", "Dark",
+  BNE .exit           ; exit if any ^ > , "Sleep", "Muddle", "Berserk", "Image"
+.love
+  LDA $3EF8,X         ; guard status-3/status-4
+  BIT #$3211          ; "Dance", "Stop", "Freeze", "Chant", "Hide"
+  BNE .exit           ; exit if any ^
+  LDA $3018,X         ; guard bit
+  TSB $A6             ; set ^ "Jump in Front of Target" animation
+  LDA $3BF4,X         ; guard Current HP
+  CMP $F2             ; compare to current guard HP
+  BCC .exit           ; exit if lower than ^
+  STA $F2             ; save new guard HP
+  STX $F4             ; set new bodyguard
+.exit
+  RTS
+
+; #########################################################################
 ; Process HP and MP Damage
 ;
 ; Never set "Death" from HP depletion on bosses. Instead, all boss deaths
@@ -721,33 +830,41 @@ org $C22002 : CMP #$04 ; Vindictive Targeting Fix
 
 org $C22256 : JMP ReflectClear ; Handle reflect behavior
 
-org $C222D1 : Miss:   ; Code for missed attack
+; Disable Dog Block if attack was Covered
+org $C22282
+HitDetermine:
+  LDA $3EF9,Y         ; target status-4
+  ASL                 ; N: "Dog Block"
+  BPL .golem          ; branch if no ^
+  JSR SkipDogBlock    ; C: 50% chance dog block (if no cover)
+
+org $C22293 : .golem
+org $C222D1 : .miss   ; Code for missed attack
 
 org $C22306
-BlindPatch:
   JSR BlindHelp
   BRA .skip_ahead
-org $C22315
-.skip_ahead
+org $C22315 : .skip_ahead
 
 ; Terii Senshi evasion bugfix, with modification to Image removal
 org $C2232C
-  BEQ .no_img  ; Branch if the target does not have Image status
-  JSR $4B5A    ; random(255)
-  CMP #$56     ; 33% chance to clear Image status
-  BCS Miss     ; branch if not ^
-  LDA $3DFD,Y  ; status-to-clear-2
-  ORA #$04     ; add "Image"
-  STA $3DFD,Y  ; update status-to-clear-2
-  BRA Miss     ; branch to miss
+  BEQ .no_img       ; Branch if the target does not have Image status
+  JSR $4B5A         ; random(255)
+  CMP #$56          ; 33% chance to clear Image status
+  BCS .miss         ; branch if not ^
+  LDA $3DFD,Y       ; status-to-clear-2
+  ORA #$04          ; add "Image"
+  STA $3DFD,Y       ; update status-to-clear-2
+  BRA .miss         ; branch to miss
 warnpc $C2233F+1
 org $C2233F
 .magic_evd_fork
-  LDA $3B55,Y  ; 255 - (MBlock *2) + 1
-  PHA          ; store hitrate
-  BRA HitCalc  ; branch to calculate
+  LDA $3B55,Y       ; 255 - (MBlock *2) + 1
+  PHA               ; store hitrate
+  BRA HitCalc       ; branch to calculate
 .no_img
-  LDA $3B54,Y  ; Handled in sei_tank_n_spank.asm (TODO Integrate)
+  JSR HalveEvasion  ; get Evasion (halved in covering)
+
 warnpc $C22348+1
 org $C22348
   PHA          ; store hitrate
@@ -3448,6 +3565,98 @@ RunicCheck:
   TDC            ; zero A/B (subcommand, to be safe)
   RTS 
 warnpc $C2FACD+1
+
+; -------------------------------------------------------------------------
+; Smart Cover and Tank 'n Spank Helpers
+
+org $C2FAD0
+SmartCover:
+  BEQ .exit           ; exit if no intended targets (from $B8)
+  LDY #$FF            ; null
+  STY $F4             ; default to no bodyguards.
+  JSR $51F9           ; Y = index of our highest intended target
+  STY $F8             ; save target index
+  STZ $F2             ; highest bodyguard HP = 0
+  PHX                 ; store attacker index
+  LDX $336C,Y         ; Love Token - which target takes damage for you
+  BMI .noLove         ; branch if none ^
+  JSR EvalKnight_skip ; always consider Love Token target as a bodyguard
+  JSR Intercept       ; if it was valid, make it intercept the attack  
+.noLove
+  PLX                 ; restore attacker index
+  LDA $3A36           ; Golem HP
+  BNE .exit           ; exit if Golem is active
+  CPX #$08            ; attacker is a monster
+  BCS .status         ; branch if ^
+  CPX $F8             ; is attacker the target
+  BEQ .exit           ; exit if ^
+  LDA $3EE4,X         ; attacker status byte 1-2
+  BIT #$2002          ; "Muddle", "Zombie"
+  BNE .heals          ; branch if ^
+  LDA $3394,X         ; Charm - which entity charmed the attacker
+  BMI .exit           ; exit if not ^ (attack was initiated by player)
+.heals
+  LDA $11A9           ; special effect byte
+  AND #$00FF          ; isolate ^
+  CMP #$0018          ; "Curative Attributes" (eg. healing shiv)
+  BEQ .exit           ; exit if ^
+  SEP #$20            ; 8-bit A
+  LDA $11A1           ; attack element(s)
+  PHA                 ; store ^ on stack
+  XBA                 ; store ^ in B
+  PLA                 ; restore copy of elements
+  REP #$20            ; 16-bit A
+  AND $3BCC,Y         ; target absorbed/immune elements
+  BNE .exit           ; exit if any absorbed or nullified
+.status
+  LDA $3EE4,Y         ; target status byte 1-2
+  BIT #$04DA          ; "Death", "Petrify", "Clear", "Zombie", "Magitek", "Image"
+  BNE .exit           ; exit if ^
+.seize
+  LDA $3358,Y         ; $3359 = who is Seizing you
+  BPL .exit           ; exit if target is seized
+  LDA #$000F          ; load all characters as potential bodyguards        
+.cover
+  CPY #$08            ; target is monster
+  BCC .saveBg         ; branch if not ^
+  TDC                 ; zero A/B
+.saveBg
+  STA $F0             ; save potential bodyguards
+  LDA $3018,Y         ; target bit
+  ORA $3018,X         ; attacker bit
+  TRB $F0             ; remove attacker and target from bodyguard pool
+  JMP TrueKnight_jmp  ; jump back to resume in-place cover routine
+.exit
+  PLX                 ; restore attack index
+  RTS
+
+; -------------------------------------------------------------------------
+; Helper to halve evasion for bodyguards
+
+HalveEvasion:
+  CPY $F4             ; is target a bodyguard
+  BNE .exit           ; exit if not ^
+  LDA #$FF            ; 255
+  SEC                 ; set carry
+  SBC $3B54,Y         ; 255 - (255 - Evade * 2 + 1) [= Evade * 2 - 1]
+  INC                 ; Evade * 2
+  LSR                 ; Evade
+  LSR                 ; Evade / 2
+  JMP $2861           ; recompute blockvalue from halved Evade
+.exit
+  LDA $3B54,Y         ; use full evasion (255 - Evade * 2 + 1)
+  RTS
+
+; -------------------------------------------------------------------------
+; Helper to prevent Dog Block for bodyguards
+
+SkipDogBlock:
+  CPY $F4             ; is target a bodyguard
+  BNE .exit           ; exit if not ^
+  CLC                 ; else, clear carry (no dog block)
+  RTS
+.exit
+  JMP $4B53           ; carry: 50% chance of dog block
 
 ; -------------------------------------------------------------------------
 ; Poison status on-clear helper to reset damage incrementor
