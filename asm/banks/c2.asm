@@ -1183,6 +1183,11 @@ DmgQtr:
   RTS
 
 ; #########################################################################
+; Get Sketcher Level
+
+org $C22C25 : JSR SketchMag  ; Interrupting a check to look for a sketcher
+
+; #########################################################################k
 ; Load Monster Stats
 
 org $C22D30 : NOP #3    ; remove 1.5x spell power from enemies
@@ -2999,10 +3004,40 @@ NCross2:
   RTS
 
 ; --------------------------------------------------------------------------
+; Sketch Helpers
 
-org $C26642
-SketchChk:         ; function defined in sketch_fix.asm [?]
+org $C26631
+SketchMag:
+  BMI .exit        ; exit if no sketcher
+  TAX              ; else, index sketcher index
+  LDA $11A2        ; attack flags
+  LSR              ; C: "Physical"
+  LDA $3B41,X      ; sketcher's Magic Power
+  BCC .mag_atk     ; branch if not "Physical"
+  ASL              ; else, double to imitate Vigor (stored x2) 
+.mag_atk
+  STA $11AE        ; set damage stat
+.exit
+  RTS
 
+SketchChk:
+  BCS NoSketch2    ; branch if special attack or an attack with the left hand.
+SketchChk2:
+  LDA $3417        ; check "Sketcher"
+  BMI NoSketch2    ; exit if no ^
+  PHX              ; store sketcher index
+  TAX              ; index it
+  LDA $3B68,X      ; sketcher's Battle Power
+  PLX              ; restore X
+  BRA SketchMag_exit
+
+NoSketch2:
+  CMP #$06         ; is it a special attack?
+  BEQ SketchChk2   ; branch if ^
+  LDA $3B68,X      ; else load up the attacker's battle power
+  RTS
+
+; --------------------------------------------------------------------------
 ; Displaced due to original esper boost rewrite
 ; TODO: Look into moving back in-line after Bropedio change overwrites boosts
 org $C26659
