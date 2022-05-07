@@ -1603,6 +1603,41 @@ StoreDamage:
 ; #########################################################################
 ; Ogre Nix Effect (now freespace)
 
+; -------------------------------------------------------------------------
+; Shock Command Effect (moved here)
+; ((3 * ((Level * stamina) + current HP)) / 4) & [Attacker takes 1/8th MHP damage.]
+
+org $C23EDD
+Shock:
+  LDA $3B18,Y    ; attacker Level
+  XBA            ; set multiplier ^
+  LDA $3B40,Y    ; attacker Stamina
+  JSR $4781      ; Level * Stamina
+  REP #$20       ; 16-bit A
+  ADC $3BF4,Y    ; Level * Stamina + CurrentHP
+  STA $11B0      ; set damage ^
+  ASL            ; x2
+  ADC $11B0      ; x3
+  LSR            ; x3/2
+  LSR            ; x3/4
+  STA $11B0      ; 3/4 * (Level * Stamina + CurrentHP)
+  LDA $3C1C,Y    ; attacker MaxHP
+  LSR
+  LSR
+  LSR            ; MaxHP / 8
+  PHA            ; store on stack
+  LDA $3BF4,Y    ; attacker CurrentHP
+  SEC            ; set carry
+  SBC $01,S      ; Current HP - (Max HP / 8)
+  STA $3BF4,Y    ; update CurrentHP ^
+  BCS .exit      ; branch if not dead
+  JSR $1390      ; attacker takes lethal damage
+.exit
+  PLA            ; clear stack
+  RTS
+
+; -------------------------------------------------------------------------
+
 org $C23F25
 MPCrit:
   LDA $B2          ; special attack flags
@@ -1777,6 +1812,7 @@ org $C242EF : dw MPCrit    ; MP Criticals additional hook
 org $C24315 : dw BlowFish  ; Effect $1A - Blow Fish
 org $C2432B : dw GroundDmg ; Effect $25 - Quake
 org $C24341 : dw $3E8A     ; Remove random targeting from Suplex effect
+org $C24367 : dw Shock     ; Shock formula
 org $C24383 : dw CoinToss  ; Effect $51 ($C33FB7 now unused)
 
 ; #########################################################################
@@ -2090,7 +2126,7 @@ DisableCommands:
   RTS 
 
 ModifyCmds:
-  db $03    ; Morph
+  db $1B    ; Shock (used to be Morph)
   db $0D    ; Sketch
   db $0B    ; Runic
   db $07    ; SwdTech
@@ -2101,7 +2137,7 @@ ModifyCmds:
   db $00    ; Fight
 
 CmdModify:
-  dw $5326  ; Morph
+  dw $5322  ; Shock (used to be Morph)
   dw $52FD  ; Sketch
   dw $5322  ; Runic
   dw $531D  ; SwdTech
@@ -2134,6 +2170,7 @@ org $C25301
 
 ; #########################################################################
 ; Morph Command Disabling
+; No longer needed at all, since Shock replaced Morph above
 
 org $C25326 : CLC : RTS ; never disable
 

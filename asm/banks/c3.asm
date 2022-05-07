@@ -539,7 +539,7 @@ CmdListB:
   JSR $612C          ; check blanked commands (Magic/Morph/Leap/etc)
   BMI .blank         ; branch if ^
 .skip
-  JSR CmdPalette     ; pick a palette
+  JSR Grey_Shock     ; pick a palette, handle Shock palette, too 
   STA $E2            ; save command number
   ASL                ; x2
   CLC : ADC $E2      ; x3
@@ -564,10 +564,11 @@ CmdListB:
   LDA #$FF           ; space character
   SEC                ; set carry (indicates null-cmd)
   BRA .init_loop     ; write 7 spaces
+  PHA                ; store command ID ; TODO: Remove unused byte
 CmdPalette:
-  PHA                ; store command ID
   CMP #$0B           ; "Runic"
   BNE .bushido       ; branch if not ^
+.runic
   LDA $11DA          ; right hand properties
   ORA $11DB          ; left hand properties
   BPL .gray          ; branch if no Runic support
@@ -670,6 +671,17 @@ Long6172:
   JSR $6172      ; Access to existing relic cmd changes (from C2)
   RTL
 warnpc $C3612C+1
+
+; #########################################################################
+; Relic Effects
+
+; -------------------------------------------------------------------------
+; Force-enable Shock for escape from Floating Continent
+org $C36176 : JSR Shock_Chk
+; Replaces Runic with Shock if Leo's Crest is equipped
+org $C3619A : db $0B ; Runic
+; Commands to upgrade above due to Relics
+org $C3619F : db $1B ; Shock
 
 ; #########################################################################
 ; Menu Label Changes (part 1)
@@ -1298,6 +1310,28 @@ GetItemOffset:
   LDA $D8500C,X       ; selected weapon properties (special byte 3)
   AND #$18            ; isolate "Genji Glove" and "Gauntlet"
   RTS
+
+; ------------------------------------------------------------------------
+; Helpers for Shock Command
+
+org $C3F17C
+Shock_Chk:
+  LDA $1E9C             ; event byte (0E0 - 0E7) - Unused bits
+  BIT #$10              ; bit 0E4 - "FC Escape Sequence"
+  BEQ .end              ; exit if clear ^
+  LDA #$10              ; "Runic -> Shock"
+  TSB $11D6             ; set relic effect ^
+.end
+  LDA $11D6             ; [displaced] get relic effects
+  RTS
+  
+Grey_Shock:
+  PHA                   ; store command ID
+  CMP #$1B              ; "Shock"
+  BNE .next             ; branch if not ^
+  JMP CmdPalette_runic  ; else, use Runic disable code
+.next
+  JMP CmdPalette        ; check Runic
 
 ; ------------------------------------------------------------------------
 ; Helper for field item usage target validation
