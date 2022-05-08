@@ -115,6 +115,11 @@ org $C33411 : dw $3E25
 
 
 ; #########################################################################
+; Positioned Text for Main Menu
+
+org $C33819 : db "GP" ; instead of Gp
+
+; #########################################################################
 ; Config Menu Initialize
 
 org $C33867
@@ -531,6 +536,7 @@ org $C35CE2
   SPLabel:    dw $47B1 : db "SP ",$00
   LearnLabel: dw $4437 : db "Learn",$00
   SPMax:      dw $47BB : db "/30",$00
+              db $00   : db " EL Bonus:    "
 
 ; #########################################################################
 ; Draw command names based on availability
