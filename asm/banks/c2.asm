@@ -293,17 +293,43 @@ org $C209C8 : ADC #$0A ; add 10 instead of 20
 ; ########################################################################
 ; ATB Multipliers (slow/haste/normal)
 
-; ATB multiplier changes - now handled in speed.asm
-;org $C209D4 : db #$3C ; Slow
-;org $C209DD : db #$4B ; Normal
-;org $C209E3 : db #$5A ; Haste
-; End ATB multiplier changes
-
-;org $C209F3 ; Also now handled in speed.asm
-;  ADC #$14 ; add the constant speed bonus (+20)
-;  XBA
-;  BRA Label1 ; skip some unused code
-;org $C20A00 : Label1:
+org $C209D2
+ATBMultipliers:
+  PHP             ; store flags
+  LDY #$3C        ; multiplier 60 if slowed
+  LDA $3EF8,X     ; status-3
+  BIT #$04        ; "Slow"
+  BNE .set_mult   ; branch if ^
+  LDY #$4B        ; multiplier 75 normally
+  BIT #$08        ; "Haste"
+  BEQ .set_mult   ; branch if not ^
+  LDY #$5A        ; multiplier 90 if hasted
+.set_mult
+  TYA             ; ATB multiplier
+  STA $3ADD,X     ; save ^
+  PHA             ; store ^
+  CPX #$08        ; monster entity
+  BCC .character  ; branch if not ^
+  LSR             ; multiplier / 2
+  CLC             ; clear carry
+  ADC $01,S       ; multiplier * 1.5
+  STA $01,S       ; set ^
+  LDA #$14        ; monster speed bonus (20)
+  CLC             ; clear carry
+  BRA .add_speed  ; branch
+.character
+  LDA #$33        ; character speed bonus (51)
+.add_speed
+  ADC $3B19,X     ; add entity speed
+  XBA             ; store ^ plus bonus in B
+  PLA             ; multiplier (*1.5 for monsters)
+  JSR $4781       ; multiplier * (Speed + bonus)
+  REP #$20        ; 16-bit A
+  LSR #4          ; multiplier * (Speed + bonus) / 16
+  STA $3AC8,X     ; save ATB increment size
+  PLP             ; restore flags
+  NOP #2          ; 2 bytes padding
+  RTS
 
 ; ########################################################################
 ; SOS Equipment Activations
@@ -3646,7 +3672,7 @@ org $C2ADE1
 
 ; Disables 7-7-Bar results
 ; 12 bytes freed up at $C2B4B2
-org $C2B4AF	: LDA #$07 : RTL
+org $C2B4AF : LDA #$07 : RTL
 
 ; #########################################################################
 ; RNG
