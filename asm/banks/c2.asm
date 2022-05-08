@@ -867,14 +867,36 @@ org $C22256 : JMP ReflectClear ; Handle reflect behavior
 
 ; Disable Dog Block if attack was Covered
 org $C22282
-HitDetermine:
+HitMiss:
   LDA $3EF9,Y         ; target status-4
   ASL                 ; N: "Dog Block"
   BPL .golem          ; branch if no ^
   JSR SkipDogBlock    ; C: 50% chance dog block (if no cover)
 
 org $C22293 : .golem
-org $C222D1 : .miss   ; Code for missed attack
+
+org $C222A8           ; replace the old L? spells handling
+  BIT #$10            ; "Stamina Evasion"
+  BEQ EvadeChk        ; branch if not ^
+  JSR StamEvd         ; else, run the stamina check
+  BCS .dodge          ; branch if stam check succeeded
+  BRA EvadeChk        ; else branch to normal hit determination
+
+org $C222B5 : .dodge
+org $C222D1 : .miss
+
+org $C222EC
+StamTest:
+  LDA $11A7           ; special attack byte 3
+  BIT #$04            ; "Stamina Attack"
+  BEQ NoStam          ; branch if not ^
+  LDA $3B40,X         ; else load Stamina
+  RTS
+NoStam:
+  LDA $3B41,X         ; Magic Power
+  RTS
+
+org $C222FB : EvadeChk:
 
 org $C22306
   JSR BlindHelp
@@ -886,11 +908,11 @@ org $C2232C
   BEQ .no_img       ; Branch if the target does not have Image status
   JSR $4B5A         ; random(255)
   CMP #$56          ; 33% chance to clear Image status
-  BCS .miss         ; branch if not ^
+  BCS HitMiss_miss  ; branch if not ^
   LDA $3DFD,Y       ; status-to-clear-2
   ORA #$04          ; add "Image"
   STA $3DFD,Y       ; update status-to-clear-2
-  BRA .miss         ; branch to miss
+  BRA HitMiss_miss  ; branch to miss
 warnpc $C2233F+1
 org $C2233F
 .magic_evd_fork
@@ -1066,6 +1088,15 @@ org $C22883 : NoMog:
 org $C228C1 : JSR GauRageStatuses2
 
 ; #########################################################################
+; Load Magic/Vigor/Stamina Stat and Level
+
+org $C22955
+  LDA $3B2C,X     ; Vigor * 2
+  BCS Phys_Atk    ; branch if physical attack (carry set earlier)
+  JSR StamTest    ; else, check to see if it should be stamina-based
+Phys_Atk:
+
+; #########################################################################
 ; Load Weapon Properties
 ;
 ; Synchysi's Atma Weapon patch modifies the special effect handling
@@ -1225,6 +1256,15 @@ org $C22C25 : JSR SketchMag  ; Interrupting a check to look for a sketcher
 ; #########################################################################k
 ; Load Monster Stats
 
+org $C22CE9
+MonsterStamina:
+  NOP
+  CMP #$20        ; compares monster maxHP hibyte to 32
+  BCC .add        ; branch if less than 31
+  LDA #$1E        ; else, set stamina equal to 30
+.add
+  ADC #$01        ; Add 1 to stamina (or 2 if the carry is set from above)
+
 org $C22D30 : NOP #3    ; remove 1.5x spell power from enemies
 org $C22D65 : ADC #$18  ; Add 24 to enemy's vigor, giving them a range of 24-30
 
@@ -1291,6 +1331,7 @@ org $C23225 : SkipImpMute:
 ; #########################################################################
 ; Combat Routine
 
+org $C2334B : JSR SpecialAttStam    ; handle enemy special attacks stamina flag
 org $C2336B : NOP #2                ; remove second INC $BC from morph (+50%)
 org $C23392
   LDA $11A7                         ; Special byte 3
@@ -2849,6 +2890,17 @@ Update_Stat:
   RTS
 
 ; #########################################################################
+; Sabin Learning Blitzes at Level-up (moved elsewhere by EL rewrite)
+; Now freespace
+
+org $C261E9
+StamSpecial:      ; helper for monster special status attacks
+  STA $11AA,X     ; [displaced] set attack status byte
+  LDA #$10        ; "Stamina Evade"
+  TSB $11A4       ; set ^ attack flag
+  RTS
+
+; #########################################################################
 ; Add Experience after Battle
 
 ; Interrupt leveling routine to calculate EP
@@ -3215,6 +3267,21 @@ BlindHelp:
   RTS
 
 ; -------------------------------------------------------------------------
+; Helpers for Enemy Special status attacks
+
+org $C26761
+SpecialAttStam:
+  PHA             ; store special attack status byte
+  BIT #$80        ; "Death" (BUG: or "Sleep", others)
+  BEQ .exit       ; branch if not ^
+  LDA #$02        ; "Miss if Death Protection"
+  TSB $11A2       ; set ^ attack flag
+.exit
+  PLA             ; restore attack status byte
+  JSR StamSpecial ; set "Stamina" flag if ^
+  RTS
+
+; -------------------------------------------------------------------------
 ; Helpers for condensed spell list hack
 
 org $C26770         ; 64 bytes needed, used through $C2FAEF
@@ -3277,6 +3344,37 @@ CheckCantrip:
 .exit
   PLA               ; restore A (new ATB value)
   STA $3218,X       ; [displaced] save new ATB value
+  RTS
+
+; -------------------------------------------------------------------------
+; Helper for Stamina Evasion
+
+org $C267C5
+StamEvd:
+  JSR $4B5A       ; random(0..255)
+  AND #$7F        ; random(0..127)
+  STA $EE         ; save ^
+  LDA $3B40,Y     ; target's stamina
+  CMP $EE         ; >= random(0..127)
+  BCC .exit       ; exit if not ^
+  LDA $11A6       ; attack power
+  BEQ .miss       ; miss if no ^ (and Stamina evade)
+  LDA $11A4       ; attack flags
+  AND #$84        ; "Fractional", "Redirection"
+  BNE .miss       ; miss if ^ (and Stamina evade)
+  LDA $11A3       ; attack flags
+  AND #$80        ; "MP Damage"
+  BNE .miss       ; miss if ^ (and Stamina evade)
+  LDX #$03        ; else, strip statuses off the attack (BUG)
+.loop
+  STZ $11AA,X     ; clear status attack byte
+  DEX             ; next status byte index
+  BPL .loop       ; clear all 4 status bytes
+  CLC             ; clear carry to direct through regular hit evasion
+  RTS
+.miss
+  SEC             ; C: attack misses completely
+.exit
   RTS
 
 ; -------------------------------------------------------------------------
