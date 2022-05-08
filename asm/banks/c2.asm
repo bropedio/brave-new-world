@@ -2515,6 +2515,13 @@ warnpc $C2546E+1
 ; ########################################################################
 ; Construct Magic and Lore Menus
 
+org $C255BD : CMP #$19       ; extend "Black Magic" range by 1 (incl. Stone)
+
+org $C2574B ; Spell placement for battle menu
+  db $09,$1D,$00,$00,$1D,$14 ; Black magic (adj for more new Black spell)
+  db $09,$F0,$00,$09,$E7,$E7 ; Grey magic (adj for more new Black spell)
+  db $D3,$D3,$00,$EC,$E7,$00 ; White magic (adj for more new Black spell)
+
 org $C257B0 : BRA NoImpDis   ; skip Imp check for disabling spells in list
 org $C257BB : NoImpDis:      ; label for above ^
 

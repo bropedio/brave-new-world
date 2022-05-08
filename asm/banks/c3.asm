@@ -296,6 +296,18 @@ org $C34CC0 : NOP #6 ; skip drawing "title box" window
 org $C34D8C : NOP #6 ; skip drawing "MP" label
 org $C34EEA : JSR EL_Skill  ; draw EL in skills display
 org $C34F12 : db $35,$42 ; make room for EL display
+
+; Data table for magic order in menus
+org $C34F49
+  db $2D,$00,$19,$FF
+  db $2D,$19,$00,$FF
+  db $00,$19,$2D,$FF
+  db $00,$2D,$19,$FF
+  db $19,$2D,$00,$FF
+  db $19,$00,$2D,$FF
+
+org $C34F69 : LDX #$0014 ; the number of grey magic spells
+org $C34F6E : LDX #$0019 ; the number of black magic spells
 org $C34FAC : LDX #$0011 ; increase space between spell list columns (was $10)
 
 ; #########################################################################
