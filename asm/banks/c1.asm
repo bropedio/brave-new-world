@@ -127,6 +127,18 @@ org $C17D25 : NOP #3 ; [?]
 org $C17D8A : JSR SwdTechMeter ; add handling for bushido meter scroll
 
 ; ########################################################################
+; Slots Battle Menu
+; De-rigs the slots
+
+org $C1806D
+SlotsBatMenu:
+  BRA .r2_rig
+org $C18089 : .r2_rig
+org $C180A6
+  BRA .r3_rig
+org $C180D7 : .r3_rig
+
+; ########################################################################
 ; Lore Battle Menu
 
 org $C18336 : CMP #$0C    ; lore menu length - 4 (x2)

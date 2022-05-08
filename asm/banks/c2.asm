@@ -695,6 +695,15 @@ org $C215D1 : NOP #2   ; Enable desperation attacks at any time (nATB)
 org $C21624 : LDA #$03 ; reduce Offering hits from 4 to 2
 
 ; #########################################################################
+; Slot (command)
+
+; Detaches Joker Doom (now Jackpot) from Dispatch's spell slot
+org $C2172C
+SlotCmd:
+  BRA .skip      ; skip check for Jokerdoom
+org $C21734 : .skip
+
+; #########################################################################
 ; Dance (command)
 
 org $C2177D : DanceCmd:       ; [label] for Moogle Charm entrypoint 1
@@ -1301,6 +1310,11 @@ org $C235E9 : JSL InitAttackVars ; hook to track more counterattack vars
 org $C23651 : JSR RandomCast : NOP #2 ; add hook for better procrate
 
 ; #########################################################################
+; Prepare Attack Name to Display
+
+org $C236D2 : dw $3687 ; JokerDoom hook (was $36A6 - now freespace)
+
+; #########################################################################
 ; Increment Damage Function ($BC)
 ; Rewritten to allow damage increments with defense-ignoring attacks
 
@@ -1330,6 +1344,17 @@ IncDmgFunc:
   STY $BC         ; zero increment count
 .exit
   PLY             ; restore Y
+  RTS
+
+; #########################################################################
+; Pick Random Esper
+; Adds Odin and Raiden to Bar-Bar-Bar results, and removes Phoenix
+
+org $C237DC
+  LDA #$1A        ; increase range of espers to choose from
+  JSR $4B65       ; select random esper from range
+  CLC             ; clear carry
+  ADC #$36        ; add offset to esper spells
   RTS
 
 ; #########################################################################
@@ -1965,6 +1990,16 @@ org $C24D03
   JSR StamCounter    ; blackbelt counter algorithm
   CMP $10            ; compare random() to Stamina + 32 (in scratch)
   BCS .no_counter    ; exit if (0..128) was larger than (Stam + 32)
+
+; #########################################################################
+; Various setup for player-confirmed commands
+
+; Detaches Joker Doom (now Jackpot) from Dispatch's spell slot
+org $C24DBF
+PlayerCmdSetup:
+  BRA .check_bar         ; skip check for Joker Doom (now freespace)
+org $C24DD2 : .check_bar
+org $C24E4A : db $97,$97 ; change both Joken Doom spell IDs
 
 ; #########################################################################
 ; Determine MP Cost of Spell
@@ -3511,6 +3546,71 @@ DmgCmdAliasMass:
 warnpc $C2A800+1
 
 ; #########################################################################
+; Slot Reel Layout
+; Modified to be consistent for de-rigged slots
+
+!slot_seven = $0000
+!slot_bahamut = $0001
+!slot_bar = $0002
+!slot_blackjack = $0003
+!slot_chocobo = $0004
+!slot_diamond = $0005
+
+; Reel 1
+dw !slot_seven
+dw !slot_bar
+dw !slot_chocobo
+dw !slot_chocobo
+dw !slot_chocobo
+dw !slot_bar
+dw !slot_bar
+dw !slot_diamond
+dw !slot_diamond
+dw !slot_diamond
+dw !slot_bar
+dw !slot_bar
+dw !slot_blackjack
+dw !slot_blackjack
+dw !slot_blackjack
+dw !slot_bar
+
+; Reel 2
+dw !slot_seven
+dw !slot_bar
+dw !slot_blackjack
+dw !slot_blackjack
+dw !slot_blackjack
+dw !slot_bar
+dw !slot_bar
+dw !slot_chocobo
+dw !slot_chocobo
+dw !slot_chocobo
+dw !slot_bar
+dw !slot_bar
+dw !slot_diamond
+dw !slot_diamond
+dw !slot_diamond
+dw !slot_bar
+
+; Reel 3
+dw !slot_seven
+dw !slot_bar
+dw !slot_diamond
+dw !slot_diamond
+dw !slot_diamond
+dw !slot_bar
+dw !slot_bar
+dw !slot_blackjack
+dw !slot_blackjack
+dw !slot_blackjack
+dw !slot_bar
+dw !slot_bar
+dw !slot_chocobo
+dw !slot_chocobo
+dw !slot_chocobo
+dw !slot_bar
+
+; #########################################################################
 ; TODO: This is not freespace -- it is data. This helper should be
 ; moved to actual freespace ASAP
 
@@ -3540,6 +3640,13 @@ org $C2ADE1
   db $82,$87,$84,$80,$93,$84,$91,$FF,$FF,$FF    ; Sap, Regen
   db $24,$25,$FF,$20,$26,$27,$28,$FF,$FF,$FF    ; Sap, Rerise
   db $82,$87,$84,$80,$93,$84,$91,$FF,$FF,$FF    ; Sap, Rerise, Regen
+
+; #########################################################################
+; Slot Attack Selection based on Reels
+
+; Disables 7-7-Bar results
+; 12 bytes freed up at $C2B4B2
+org $C2B4AF	: LDA #$07 : RTL
 
 ; #########################################################################
 ; RNG
