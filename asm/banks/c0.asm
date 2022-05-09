@@ -33,12 +33,10 @@ warnpc $C04978+1
 
 ; #########################################################################
 ; Movement Helpers (Auto-Dash)
-;
-; Modified by Synchysi's handling of auto-sprint shoes. Note that freespace
-; at $C04A67 is used, replacing now-unused Tintinabar effect handling.
 
-org $C04A67
-Dash:
+org $C04A65 : BRA C04A93 ; skip tintinabar effect (now freespace)
+
+Dash:            ; Helper for auto-sprint shoes
   LDA $4219      ; controller 1 input-2
   ROL            ; C: "Pressing B"
   LDA $1D4E      ; config option flags
@@ -51,6 +49,8 @@ Dash:
   SEC            ; ^
 .exit
   RTS
+
+org $C04A93 : C04A93:
 
 org $C04E28
 MovementSpeed:
