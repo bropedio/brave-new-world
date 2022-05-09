@@ -1684,6 +1684,15 @@ SetCantrip:
   RTS
 
 ; #########################################################################
+; Metamorph Chance (unused in BNW, so now freespace)
+
+org $C23DC5
+SetIgnDef:
+  LDA #$20         ; "Ignore Defense"
+  TSB $11A2        ; set flag ^
+  RTS
+
+; #########################################################################
 ; Special Effect (per-target) Jump Table [C23DCD]
 
 org $C23E11 : dw NewLife  ; Effect $22 - Life (was Stone)
@@ -1905,6 +1914,7 @@ warnpc $C242C6+1
 ; #########################################################################
 ; Special Effect (per-strike) Jump Table [C242E1]
 
+org $C242EB : dw SetIgnDef ; Defense Ignoring weapon
 org $C242EF : dw MPCrit    ; MP Criticals additional hook
 org $C24315 : dw BlowFish  ; Effect $1A - Blow Fish
 org $C2432B : dw GroundDmg ; Effect $25 - Quake
