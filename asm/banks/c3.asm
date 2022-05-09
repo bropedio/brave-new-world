@@ -88,6 +88,11 @@ org $C32341
 org $c32806 : NOP #3 ; skip drawing MP cost
 
 ; #########################################################################
+; Draw Esper
+
+org $C32937 : JMP DrawEsperHook ; include esper equip bonuses
+
+; #########################################################################
 ; Field Spell Usage
 
 org $C32C32 : CMP #$29 ; update spell ID for float (allow field usage)
@@ -1772,6 +1777,15 @@ Unspent_EL:
   JSR $7FD9         ; draw string from WRAM buffer
   LDY #$470F        ; next tilemap position (shifted left 2 spaces)
   RTS
+
+; ---------------------------------------------------------
+; Esper Equip Bonus Drawing helper
+
+org $C3F43B
+DrawEsperHook:
+  JSR $9110         ; Recalculate numbers
+  JSR $4EED         ; Properly update display
+  JMP $4F08         ; draw esper name [?]
 
 ; ---------------------------------------------------------
 ; Handle in-battle gauge mode toggle via Select button

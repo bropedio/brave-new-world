@@ -257,6 +257,137 @@ RespecELs:
   JMP $9B5C        ; [unused] TODO Remove this
 
 ; -------------------------------------------------------------------------
+; Esper Junctions (Equip Bonuses)
+; TODO: Could save lots of space by converting data to script
+;       eg. [op][arg], so Ramuh could be [elem_op][$04]
+
+; Immunity 1    Immunity 2       Status 1      Special           Elem-half
+; $80: Death    $80: Sleep       $80: Reflect  $80: MP +12.5%    $80: Water
+; $40: Petrify  $40: Seizure     $40: Safe     $40: MP +50%      $40: Earth
+; $20: Imp      $20: Muddle      $20: Shell    $20: MP +25%      $20: Pearl
+; $10: Clear    $10: Berserk     $10: Stop     $10: HP +12.5%    $10: Wind
+; $08: MagiTek  $08: Mute        $08: Haste    $08: HP +50%      $08: Poison
+; $04: Poison   $04: Image       $04: Slow     $04: HP +25%      $04: Bolt
+; $02: Zombie   $02: Near Fatal  $02: Regen    $02: MDamage +25% $02: Ice
+; $01: Dark     $01: Condemned   $01: Float    $01: PDamage +25% $01: Fire
+
+; Speed/Vigor   Magic/Stamina    Defense       MDef              Mblock/Evade
+; $x0: Speed    $x0: Magic       $xx: Defense  $xx: Mdef         $x0: Mblock
+; $x0: Speed    $x0: Magic       $xx: Defense  $xx: Mdef         $x0: Mblock
+; $x0: Speed    $x0: Magic       $xx: Defense  $xx: Mdef         $x0: Mblock
+; $x0: Speed    $x0: Magic       $xx: Defense  $xx: Mdef         $x0: Mblock
+; $0x: Vigor    $0x: Stamina     $xx: Defense  $xx: Mdef         $0x: Evade
+; $0x: Vigor    $0x: Stamina     $xx: Defense  $xx: Mdef         $0x: Evade
+; $0x: Vigor    $0x: Stamina     $xx: Defense  $xx: Mdef         $0x: Evade
+; $0x: Vigor    $0x: Stamina     $xx: Defense  $xx: Mdef         $0x: Evade
+
+org $C0D690
+  db $00                  ; Ramuh: Status immunity 1
+  db $00                  ; Ramuh: Status immunity 2
+  db $00                  ; Ramuh: Innate status
+  db $00                  ; Ramuh: Damage & HP%/MP% bonuses
+  db $04                  ; Ramuh: Elemental resistance
+  db $00                  ; Ramuh: Speed & Vigor
+  db $00                  ; Ramuh: Magic & Stamina
+  db $00                  ; Ramuh: Defense
+  db $00                  ; Ramuh: Magic Defense
+  db $00                  ; Ramuh: M.Block & Evade
+
+  db $00,$00,$00,$00,$01,$00,$00,$00,$00,$00    ; Ifrit
+  db $00,$00,$00,$00,$02,$00,$00,$00,$00,$00    ; Shiva
+  db $01,$28,$00,$00,$00,$00,$00,$00,$00,$00    ; Siren
+  db $00,$00,$00,$00,$40,$00,$00,$00,$00,$00    ; Terrato
+  db $00,$00,$00,$00,$00,$00,$05,$00,$00,$00    ; Shoat
+  db $00,$00,$00,$00,$10,$00,$00,$00,$00,$00    ; Maduin
+  db $00,$00,$00,$00,$80,$00,$00,$00,$00,$00    ; Bismark
+  db $24,$10,$00,$00,$00,$00,$00,$00,$00,$00    ; Stray
+  db $00,$00,$08,$00,$00,$00,$00,$00,$00,$00    ; Palidor
+  db $00,$00,$20,$00,$00,$00,$00,$00,$00,$00    ; Tritoch
+  db $00,$00,$00,$00,$00,$50,$00,$00,$00,$00    ; Odin
+  db $00,$00,$00,$00,$00,$00,$00,$00,$00,$00    ; Raiden
+  db $00,$00,$40,$00,$00,$00,$00,$00,$00,$00    ; Bahamut
+  db $00,$00,$80,$00,$00,$00,$00,$00,$00,$00    ; Crusader
+  db $00,$00,$00,$02,$00,$00,$00,$00,$00,$00    ; Ragnarok
+  db $00,$00,$00,$01,$00,$00,$00,$00,$00,$00    ; Alexandr
+  db $00,$00,$00,$00,$00,$00,$50,$00,$00,$00    ; Kirin
+  db $00,$00,$00,$00,$00,$00,$00,$00,$0A,$00    ; Zoneseek
+  db $00,$00,$02,$00,$00,$00,$00,$00,$00,$00    ; Carbunkl
+  db $00,$00,$00,$00,$00,$00,$00,$00,$00,$A0    ; Phantom
+  db $C0,$80,$00,$00,$00,$00,$00,$00,$00,$00    ; Seraph
+  db $00,$00,$00,$00,$00,$00,$00,$0A,$00,$00    ; Golem
+  db $00,$00,$00,$00,$00,$05,$00,$00,$00,$00    ; Unicorn
+  db $00,$00,$00,$00,$00,$00,$00,$00,$00,$0A    ; Fenrir
+  db $00,$00,$00,$20,$00,$00,$00,$00,$00,$00    ; Starlet
+  db $00,$00,$00,$04,$00,$00,$00,$00,$00,$00    ; Phoenix
+
+; -------------------------------------------------------------------------
+; Esper Equip Bonus application
+
+org $C0D79E
+EsperBonuses:
+  LDA $15FB,X       ; equipped esper
+  BPL .chk_bonus    ; branch if not null ^
+  JMP .finish       ; else, exit/finish
+.chk_bonus
+  XBA               ; store esper index
+  LDA #$0A          ; size of esper item block
+  REP #$20          ; 16-bit A
+  STA $004202       ; set multiplication register
+  PHX               ; store X
+  PHY               ; store Y
+  NOP               ; wait for multiplication
+  LDA $004216       ; esper data offset
+  TAX               ; index it ^
+  LDA $C0D690,X     ; Status protection
+  TSB $11D2         ; add to equipment status protection
+  LDA $C0D692,X     ; Innate statuses and percent bonuses
+  TSB $11D4         ; add to equipment innate statuses/etc
+  LDA $C0D695,X     ; Stat bonuses
+  LDY #$0006        ; stat iterator (4 stats)
+.loop
+  PHA               ; store stat bonuses
+  AND #$000F        ; buttom nibble
+  CLC               ; clear carry
+  ADC $11A0,Y       ; add to equipment stat bonus byte
+  STA $11A0,Y       ; update ^
+  PLA               ; restore stat bonuses
+  LSR #4            ; shift next stat into place
+  DEY #2            ; decrement iterator
+  BPL .loop         ; loop through all 4 core stats
+  SEP #$20          ; 8-bit A
+  LDA $C0D699,X     ; Evade & Mblock
+  PHA               ; store ^
+  AND #$0F          ; bottom nibble TODO: Missing CLC
+  ADC $11A8         ; add to equipment Evade stat
+  STA $11A8         ; update ^
+  PLA               ; restore Evade/MBlock
+  LSR #4            ; shift MBlock into place
+  AND #$0F          ; get MBlock TODO: Unnecessary AND, missing CLC
+  ADC $11AA         ; add to equipment MBlock stat
+  STA $11AA         ; update ^
+  LDA $C0D694,X     ; Elemental resistances
+  TSB $11B9         ; add to equipment resistances
+  LDA $C0D697,X     ; Defense TODO: Missing CLC, but probably no bug
+  ADC $11BA         ; add to equipment defense
+  BCC .noCap1       ; branch if no overflow
+  LDA #$FF          ; else use max 255
+.noCap1
+  STA $11BA         ; update equipment defense
+  LDA $C0D698,X     ; M.Def TODO: Missing CLC
+  ADC $11BB         ; add to equipment M.Def
+  BCC .noCap2       ; branch if no overflow
+  LDA #$FF          ; else use max 255
+.noCap2
+  STA $11BB         ; update equipment M.Def
+  PLY               ; restore Y
+  PLX               ; restore X
+.finish
+  LDA $15ED,X       ; [displaced] MaxMP hibyte
+  AND #$3F          ; [displaced] mask +% effects
+  RTL
+
+; -------------------------------------------------------------------------
+
 org $C0DE5E
 SetMPDmgFlag:
   ORA #$01           ; [moved] Add "enable dmg numeral" flag

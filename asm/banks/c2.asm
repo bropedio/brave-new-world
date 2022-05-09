@@ -491,6 +491,8 @@ warnpc $C20E61+1
 ; by Assassin to fix a bug that stopped the Genji Glove effect from reducing
 ; each weapon to 75% damage.
 
+org $C20EF3 : JSL EsperBonuses : NOP ; hook to apply esper equip bonuses
+
 org $C20F15
 GengiCheckFunction:
   PHD               ; store direct page
