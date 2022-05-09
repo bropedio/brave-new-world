@@ -1175,6 +1175,10 @@ org $C22A44
   STZ $BA       ; clear "Can Target Dead" and "No Retarget if Dead"
 
 ; ------------------------------------------------------------------------
+
+org $C22A71 : JSR ThrowProps ; hook to load weapon properties with throw
+
+; ------------------------------------------------------------------------
 ; Modified as part of "Abort on Enemies" patch to prevent most items and
 ; rods from being targeted at enemies. (Synchysi)
 
@@ -3990,6 +3994,23 @@ Poison:
   LDA #$00
   STA $3E24,Y    ; zero poison damage incrementer
   PLP
+  RTS
+
+; -------------------------------------------------------------------------
+; Helper for Throw weapon properties loading
+
+org $C2FBD0
+ThrowProps:
+  PHP            ; store flags
+  STA $11A1      ; [displaced] store element
+  LDA $D8501B,X  ; special action (weapon)
+  AND #$F0       ; isolate ^
+  LSR #3         ; shift down to x2 index
+  STA $11A9      ; save ^
+  STZ $11A4      ; clear "Can't be Dodged"
+  LDA #$FF       ; 255
+  STA $11A8      ; set max hit rate (100% hitrate unless Blind)
+  PLP            ; restore flags
   RTS
 
 ; -------------------------------------------------------------------------
