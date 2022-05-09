@@ -539,6 +539,67 @@ org $C35CE2
               db $00   : db " EL Bonus:    "
 
 ; #########################################################################
+; Gogo's Command Select Menu
+; BNW Hardcodes Gogo's available commands
+; TODO: Convert this to simple data
+
+org $C35DC9
+GogoCmdList:
+  SEP #$20        ; 8-bit A
+  LDA #$00        ; 0
+  STA $2180       ; "Fight"
+  INC             ; 1
+  STA $2180       ; "Item"
+  INC             ; 2
+  STA $2180       ; "Magic"
+  LDA #$05        ; 5
+  STA $2180       ; "Steal"
+  LDA #$07        ; 7
+  STA $2180       ; "Bushido"
+  INC             ; 8 
+  STA $2180       ; "Throw"
+  INC             ; 9
+  STA $2180       ; "Tools"
+  INC             ; 10
+  STA $2180       ; "Blitz"
+  INC             ; 11
+  STA $2180       ; "Runic"
+  INC             ; 12
+  STA $2180       ; "Lore"
+  INC             ; 13
+  STA $2180       ; "Sketch"
+  LDA #$0F        ; 15
+  STA $2180       ; "Slot"
+  INC             ; 16
+  STA $2180       ; "Rage"
+  LDA #$13        ; 19
+  STA $2180       ; "Dance"
+  NOP #10
+.build_list
+  LDX #$9D8A      ; 7E/9D8A
+  STX $2181       ; Set WRAM LBs
+  LDA #$FF        ; Cmd: Empty
+  STA $2180       ; Add to list
+  TDC             ; Clear A
+  TAX             ; Cmd slot: 1
+  TAY             ; Cmd count: 0
+.loop
+  TDC             ; ...
+  PHX             ; Save cmd slot
+  LDA $7E9E09,X   ; Available cmd
+  STA $2180       ; Add to list
+  INY             ; Cmd count +1
+  PLX             ; Cmd slot
+  INX             ; Cmd slot +1
+  CPX #$000E      ; Done 16 x 4?
+  BNE .loop       ; Loop if not
+  INY             ; Cmd count +1
+  TYA             ; Put it in A
+  STA $7E9D89     ; Set list size
+  BRA .layout
+org $C35E6D : .layout
+
+; #########################################################################
 ; Draw command names based on availability
 ;
 ; Rewritten as part of Assassin's "Brushless Sketch" patch to save space
