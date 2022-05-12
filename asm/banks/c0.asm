@@ -313,7 +313,7 @@ org $C0D690
   db $00,$00,$00,$00,$00,$00,$00,$00,$0A,$00    ; Zoneseek
   db $00,$00,$02,$00,$00,$00,$00,$00,$00,$00    ; Carbunkl
   db $00,$00,$00,$00,$00,$00,$00,$00,$00,$A0    ; Phantom
-  db $C0,$80,$00,$00,$00,$00,$00,$00,$00,$00    ; Seraph
+  db $C2,$80,$00,$00,$00,$00,$00,$00,$00,$00    ; Seraph
   db $00,$00,$00,$00,$00,$00,$00,$0A,$00,$00    ; Golem
   db $00,$00,$00,$00,$00,$05,$00,$00,$00,$00    ; Unicorn
   db $00,$00,$00,$00,$00,$00,$00,$00,$00,$0A    ; Fenrir
@@ -341,7 +341,7 @@ EsperBonuses:
   LDA $C0D690,X     ; Status protection
   TSB $11D2         ; add to equipment status protection
   LDA $C0D692,X     ; Innate statuses and percent bonuses
-  TSB $11D4         ; add to equipment innate statuses/etc
+  JSR EarringFix    ; hook to extend handling in subroutine
   LDA $C0D695,X     ; Stat bonuses
   LDY #$0006        ; stat iterator (4 stats)
 .loop
@@ -361,8 +361,8 @@ EsperBonuses:
   ADC $11A8         ; add to equipment Evade stat
   STA $11A8         ; update ^
   PLA               ; restore Evade/MBlock
+  AND #$F0          ; get MBlock TODO: Unnecessary AND, just CLC after LSR
   LSR #4            ; shift MBlock into place
-  AND #$0F          ; get MBlock TODO: Unnecessary AND, missing CLC
   ADC $11AA         ; add to equipment MBlock stat
   STA $11AA         ; update ^
   LDA $C0D694,X     ; Elemental resistances
@@ -385,6 +385,16 @@ EsperBonuses:
   LDA $15ED,X       ; [displaced] MaxMP hibyte
   AND #$3F          ; [displaced] mask +% effects
   RTL
+
+org $C0D827
+EarringFix:         ; TODO: Move this code in-line
+  TSB $11D4         ; [displaced] add to equipment innate statuses/etc
+  SEP #$20          ; 8-bit A
+  XBA               ; A = 11D5 bits 
+  AND #$02          ; isolate earring bit
+  TSB $11D7         ; set earring bit
+  REP #$20          ; 16-bit A
+  RTS
 
 ; -------------------------------------------------------------------------
 

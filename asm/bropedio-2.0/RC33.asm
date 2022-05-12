@@ -7,7 +7,6 @@ hirom
 ; This master file includes all bugfixes and patches for RC33
 ; of Brave New World 2.0.
 
-incsrc esper-boosts.asm
 incsrc green-cherry-full-fix.asm
 incsrc mind-blast.asm
 incsrc respect-row.asm
