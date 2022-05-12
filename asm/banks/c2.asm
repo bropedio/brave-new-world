@@ -3286,10 +3286,13 @@ Update_Stat:
 
 org $C261E9
 StamSpecial:      ; helper for monster special status attacks
-  STA $11AA,X     ; [displaced] set attack status byte
-  LDA #$10        ; "Stamina Evade"
-  TSB $11A4       ; set ^ attack flag
+  TXA             ; A = status byte index
+  BNE .end        ; exit if not status-1 (Death)
+  LDA #$02        ; "Miss if Death Immune"
+  TSB $11A2       ; set ^ flag
+.end
   RTS
+warnpc $C261F3
 
 ; #########################################################################
 ; Add Experience after Battle
@@ -3715,20 +3718,18 @@ XMagCntr:
 
 org $C26761
 SpecialAttStam:
-  PHA             ; store special attack status byte
-  BIT #$80        ; "Death" (BUG: or "Sleep", others)
-  BEQ .exit       ; branch if not ^
-  LDA #$02        ; "Miss if Death Protection"
-  TSB $11A2       ; set ^ attack flag
-.exit
-  PLA             ; restore attack status byte
-  JSR StamSpecial ; set "Stamina" flag if ^
+  STA $11AA,X     ; [displaced] store updated status byte
+  BPL .finish     ; if possible death bit not set, branch
+  JSR StamSpecial ; else, set death miss flag
+.finish
+  LDA #$10        ; "Stamina Evasion"
+  TSB $11A4       ; set ^ flag
   RTS
+  db $FF          ; [padding]
 
 ; -------------------------------------------------------------------------
 ; Helpers for condensed spell list hack
 
-org $C26770         ; 64 bytes needed, used through $C2FAEF
 calcMPCost:
   CMP #$0C          ; coming in, low byte is command and high byte is spell ID
   BEQ .lore         ; branch if it's Lore
