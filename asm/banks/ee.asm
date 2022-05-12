@@ -5,6 +5,11 @@ hirom
 ; ########################################################################
 
 ; ------------------------------------------------------------------------
+; Always play "Ruined World" on overworld map, even after getting Airship
+
+org $EE8394 : db $4F
+
+; ------------------------------------------------------------------------
 ; Doom Gaze airship search option helper
 
 org $EEAF01
