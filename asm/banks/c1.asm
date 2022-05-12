@@ -288,6 +288,13 @@ org $C1A5A9 : NOP : JSL SetMPDmgFlag
 org $C1A6E6 : NOP : JSL SetMPDmgFlagMass
 
 ; ######################################################################
+; Odin Animation
+; Skip "Cleave" effect in Odin animation
+
+org $C1B0E4 : BRA No_Odin_Cleave
+org $C1B0EC : No_Odin_Cleave:
+
+; ######################################################################
 ; RNG
 
 org $C1CD53 : JSL Random

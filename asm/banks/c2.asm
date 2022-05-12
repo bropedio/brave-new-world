@@ -22,8 +22,6 @@ MPCritCost:
 .exit
   RTS
 
-warnpc $C202DC+1
-
 ; -------------------------------------------------------------------------
 ; Note, assumes no more than 1 overflow in $EA from multiplication
 ; (Imp command disabling used as Freespace)
@@ -38,9 +36,18 @@ AtmaOver:
 warnpc $C202B8+1
 
 ; -------------------------------------------------------------------------
-; Helper for Zantetsuken [TODO: Integrate zantetsuken.asm hack]
+; Zantetsuken helper
+; Undead killer weapon effect enters here due to 50% proc rate
 
-org $C202BE : Kill_Zombie: ; [label] for Cleave effect
+org $C202BC
+  LDA #$EE          ; "XKill" animation ID [TODO: No longer used]
+KillZombie:
+  XBA               ; store in B
+  JSR $4B5A         ; random(0..256)
+  CMP #$80          ; C: 50% chance [TODO: Use random(0..2) function]
+  JMP Undead_Killer ; jump to another helper
+
+warnpc $C202DC+1
 
 ; #########################################################################
 ; Adding Command to Wait Queue + Swap Roulette to Enemy Roulette
@@ -1635,9 +1642,8 @@ SpellProc:
   BRA .cannot_miss      ; improve silly branching logic from vanilla
 .normal
 
-org $C2382D : .cannot_miss
-
 org $C2381D :  JSL AutoCritProcs ; power-up crit doom to x-zone, multitarget quartr
+org $C2382D : .cannot_miss
 
 ; #########################################################################
 ; Maneater Effect (now on Butterfly)
@@ -1970,10 +1976,11 @@ SetIgnDef:
 ; #########################################################################
 ; Special Effect (per-target) Jump Table [C23DCD]
 
-; Adds a special effect for auto-killing undead, or critting undead bosses
-org $C23DEB : dw Cleave    ; Effect [?] - Cleave [?]
-org $C23E11 : dw NewLife   ; Effect $22 - Life (was Stone)
-org $C23E79 : dw Chainsaw2 ; Effect $56 (was Debilitator, now Chainsaw)
+org $C23DE7 : dw Zantetsuken ; Effect [?] - Zantetsuken [?]
+org $C23DEB : dw Cleave      ; Effect [?] - Cleave [?]
+org $C23E11 : dw NewLife     ; Effect $22 - Life (was Stone)
+org $C23E13 : dw NoCounter   ; Effect [?] - Instant Death
+org $C23E79 : dw Chainsaw2   ; Effect $56 (was Debilitator, now Chainsaw)
 
 ; #########################################################################
 ; Step Mine (unchanged)
@@ -2121,7 +2128,7 @@ Cleave:
   LDA $3C95,Y     ; special byte 3
   BPL .exit       ; branch if not "Undead"
   LDA #$7E        ; "Cleave" animation ID
-  JMP Kill_Zombie ; branch to Zantetsuken code for cleave-kill/boss-crit
+  JMP KillZombie ; branch to Zantetsuken code for cleave-kill/boss-crit
 .exit
   RTS
 
@@ -2643,6 +2650,13 @@ org $C25301
   LDA $3CA9,Y       ; lefthand weapon ID
   JSR Get_Tgt_Byte  ; update targeting byte if heal rod
   PLP               ; restore flags
+  RTS
+
+; #########################################################################
+
+org $C25310
+NoCounter:
+  STZ $341A         ; disable counterattack (animation removes target)
   RTS
 
 ; #########################################################################
@@ -3568,7 +3582,36 @@ LevelChk:
   JMP $61FC
 .exit
   RTS
-warnpc $C266A3+1 ; TODO: Confirm this end offset
+
+; -------------------------------------------------------------------------
+; Zantetsuken Effect Helpers
+
+org $C266A3
+Zantetsuken:
+  LDA #$EE      ; "XKill" animation ID
+  XBA           ; store in B [TODO: overwritten below, remove this]
+  JSR $4B5A     ; random(0..256)
+  CMP #$40      ; C: 75% chance
+
+Undead_Killer:
+  BCS .exit     ; exit if no proc
+  LDA $3AA1,Y   ; target special state flags
+  BIT #$04      ; "Immune to Instant Death"
+  BNE .crit     ; do critical damage if ^
+  LDA #$7E      ; "Cleave" animation ID
+  XBA           ; store in B
+  JMP $38A6     ; execute cleave-kill.
+.crit
+  LDA $BC       ; attack incremented damage (Critical Hit?) [TODO: confirm]
+  BNE .exit     ; exit if ^ (no double critical)
+  INC $BC       ; dmg +50%
+  INC $BC       ; dmg +100%
+  LDA #$20      ; "Flash Screen" flag
+  TSB $A0       ; set ^ animation
+.exit
+  RTS
+
+; -------------------------------------------------------------------------
 
 org $C266C7
 ; Coin Toss Formula
