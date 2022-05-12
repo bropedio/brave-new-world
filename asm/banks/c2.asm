@@ -1217,7 +1217,7 @@ Sap_Chk2:
 ; -------------------------------------------------------------------------
 
 org $C22883 : NoMog:
-org $C228C1 : JSR GauRageStatuses2
+org $C22917 : STA $3330,X ; clear correct immunities byte [vanilla bug]
 
 ; #########################################################################
 ; Load Magic/Vigor/Stamina Stat and Level
@@ -2346,9 +2346,24 @@ OvercastFix:
   RTS
 
 ; -------------------------------------------------------------------------
-; Imp no longer reruns equipment check
+; Imp & Rage - Clear
 
-org $C245E2 : JMP $464C ; changed from JSR
+org $C245E2
+  JMP $464C       ; was JSR, so now Imp doesn't rerun equipment check
+RageClear2:
+  PLA             ; clean up stack
+  SEP #$10        ; 8-bit X/Y
+  TYA             ; character index
+  LSR             ; / 2
+  TAX             ; character index in X
+  INC $2F30,X     ; set flag to re-calculate character properties
+  PLX             ; restore X
+  BRA ClearQueue  ; set flag to clear pending attacks
+
+; -------------------------------------------------------------------------
+; Petrify & Death Set
+
+org $C2462F : ClearQueue: ; [label] clear queued actions
 
 ; -------------------------------------------------------------------------
 ; Sleep on-set
@@ -2385,6 +2400,8 @@ org $C2469B : NoStatusHook: ; [label] RTS for empty status clear/set hooks
 
 org $C246DE : dw NoStatusHook ; "Reflect" on-set - removed
 org $C246F4 : dw Poison       ; "Poison" on-clear - reset increment
+org $C24710 : dw ClearQueue   ; "Dance" on-clear - clear queue
+org $C24720 : dw RageClear    ; "Rage" on-clear - hook for status removal
 
 ; #########################################################################
 ; Field Item Usage
@@ -3427,6 +3444,27 @@ Row_Chk:
   RTS
 
 ; -------------------------------------------------------------------------
+; Rage on-clear status removal helper
+
+org $C2659D
+RageClear:
+  PHX             ; save X
+  REP #$10        ; 16-bit X/Y
+  LDA $33A8,Y     ; monster #
+  ASL #5          ; monster # * 32
+  TAX             ; index to monster data
+  LDA $CF001B,X   ; monster status bytes 1-2 
+  TSB $F4         ; add to "status to clear"
+  LDA $CF001D,X   ; monster status bytes 3-4
+  PHA             ; store on stack
+  LSR             ; shift out "Perma-Float"
+  TDC             ; zero A/B
+  ROR             ; put "Perma-Float" in bit 0
+  ORA $01,S       ; combine with other statuses
+  TSB $F6         ; add to "status to clear"
+  JMP RageClear2  ; jump to old rage-clear code (modified)
+
+; -------------------------------------------------------------------------
 ; Field Item Usage Helper
 
 org $C265BE
@@ -4002,7 +4040,7 @@ GauRageStatuses:
   STA $3EE4,Y     ; update current status
   RTS
   
-GauRageStatuses2:
+GauRageStatuses2: ; TODO: Remove -- no longer used
   STA $3C6C,X
   AND $3EE5,X     ; equipment status byte 2 AND current status = status to actually have
   STA $3EE5,X
