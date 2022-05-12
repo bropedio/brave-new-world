@@ -904,16 +904,50 @@ org $C22002 : CMP #$04 ; Vindictive Targeting Fix
 ;   Have Blind status apply on skills with 255 hit rate and sets the
 ;   accuracy of a blinded attacker to 50%
 
-org $C22256 : JMP ReflectClear ; Handle reflect behavior
+org $C22215
+HitMiss:
+  LDA $11A2        ; attack flags
+  BIT #$02         ; "Instant Death"
+  BEQ .chk_vanish  ; branch if not ^
+  LDA $3AA1,Y      ; special status flags
+  BIT #$04         ; "Immune to Instant Death"
+  BNE .go_dodge    ; branch if ^
+.chk_vanish
+  LDA $B3          ; attack flags
+  BPL .chk_image   ; branch if "Ignore Vanish"
+  LDA $3EE4,Y      ; status-1
+  BIT #$10         ; "Vanish"
+  BEQ .chk_image   ; branch if no ^
+  LDA $11A4        ; attack flags
+  ASL              ; N: "L.X Spell" [TODO: BNW changed to "Abort on Enemies"]
+  BMI .rm_vanish   ; branch if ^
+  LDA $11A2        ; attack flags
+  LSR              ; C: "Physical"
+  JMP .hit_miss    ; hit or miss based on ^
+.rm_vanish
+  LDA $3DFC,Y      ; status-to-clear-1
+  ORA #$10         ; add "Vanish"
+  STA $3DFC,Y      ; set ^ to be cleared
+.chk_image
+  LDA $11A3        ; attack flags
+  BIT #$02         ; "Unreflectable"
+  BNE .prep_doggy  ; branch if ^
+  LDA $3EF8,Y      ; status-3
+  BPL $0A          ; branch if no "Reflect" status
+  REP #$20         ; 16-bit A
+  LDA $3018,Y      ; target bit
+  TSB $A6          ; add reflector for animation
+  JMP ReflectClear ; handle reflect behavior
+.prep_doggy
 
 ; Disable Dog Block if attack was Covered
 org $C22282
-HitMiss:
   LDA $3EF9,Y         ; target status-4
   ASL                 ; N: "Dog Block"
   BPL .golem          ; branch if no ^
   JSR SkipDogBlock    ; C: 50% chance dog block (if no cover)
 
+org $C22291 : .go_dodge
 org $C22293 : .golem
 
 org $C222A8           ; replace the old L? spells handling
@@ -923,6 +957,7 @@ org $C222A8           ; replace the old L? spells handling
   BCS .dodge          ; branch if stam check succeeded
   BRA EvadeChk        ; else branch to normal hit determination
 
+org $C222B3 : .hit_miss
 org $C222B5 : .dodge
 org $C222D1 : .miss
 
