@@ -37,6 +37,11 @@ AtmaOver:
   RTS
 warnpc $C202B8+1
 
+; -------------------------------------------------------------------------
+; Helper for Zantetsuken [TODO: Integrate zantetsuken.asm hack]
+
+org $C202BE : Kill_Zombie: ; [label] for Cleave effect
+
 ; #########################################################################
 ; Adding Command to Wait Queue + Swap Roulette to Enemy Roulette
 
@@ -1014,6 +1019,21 @@ org $C2235E : PEA $0004 ; remove evasion penalty from Rerise
 org $C22372 : BRA HitCalc ; skip evasion bonuses from all statuses
 org $C22388 : HitCalc:
 
+; ------------------------------------------------------------------------
+; Dice Helper in freespace from old Stamina Evasion routine
+
+org $C2239C
+DiceHelp:
+  LDA $3A70         ; which hand is striking (odd = right; even = left)
+  LSR               ; C: Righthand
+  BCC .lefthand     ; branch if not ^
+  LDA $3B7C,Y       ; righthand hitrate (contains # of dice)
+  BRA .exit         ; finish up
+.lefthand
+  LDA $3B7D,Y       ; lefthand hitrate (contains # of dice)
+.exit
+  RTS
+
 ; #########################################################################
 ; Initialize Many Things at Battle Start
 
@@ -1336,6 +1356,11 @@ org $C22B2F : ToolsRTS:
 ; Damage Formulas
 
 ; -------------------------------------------------------------------------
+; Magical Damage Formula
+
+org $C22B9A : JMP Wpn_Chk ; add hook to modify spellproc dmg
+
+; -------------------------------------------------------------------------
 ; Physical Damage Rewrite
 ; New physical damage formula for characters only, plus handling for
 ; Bushido leveraging equipped weapon battle power.
@@ -1589,7 +1614,35 @@ org $C237DC
 ; #########################################################################
 ; Weapon Addition Magic
 
+org $C2380F
+SpellProc:
+  BEQ .normal           ; improve silly branching logic from vanilla
+  JSR Net_Target        ; hook to bypass "Randomize Targets" for "Net"
+  BRA .cannot_miss      ; improve silly branching logic from vanilla
+.normal
+
+org $C2382D : .cannot_miss
+
 org $C2381D :  JSL AutoCritProcs ; power-up crit doom to x-zone, multitarget quartr
+
+; #########################################################################
+; Maneater Effect (now on Butterfly)
+
+org $C238FD : ManRTS: ; [label] reusable RTS
+
+; #########################################################################
+; Hawk Eye Effect
+; Increases the incrementer for "randomly thrown" weapons to 2
+
+org $C23905
+  INC $BC         ; +50% more dmg (now +100%)
+  LDA $3EF9,Y     ; target status-4
+  BPL .throw      ; finish up if no "Float"
+  LDA $B5         ; command ID
+  CMP #$00        ; is it "Fight" [TODO: CMP not necessary]
+  BNE ManRTS      ; exit if not ^ (Jump/Steal)
+
+org $C23916 : .throw ; [label] set "Throw" animation for "Critical"
 
 ; #########################################################################
 ; Stone Effect (now freespace)
@@ -1688,6 +1741,35 @@ RandomCast:
 .nope
   PLA             ; restore random(256)
   CMP #$40        ; 1/4 chance of activating random weapon cast
+  RTS
+
+; -------------------------------------------------------------------------
+; Helper for Magic Damage modification for Spellprocs (Windslash/Aero)
+; No possibility for regular dmg; only Two-Handed or Dual-Wield
+
+Wpn_Chk:
+  SEP #$20        ; [displaced] 8-bit A
+  LDA $11A7       ; attack flags
+  BIT #$08        ; "Respect Weapon Flags" (new BNW flag)
+  BEQ .exit       ; branch if not ^
+  REP #$20        ; 16-bit A
+  LDA $B2         ; attack flags ($B3)
+  BIT #$4000      ; "Two-Handed"
+  BNE .dual       ; branch if not ^
+  LDA $11B0       ; damage
+  LSR             ; damage / 2
+  ADC $11B0       ; damage * 150%
+  BRA .set_dmg    ; branch to finish
+.dual
+  LDA $11B0       ; damage
+  LSR #2          ; damage / 4
+  EOR #$FFFF      ; * -1 (minus 1)
+  SEC             ; set carry (for true * -1)
+  ADC $11B0       ; damage * 75%
+.set_dmg
+  STA $11B0       ; set new damage
+  SEP #$20        ; [displaced] 8-bit A
+.exit
   RTS
 
 ; #########################################################################
@@ -1852,6 +1934,17 @@ SetCantrip:
   RTS
 
 ; #########################################################################
+; X Kill Effect (now shifted down, freespace at top)
+
+; -------------------------------------------------------------------------
+; Kusarigama Effect ($03)
+; Deal double damage to humans and randomly cast Net
+
+org $C23D43
+  JSR $38F2        ; double damage for human targets (maneater)
+  JMP NetEffect    ; Jump to function to randomly cast Net
+
+; #########################################################################
 ; Metamorph Chance (unused in BNW, so now freespace)
 
 org $C23DC5
@@ -1863,6 +1956,8 @@ SetIgnDef:
 ; #########################################################################
 ; Special Effect (per-target) Jump Table [C23DCD]
 
+; Adds a special effect for auto-killing undead, or critting undead bosses
+org $C23DEB : dw Cleave    ; Effect [?] - Cleave [?]
 org $C23E11 : dw NewLife   ; Effect $22 - Life (was Stone)
 org $C23E79 : dw Chainsaw2 ; Effect $56 (was Debilitator, now Chainsaw)
 
@@ -1876,7 +1971,23 @@ StoreDamage:
   RTS
 
 ; #########################################################################
-; Ogre Nix Effect (now freespace)
+; Ogre Nix Effect (now Aero/Mutsunokami + freespace)
+
+; -------------------------------------------------------------------------
+; Mutsunokami - Aero
+
+org $C23ECA
+Aero:
+  JSR $4B5A     ; random(0..256)
+  CMP #$80      ; C: 50% chance [TODO: Use random(0..2) function]
+  BCS .exit     ; exit if ^
+  STZ $11A6     ; zero battle power (attack itself does no damage)
+  LDA #$99      ; "Aero v.2" spell ID
+.proc
+  STA $3400     ; set spellcast proc
+  INC $3A70     ; increment remaining hits for spellcast
+.exit
+  RTS
 
 ; -------------------------------------------------------------------------
 ; Shock Command Effect (moved here)
@@ -1912,8 +2023,21 @@ Shock:
   RTS
 
 ; -------------------------------------------------------------------------
+; Helper for Net spellproc targeting exception
 
-org $C23F25
+org $C23F18
+Net_Target:
+  LDA $B6              ; spell ID (animation)
+  CMP #$AD             ; is it "Net"
+  BNE .randomize       ; branch if not ^
+  JMP SpellProc_normal ; else, treat as normal spellcast
+.randomize
+  STZ $3415            ; set "Randomize Target"
+  RTS
+
+; -------------------------------------------------------------------------
+; Shifted location for MP Crit Effect
+
 MPCrit:
   LDA $B2          ; special attack flags
   BIT #$02         ; "No Critical"
@@ -1948,6 +2072,44 @@ org $C23F5C : REP #$21 ; modify to also clear carry (for reuse elsewhere)
 ; Alters the Golem Wall effect to use the caster's max HP instead of current
 
 org $C23F67 : LDA $3C1C,Y
+
+; #########################################################################
+; Soul Sabre Effect (now Net/freespace)
+
+org $C23F6E
+NetEffect:
+  JSR $4B5A       ; random(0..256)
+  CMP #$80        ; C: 50% chance [TODO: Use random(0..2) function]
+  BCS .exit       ; exit if ^
+  LDA #$AD        ; "Net" spell ID
+  JMP Aero_proc   ; set proc ^ (via Aero effect fork)
+.exit
+  RTS
+
+; #########################################################################
+; ValiantKnife Effect
+
+org $C23F9E : ValiantExit: ; [label]
+
+; #########################################################################
+; Tempest Wind Slash Effect
+
+org $C23FA4 : BCS ValiantExit ; use earlier RTS for random exit branch
+org $C23FA9
+  LDA #$98        ; use new "Windslash" spell ID
+  JMP Aero_proc   ; set proc ^ (via Aero effect fork)
+
+; #########################################################################
+; Magicite Effect (now Cleave effect)
+
+org $C23FAE
+Cleave:
+  LDA $3C95,Y     ; special byte 3
+  BPL .exit       ; branch if not "Undead"
+  LDA #$7E        ; "Cleave" animation ID
+  JMP Kill_Zombie ; branch to Zantetsuken code for cleave-kill/boss-crit
+.exit
+  RTS
 
 ; #########################################################################
 ; Old GP Toss Routine (now freespace)
@@ -1988,6 +2150,11 @@ org $C2414D
   JSR $522A       ; randomly pick an entity from among the targets
   JMP NCross2     ; jump to second half of routine
 
+
+; #########################################################################
+; Dice Effect
+
+org $C2418F : JSR DiceHelp ; corrects dice issue (by Seibaby)
 
 ; #########################################################################
 ; Old Revenge Routine (now freespace)
