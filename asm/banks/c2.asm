@@ -735,6 +735,26 @@ org $C215D1 : NOP #2   ; Enable desperation attacks at any time (nATB)
 org $C21624 : LDA #$03 ; reduce Offering hits from 4 to 2
 
 ; #########################################################################
+; Umaro's Attacks (Charge, Throw, Storm)
+
+org $C2167F : JSR Tackle ; hook to set Tackle battle power to 255
+org $C216D6 : LDA #$12 ; "Always Crit"/"Ignore Dmg Inc" if throwing Mog
+
+; Sets the battle power of Umaro's Rage attack to 255 + gauntlet bonus
+org $C216DA
+  LDA #$40         ; "Two-Handed"
+  TRB $B3          ; set ^
+  BRA TackleSkip   ; skip helper below
+
+Tackle:
+  JSR $17C7        ; setup battle power and more
+  LDA #$FF         ; 255
+  STA $11A6        ; force max battle power
+  RTS
+
+TackleSkip: ; Destination of branch from above.
+
+; #########################################################################
 ; Slot (command)
 
 ; Detaches Joker Doom (now Jackpot) from Dispatch's spell slot
@@ -2279,7 +2299,17 @@ pad $C25161
 warnpc $C25161+1
 
 ; #########################################################################
-; Probabilities for Side/Pincer/Back/Normal attacks
+; Probabilities for Umaro and Side/Pincer/Back/Normal attacks
+
+org $C25269
+  ; Row 1: No relics Column 1: Fight
+  ; Row 2: Rage Belt only Column 2: Tackle
+  ; Row 3: Blizzard Orb only Column 3: Snowstorm
+  ; Row 4: Both relics Column 4: Rage
+  db $B2,$4B,$FF,$FF ; 70% Fight, 30% Tackle
+  db $66,$4B,$FF,$4B ; 40% Fight, 30% Tackle, 30% Rage
+  db $66,$4B,$4B,$FF ; 40% Fight, 30% Tackle, 30% Snowstorm
+  db $1A,$4B,$4B,$4B ; 10% Fight, 30% Tackle, 30% Rage, 30% Snowstorm
 
 org $C25279
   db $20    ; Side attack (32/255)

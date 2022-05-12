@@ -36,6 +36,11 @@ org $C31B61 : JSR StChr ; store character ID in $A3 (for esper restrict)
 org $C31C1D : NOP #3 ; skip optimize routine
 
 ; #########################################################################
+; Allows the player to equip Umaro manually.
+
+org $C31E6E : CMP #$0E
+
+; #########################################################################
 ; Initialize Magic Menu
 
 org $C32125 : NOP #3 ; skip drawing MP Cost in Magic Menu
