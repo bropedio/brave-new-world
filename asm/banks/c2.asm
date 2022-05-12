@@ -600,6 +600,18 @@ org $C211C3 : JSR CheckCantrip ; C: whether ATB filled/overflowed
 ; #########################################################################
 ; Decrease Morph Timer (freespace)
 
+; -------------------------------------------------------------------------
+; Tools Helpers
+
+org $C21211
+Noiseblaster:
+  LDA #$10            ; "Stamina Evade"
+  STA $11A4           ; set ^ in attack flags
+  ASL                 ; "Muddle" status
+  STA $11AB           ; set ^ in attack status-2
+  STZ $11A2           ; remove "Physical"
+  RTS
+
 ; #########################################################################
 ; True Knight and Love Token
 ; Changes the True Knight effect to trigger with a Stamina / 192 chance
@@ -785,6 +797,13 @@ org $C21897 : NOP #3 ; remove instruction that ignores damage modification
 ; Item and Throw (commands)
 
 org $C218C1 : JSR ItemMod ; hook to disable dmg mod for actual items
+
+; -------------------------------------------------------------------------
+; Don't clear "can target dead/hidden targets" from all magic-based tools
+; and scrolls. This is mainly for the Defibrillator's benefit, though it
+; could adversely affect the Mana Battery.
+
+org $C218FF : NOP #2
 
 ; #########################################################################
 ; GP Rain (command)
@@ -1066,6 +1085,21 @@ warnpc $C22602+1
 org $c2265b : JSR StopBlock ; Add hook to give stop immunity
 
 ; #########################################################################
+; Load Command and Subcommand Data
+
+; -------------------------------------------------------------------------
+; Throw and Tools
+; Add Defibrillator and Mana Battery to tools that route through spell IDs
+
+org $C22708
+ToolSkeanSpells:
+  LDX #$06                 ; iterator for list of Spells as Tools/Skeans
+  CMP Tool_Data_1,X        ; check if this tool matches ^
+  BNE .skip                ; exit if not ^
+  SBC Tool_Data_2,X        ; else, get spell number TODO: Just LDA
+org $C22716 : .skip
+
+; #########################################################################
 ; Load Character Equipment Properties
 
 org $C22872
@@ -1193,6 +1227,56 @@ org $C22ACD
   LDA #$08
   TSB $BA : NOP
 
+; ------------------------------------------------------------------------
+; Tools Jump Table and Routines
+
+org $C22B1A
+  dw Noiseblaster      ; now uses Stamina Evade
+  dw ToolsRTS          ; Bio Blaster - RTS
+  dw ToolsRTS          ; Flash - RTS
+  dw Chainsaw1         ; now always does dmg if target immune to death
+  dw ToolsRTS          ; Defibrillator - RTS (old Debilitator)
+  dw Drill             ; Add "Sap" to status effects
+  dw ToolsRTS          ; Mana Battery - RTS (old Air Anchor)
+  dw Autocrossbow      ; check event bit for levelled up ACB
+
+Chainsaw1:
+  JSR $4B5A            ; random(0..256)
+  AND #$03             ; 75% chance of 0
+  BNE Drill_Saw        ; branch if ^ (no hockey mask)
+  LDA #$08             ; "Hockey Mask" animation
+  STA $B6              ; set ^
+  LDA #$AC             ; new "Chainsaw" special effect
+  STA $11A9            ; set ^ to handle instant death immunity
+
+Drill_Saw:             ; [fork]
+  LDA #$20             ; "Ignore Defense"
+  TSB $11A2            ; set ^
+  LSR                  ; "Respect Row"
+  TSB $11A7            ; set ^
+  RTS
+
+Drill:
+  LDA #$40             ; "Sap"
+  STA $11AB            ; add ^ to attack status-2
+  BRA Drill_Saw        ; branch to set flags
+
+Autocrossbow:
+  LDA #$40             ; "No Split Damage"
+  TSB $11A2            ; set ^
+  LDA $1EBB            ; event byte (1D8 - 1DF) - "Rare items"
+  BIT #$10             ; bit 1DC - "Schematics"
+  BEQ .exit            ; exit if no ^
+  LDA #$E1             ; else, battle power 225
+  STA $11A6            ; set ^
+  LDA #$FF             ; max hitrate (100%)
+  STA $11A8            ; set ^
+.exit
+  RTS
+
+org $C22B2F : ToolsRTS:
+
+
 ; #########################################################################
 ; Damage Formulas
 
@@ -1252,6 +1336,23 @@ DmgQtr:
   ADC $11B0       ; add -25%
   STA $11B0       ; update damage (75%)
   PLA             ; restore A (relic flags)
+  RTS
+
+; -------------------------------------------------------------------------
+; Chainsaw helper (freespace from old Physical Formula)
+
+org $C22C09           
+Chainsaw2:
+  LDA $3AA1,Y      ; special status flags
+  BIT #$04         ; "Immune to instant death"
+  BNE .exit        ; exit if ^
+  STZ $11A6        ; zero battle power - this is instant death, no need for damage.
+  LDA #$80         ; "Death"
+  ORA $3DD4,Y      ; add ^ status-to-set TODO: Should this add to 11AA instead?
+  STA $3DD4,Y      ; update ^
+  LDA #$10         ; "Stamina Evade"
+  STA $11A4        ; set ^
+.exit
   RTS
 
 ; #########################################################################
@@ -1632,6 +1733,12 @@ ShadowChk:
   LDA #$FD        ; load spell ID 253
   RTS
 
+org $C23C2F
+Tool_Data_1:
+  db $A4,$A5,$A7,$A9,$AB,$AC,$AD ; Data - filched from $C22778 to add two tools.
+Tool_Data_2:
+  db $27,$27,$0D,$0E,$5A,$5A,$5A ; Data - filched from $C2277D to add two tools.
+
 org $C23C3D
 CoinHelp:
   JSR $298A       ; [moved] load command data
@@ -1701,7 +1808,8 @@ SetIgnDef:
 ; #########################################################################
 ; Special Effect (per-target) Jump Table [C23DCD]
 
-org $C23E11 : dw NewLife  ; Effect $22 - Life (was Stone)
+org $C23E11 : dw NewLife   ; Effect $22 - Life (was Stone)
+org $C23E79 : dw Chainsaw2 ; Effect $56 (was Debilitator, now Chainsaw)
 
 ; #########################################################################
 ; Step Mine (unchanged)
