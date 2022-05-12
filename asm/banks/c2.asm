@@ -288,6 +288,15 @@ CommandWaitTimes:
   db $00   ; MagiTek
 
 ; ########################################################################
+; Initialize some things at battle start
+
+org $C20847
+  PHY            ; store Y
+  JSR XMagCntr   ; hook to persist X-Magic counter till second strike
+  PLY            ; restore Y
+  NOP            ; [padding]
+
+; ########################################################################
 ; Condemned Counter Initialization
 ; Timer starting value reduced due to nATB slowing things down
 
@@ -732,6 +741,11 @@ EvalKnight:
 ; messages, and animation.
 
 org $C213A1 : JMP BossDeath
+
+; #########################################################################
+; Character/Monster Takes One Turn
+
+org $C2140C : JSR XMagHelp ; hook to skip counterattacks if X-Magic pending
 
 ; #########################################################################
 ; Fight (command)
@@ -2392,7 +2406,7 @@ org $C24B6F : JSL Random
 ; Prepare Counterattacks (C24C5B)
 
 org $C24C5B
-PrepareCounterattacks:     ; set parent label for full routine
+PrepCounter:     ; set parent label for full routine
 org $C24CC2 : .no_counter
 org $C24CDD : BNE .counter ; skip blackbelt check for "damaged this turn"
 org $C24CE3 : BCC .counter ; skip blackbelt check for "damaged this turn"
@@ -3626,6 +3640,30 @@ BlindHelp:
   BRA .exit        ; branch to exit
 .normal
   LDA $11A8        ; hit rate
+.exit
+  RTS
+
+; -------------------------------------------------------------------------
+; X-Magic Counter Helpers
+
+org $C26744
+XMagHelp:
+  LDA $04,S         ; attacker index
+  TAX               ; index it
+  LDA $32CC,X       ; entrypoint to linked list queue
+  INC               ; null check (always null unless X-Magic)
+  BNE XMagCntr_exit ; branch if not null ^ [TODO: use local RTS]
+  JMP PrepCounter   ; else, prep counterattacks
+  RTS
+
+XMagCntr:
+  LDA $04,S         ; attacker index
+  TAY               ; index it
+  LDA $32CC,Y       ; entrypoint to linked list queue
+  INC               ; null check (always null unless X-Magic)
+  BNE .exit         ; branch if not null ^
+  ASL $32E0,X       ; shift out "counterattack check pending"
+  LSR $32E0,X       ; remove ^
 .exit
   RTS
 
