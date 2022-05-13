@@ -63,7 +63,7 @@ org $C04E33
 ; #########################################################################
 ; General Actions pointer updates
 ;
-; Action $66 now used to set character lvl to Max(lvl, 18)
+; Action $66 now used to set character lvl to Max(lvl, [18,19,20,21])
 ; Action $67 is now used to reset ELs for current party
 ; Action $7F (Change Character Name) is optimized and shifted to make
 ; room for a fix to Action $8D (Unequip Character).
@@ -71,6 +71,12 @@ org $C04E33
 org $C09926 : dw Level18
 org $C09928 : dw RespecELs
 org $C09958 : dw CharName
+
+; #########################################################################
+; Level Averaging (General Action $77)
+
+org $C09F45 : BCC SkipExpReset ; don't zero experience when level unchanged
+org $C09F73 : SkipExpReset:
 
 ; #########################################################################
 ; Random Encounters (Overworld)
@@ -197,25 +203,40 @@ org $C0BE03
 
 ; -------------------------------------------------------------------------
 ; Helper for "Raise Lvl to 18" general action
+; Now uses variable "minimum" level based on when character rejoins party
 
 org $C0D613
 Level18:
   LDA $1D4D        ; config settings
-  BIT #$08         ; "Experience On"
-  BEQ .exit        ; exit if not ^
-  JSR $9DAD        ; Y: charcter data offset
-  LDA $1608,Y      ; character Level
-  CMP #$12         ; >= 18
-  BCS .exit        ; exit if ^
-  DEC              ; Level index
-  STA $20          ; save ^ [for HP/MP routine]
-  STZ $21          ; zero   [for HP/MP routine]
-  LDA #$12         ; 18
-  STA $1608,Y      ; set level 18
-  JMP $9F4A        ; set new max HP/MP, learn natural spells
-.exit
-  LDA #$02         ; # params to skip
-  JMP $9B5C        ; done
+  AND #$08         ; "Experience Enabled"
+  BNE .lvlup       ; branch if ^ (else, A=0)
+.finish
+  JMP $9F35        ; A will be minimum new level
+.lvlup
+  LDA $EB          ; event param
+  TAX              ; X = character #
+  LDA RejoinLvl,X  ; A = rejoin level
+  BRA .finish      ; set new level
+
+RejoinLvl:
+  db $15 ; Terra
+  db $15 ; Locke
+  db $15 ; Cyan
+  db $15 ; Shadow
+  db $13 ; Edgar
+  db $12 ; Sabin
+  db $12 ; Celes
+  db $15 ; Strago
+  db $15 ; Relm
+  db $14 ; Setzer
+  db $15 ; Mog
+  db $15 ; Gau
+  db $15 ; Gogo
+  db $15 ; Umaro
+
+; Fill remaining (now unused) bytes
+padbyte $FF
+pad $C0D636
 
 ; -------------------------------------------------------------------------
 ; Helper for Respec general action
