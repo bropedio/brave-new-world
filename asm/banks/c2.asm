@@ -1083,6 +1083,10 @@ org $C2256D : JSR condenseSpellLists
 ;   Where G = (10 - Number of entities in battle)
 ;   The new formula is:
 ;     ([(Speed * 2)..(Speed * 3 + 29)] + [(0..9) * 4] + G) * 256 / 65535
+;
+; Per Bropedio Hack (later) for Pincers
+; 1. Characters get reduced, but not zero, ATB
+; 2. Enemies start with full ATB and get to act immediately
 
 org $C22575
 InitializeATBTimers:
@@ -1123,47 +1127,47 @@ InitializeATBTimers:
   LDA $3EE1      ; FF in every case, except for final 4-tier battle
   INC            ; check for null
   BNE .next      ; skip to next entity if not ^
-  LDX $201F      ; encounter type.  0=front, 1=back, 2=pincer, 3=side
-  LDA $3018,Y    ; entity unique bit
-  BIT $3A40      ; character acting as enemy?
-  BNE .enemy     ; branch if ^
-  CPY #$08       ; in monster range
-  BCS .enemy     ; branch if ^
-  LDA $B0        ; battle flags
-  ASL            ; N: "Preemptive"
-  BMI .next      ; branch if ^
-  DEX            ; decrement encounter type
-  BMI .front     ; branch if front attack
-  DEX #2         ; decrement encounter type
-  BEQ .next      ; branch if side attack
-  LDA #$80       ; fixed starting ATB for "Pincer"
-  BRA .set_atb   ; branch to set ^
-.enemy
-  LDA $B0        ; battle flags
-  ASL            ; N: "Preemptive"
-  BMI .min_atb   ; branch if ^
-  CPX #$03       ; check "Side Attack" encounter type
-  BNE .front     ; branch if not ^
-.min_atb
-  LDA #$01       ; minimum ATB value
-  BRA .set_inc   ; set top byte of ATB timer to 2
+  LDX #$03       ; assume preemptive (=side type)
+  LDA $B0
+  ASL            ; this also clears Carry flag for later
+  BMI .type      ; keep X==3 if preemptive
+  LDX $201F      ; otherwise, load encounter type
+.type
+  DEX            ; decrement type index
+  BMI .front     ; branch to front handling if type was 0
+  DEX            ; prepare for last type check
+  LDA $3018,Y    ; entity bit
+  BIT $3A40      ; acting as enemy?
+  BNE .monster   ; branch if so
+  CPY #$08       ; monster range
+  BCS .monster   ; branch if in ^
+.human
+  DEX            ; decrement type index
+  BEQ .next      ; if type was 3, keep full ATB bar
+  LDA $F2
+  BRA .lessatb   ; pincer ATB = rand() + speed + genInc
+.monster
+  DEX            ; decrement type index
+  BNE .next      ; type was 1 or 2 (side/pincer), keep full ATB
+  LDA #$01
+  BRA .setatb    ; set top byte of ATB timer to 1
 .front
   LDA $3B19,Y    ; speed
-  ADC #$1E       ; add 30
-  JSR $4B65      ; random(speed + 30)
-  JMP ATBInitHelp
-.after_help
-  ADC $F2        ; add entity's Specific Incrementor, a
-  BCS .max_atb   ; branch if exceeded 255
-  ADC $F3        ; add General Incrementor (10 - number of valid entities)
-  BCC .set_inc   ; branch if byte didn't exceed 255
-.max_atb
-  LDA #$FF       ; max ATB (prior to pending turn)
-.set_inc
-  INC            ; increment ATB + 1
-  BNE .set_atb   ; branch if no overflow
-  DEC            ; else, decrement
-.set_atb
+  ADC #$1E       ; +30
+  JSR $4B65      ; random(0..30+speed)
+  ADC $F2        ; no chance to overflow here
+.lessatb
+  ADC $3B19,Y    ; add speed (again)
+  BCS .overflow  ; branch if overflow
+  ADC $3B19,Y    ; add speed (again)
+  BCS .overflow  ; branch if overflow
+  ADC $F3        ; add general incrementor
+  BCC .setatb    ; branch if no overflow
+.overflow
+  LDA #$FF       ; set to max ATB
+.setatb
+  ORA #$01       ; ensure not zero
+  NOP            ; [padding] TODO: Remove
   STA $3219,Y    ; save top byte of ATB timer
 .next
   REP #$20       ; 16-bit A
@@ -4357,14 +4361,8 @@ SketchFix:
 ; Freespace used for various helper functions
 
 org $C2FAA4
-ATBInitHelp:
-  ADC $3B19,Y     ; A = random: Speed to (2 * Speed + 29)
-  BCS .cap        ; branch if exceeded 255
-  ADC $3B19,Y     ; A = random: (2 * Speed) to (3 * Speed + 29)
-  BCS .cap        ; branch if exceeded 255
-  JMP InitializeATBTimers_after_help
-.cap
-  JMP InitializeATBTimers_max_atb
+padbyte $FF       ; TODO: Remove this padbyte usage
+pad $C2FAB4
 
 ; -------------------------------------------------------------------------
 ; Runic helper to ignore elemental effects and +25% magic dmg flag
