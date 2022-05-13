@@ -3187,127 +3187,73 @@ Do_Esper_Lvl:
   LDA $D86E0A,X   ; Get esper bonus index
   ASL
   TAX             ; X = bonus index * 2
-  JSR (ELBoost,X) ; Calculate bonus
-  RTL
+  REP #$20        ; 16-bit A
+  JMP AddEL       ; handle esper levelups
+  NOP #2          ; [padding]
+warnpc $C26133+1
 
 ; Esper bonus handling, completely rewritten
 
-org $C2614E     ; TODO: Remove this org [?]
-ELBoost:
-  dw HP_60      ; HP +60
-  dw MP_40      ; MP +40
-  dw HP_MP_Dual ; HP +30/MP +15
-  dw Vig_Dual   ; Vigor +1/HP +20
-  dw Mag_Dual   ; Magic +1/MP +20
-  dw Vig_Dual   ; Vigor +1/Speed +1
-  dw Mag_Dual   ; Magic +1/Speed +1
-  dw Vig_Dual   ; Vigor +1/Stamina +1
-  dw Mag_Dual   ; Magic +1/Stamina +1
-  dw Spd_Stam   ; Speed +1/Stamina +1
-  dw HP_Stam    ; HP +30/Stamina +1
-  dw MP_Stam    ; MP +25/Stamina +1
-  dw Vig_Boost  ; Vigor +2
-  dw Spd_Boost  ; Speed +2
-  dw Sta_Boost  ; Stamina +2
-  dw Mag_Boost  ; Magic +2
-  dw End        ; Free space
+org $C2614E
+ELTable:
+  db $78,$78 ; 60HP - Terrato, Crusader
+  db $52,$52 ; 40HP - Bahamut, Ragnarok
+  db $78,$3E ; 30HP/15MP -  Phoenix, Seraph
+  db $01,$50 ; 20HP/Vig - Golem
+  db $52,$07 ; 20MP/Mag - Zoneseek
+  db $01,$03 ; Vig/Spd - Palidor
+  db $03,$07 ; Mag/Spd - Siren
+  db $01,$05 ; Vig/Stm - Phantom
+  db $05,$07 ; Mag/Stm - Maduin
+  db $03,$05 ; Spd/Stm - Alexander
+  db $78,$05 ; 30HP/Stm - Kirin, Unicorn
+  db $05,$66 ; 25MP/Stm - Carbunkl
+  db $01,$01 ; 2Vig - Ramuh, Bismark
+  db $03,$03 ; 2Spd - Ifrit, Fenrir
+  db $05,$05 ; 2Stm - Stray, Odin, Tritoch, Starlet
+  db $07,$07 ; 2Mag - Shiva, Shoat
+  db $00,$00 ; null - Raiden?
 
-; HP/MP boosts
-
-MP_15:
-  LDA #$0F
-  BRA MP_Prep
-MP_20:
-  LDA #$14
-  BRA MP_Prep
-MP_25:
-  LDA #$19
-  BRA MP_Prep
-MP_40:
-  LDA #$28
-MP_Prep:
-  INY
-  INY
-  INY
-  INY
-  BRA HPMP_Boost
-HP_20:
-  LDA #$14
-  BRA HPMP_Boost
-HP_30:
-  LDA #$1E
-  BRA HPMP_Boost
-HP_60:
-  LDA #$3C
-HPMP_Boost:
+AddEL:
+  LDA ELTable,X   ; A = full 2-byte boost
+  SEP #$20        ; 8-bit A
+.doone
+  TYX             ; X = index to character stats
+  XBA             ; swap A bytes
+  BNE .bonus      ; if bonus, branch and handle (long-loop)
+  RTL             ; return
+.bonus
+  LSR
+  BCC .hpmp       ; if bit $01 not set, use HP/MP
+.loop
+  BEQ .stat       ; if no stat index, continue
+  INX
+  DEC
+  BRA .loop       ; add X to A
+.stat
+  LDA $161A,X     ; A = stat
+  CMP #$80
+  BEQ .fin        ; if maxed already, skip increment
+  INC
+  STA $161A,X     ; store updated stat
+.fin
+  BRA .next       ; finish this bonus byte
+.hpmp
+  LSR             ; remainder is amount to add
+  BCC .addhp      ; if MP bit not set, skip INX
+  INX #4          ; X points to max MP now
   CLC
-  ADC $160B,Y
-  STA $160B,Y
-  TDC
-  ADC $160C,Y
-  STA $160C,Y
-End:
-  RTS
+.addhp
+  ADC $160B,X
+  STA $160B,X     ; add HP/MP bonus
+  BCC .next       ; if no overflow, continue
+  INC $160C,X     ; carry to hi byte
+.next
+  LDA #$00        ; clear finished bonus
+  BRA .doone      ; loop for second bonus byte
 
-; Dual bonuses
-
-HP_MP_Dual:
-  PHY
-  JSR HP_30
-  PLY
-  JMP MP_15
-Mag_Dual:
-  PHY           ; Preserve Y, since it will get molested when boosting magic
-  JSR Mag_Boost
-  PLY           ; Restore Y for potential future stat boosts
-  BRA Skip_Vig
-Spd_Stam:
-  PHY           ; Preserve Y, since it will get molested when boosting speed
-  JSR Spd_Boost
-  PLY           ; Restore Y for potential future stat boosts
-  BRA Sta_Boost
-Vig_Dual:
-  JSR Vig_Boost ; No need to preserve Y, as a vigor boost won't modify it
-Skip_Vig:
-  CPX #$0008
-  BCC HP_20     ; If X < 8, we're boosting HP +20 along with vigor
-  BEQ MP_20     ; If X = 8, we're boosting MP +20 along with magic
-  CPX #$000E
-  BCC Spd_Boost ; If 8 < X < 14, we're boosting speed along with vigor/magic
-  BRA Sta_Boost ; Else, we're boosting stamina along with vigor/magic/HP/MP
-HP_Stam:
-  PHY
-  JSR HP_30
-  PLY
-  BRA Sta_Boost
-MP_Stam:
-  PHY
-  JSR MP_25
-  PLY
-  BRA Sta_Boost
-
-; Stat bonus
-
-Mag_Boost:
-  INY            ; 3 INYs = boost magic power
-Sta_Boost:
-  INY            ; 2 INYs = boost stamina
-Spd_Boost:
-  INY            ; 1 INY = boost speed
-Vig_Boost:       ; 0 INYs = boost vigor
-  LDA $161A,Y    ; Stat to raise, based on Y
-  INC
-  CPX #$0017     ; If X > 22, we're boosting a single stat, which will be +2
-  BCC Store_Stat ; Otherwise, we're doing a dual stat bonus, which is +1
-  INC
-
-Store_Stat:
-  CMP #$81        ; If the stat is greater than 128, set it equal to 128
-  BCC Update_Stat
-  LDA #$80
-Update_Stat:
-  STA $161A,Y     ; Save updated stat
-  RTS
+padbyte $FF       ; TODO: freespace here
+pad $C261E9
 
 ; #########################################################################
 ; Sabin Learning Blitzes at Level-up (moved elsewhere by EL rewrite)
