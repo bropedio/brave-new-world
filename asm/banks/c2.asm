@@ -3915,6 +3915,13 @@ StamCounter:
   RTS
 
 ; #########################################################################
+; Upper C2 Condensed Graphics
+; Modified to catch some RNG uses of the C0FD00 routine
+
+org $C26D2F : JSL Random   ; this is moved to 7E/5639 (used in title screen)
+org $C2806F : db $22       ; this is converted to two separate RNG calls (7E/6F89, 7E/6F90)
+
+; #########################################################################
 ; Freespace
 
 ; -------------------------------------------------------------------------
