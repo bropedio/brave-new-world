@@ -7,7 +7,6 @@ hirom
 ; This master file includes all bugfixes and patches for RC33
 ; of Brave New World 2.0.
 
-incsrc phantom-bug.asm
 incsrc scan-free.asm
 incsrc atb-draw-fix.asm
 incsrc quickfill.asm

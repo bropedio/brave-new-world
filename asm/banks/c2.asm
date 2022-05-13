@@ -1026,7 +1026,7 @@ HitMiss:
   BEQ .chk_image   ; branch if no ^
   LDA $11A4        ; attack flags
   ASL              ; N: "L.X Spell" [TODO: BNW changed to "Abort on Enemies"]
-  BMI .rm_vanish   ; branch if ^
+  NOP #2           ; [padding] TODO: Remove this and above ^
   LDA $11A2        ; attack flags
   LSR              ; C: "Physical"
   JMP .hit_miss    ; hit or miss based on ^
