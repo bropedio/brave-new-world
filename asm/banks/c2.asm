@@ -1866,6 +1866,13 @@ checkLeap:
   RTS
 
 ; #########################################################################
+; Mind Blast Effect
+
+org $C23BB8
+  LDX #$08        ; loop through all 5 targets (instead of 4)
+  BIT !blast,X    ; check against targeting at new RAM location
+
+; #########################################################################
 ; Rippler Effect (now freespace)
 
 org $C23C04
@@ -2159,6 +2166,12 @@ BlowFish:
   PLA             ; Pull 16-bit A
   JSR $4781       ; Spell Power * 50
   JMP StoreDamage ; use end of Step Mine effect to store damage and RTS
+
+; #########################################################################
+; Mind Blast Effect
+
+org $C2413E : LDY #$08 ; add 1 more pair of targeting bytes
+org $C24145 : STA !blast,Y ; store Mind Blast targets in new RAM location
 
 ; #########################################################################
 ; North Cross Effect ($29)
