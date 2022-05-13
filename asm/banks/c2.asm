@@ -682,10 +682,27 @@ org $C21031 : AfterImpEquip:
 org $C21124 : ORA $3A8F
 
 ; -------------------------------------------------------------------------
+; Quickfill
+; Rather than checking for the "menu open" flag, we
+; instead check for the characters' individual
+; battle menu positions, which are updated as soon
+; as ATB reaches 100%. This ensures that no additional
+; quick-loops take place once any character's battle
+; menu is ready to open.
+
+org $C2112C
+BattleFrameLoop:
+  CMP $0E         ; compare backup counter to frame count
+  BEQ .exit       ; if already ran this frame, exit (this is a change)
+  JSL Quickfill   ; determine if x2 speed
+  BEQ .exit       ; if slower speed, exit every other frame
+
+; -------------------------------------------------------------------------
 ; Skip morph gauge decrement
 
-org $C21143 : BRA BypassMorphCalc
-org $C2114B : BypassMorphCalc:
+org $C21143 : BRA .bypass_morph
+org $C2114B : .bypass_morph
+org $C21190 : .exit
 
 ; -------------------------------------------------------------------------
 ; Update ATB, check for "ATB Autofill"
