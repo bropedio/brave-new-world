@@ -1276,17 +1276,13 @@ LoadWeaponProperties:
   PLX               ; restore attacker index (no more hand-based inc)
   LDA $3C45,X       ; relic effects
   BIT #$10          ; "Cannot Miss"
-  BEQ .chk_offering ; branch if no ^
+  BEQ .exit         ; branch if no ^
   LDA #$FF          ; max
   STA $11A8         ; set hit rate to max (can be affected by blind now)
-.chk_offering
-  LDA $3C58,X       ; relic effects
-  LSR               ; C: "X-Fight" (Daryl's Soul)
-  BCC .exit         ; branch if no ^
-  LDA #$02          ; "No Critical nor True Knight"
-  TSB $B2           ; set ^
 .exit
   RTS
+padbyte $FF         ; old offering and imp critical handling are
+pad $C22A37         ; unused, so this space (56 bytes) is free.
 
 ; #########################################################################
 ; Load Item Properties
