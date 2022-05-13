@@ -2610,7 +2610,7 @@ DisableCommands:
 .skip_imp
   TXA                ; command ID *2
   ROR                ; restore command ID (LSR would be fine)
-  LDX #$0008         ; initialize command loop
+  LDX #$0009         ; initialize command loop
 .loop
   CMP ModifyCmds,X   ; current command matches special case
   BNE .next          ; branch if not ^
@@ -2637,31 +2637,29 @@ DisableCommands:
   RTS 
 
 ModifyCmds:
-  db $1B    ; Shock (used to be Morph)
-  db $0D    ; Sketch
-  db $0B    ; Runic
-  db $07    ; SwdTech
-  db $0C    ; Lore
-  db $17    ; X-Magic
-  db $02    ; Magic
-  db $06    ; Capture
-  db $00    ; Fight
+  db $1B       ; Shock (used to be Morph)
+  db $0D       ; Sketch
+  db $0B       ; Runic
+  db $07       ; SwdTech
+  db $0C       ; Lore
+  db $17       ; X-Magic
+  db $02       ; Magic
+  db $06       ; Capture
+  db $00       ; Fight
+  db $11       ; Leap
 
 CmdModify:
-  dw $5322  ; Shock (used to be Morph)
-  dw $52FD  ; Sketch
-  dw $5322  ; Runic
-  dw $531D  ; SwdTech
-  dw $5314  ; Lore
-  dw $5314  ; X-Magic
-  dw $5314  ; Magic
-  dw $5301  ; Capture
-  dw $5301  ; Fight
-
-SketchHelp:
-  LDA $EF        ; disabled commands
-  LSR            ; C: Sketch Invalid
-  RTS
+  dw $5322     ; Shock (used to be Morph)
+  dw SketchDis ; Sketch
+  dw $5322     ; Runic
+  dw $531D     ; SwdTech
+  dw $5314     ; Lore
+  dw $5314     ; X-Magic
+  dw $5314     ; Magic
+  dw $5301     ; Capture
+  dw $5301     ; Fight
+  dw LeapDis   ; Leap
+  NOP
 warnpc $C25301+1
 
 ; #########################################################################
@@ -2871,7 +2869,7 @@ ChkMenu:
 .Leap
   JSR checkLeap     ; run helper function
   BIT #$02          ; "Leapable Formation"
-  BRA .try_mp       ; TODO: This branch seems wrong (should be may_null)
+  BRA .may_null     ; null if none ^
 .Lore
 .needs_mp
   LDA #$01          ; "Needs MP" flag
@@ -3453,7 +3451,33 @@ GetRowFlag:
   ORA $11A7       ; combine with 11A7's "respect row" bit
   RTS
 
-padbyte $FF
+padbyte $FF       ; TODO: Remove this padding
+pad $C2652E
+
+org $C2652E
+SketchDis:
+  LDA $EF         ; disabled commands
+  LSR             ; C: Sketch Invalid
+  RTS
+LeapDis:
+  PHY             ; store target index
+  LDY #$0005      ; loop iterator
+.loop
+  LDA $3F46,Y     ; get monster number from formation data
+  CMP #$FF        ; this also clears Carry for $5217 below
+  BEQ .next       ; skip if $FF (empty monster)
+  JSR $5217       ; X = monster # DIV 8, A = 2^(monster # MOD 8), C = 0
+  AND $1D2C,X     ; check in rage list
+  BEQ .done       ; return (carry clear) if at least one rage unlearned
+.next
+  DEY             ; decrement iterator
+  BPL .loop       ; check all monsters in formation
+  SEC             ; if all rages learned, set carry (disable command)
+.done
+  PLY             ; restore Y
+  RTS
+
+padbyte $FF       ; TODO: Remove this padding
 pad $C2653A
 
 ; -------------------------------------------------------------------------
