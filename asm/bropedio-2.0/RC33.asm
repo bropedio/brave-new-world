@@ -7,7 +7,6 @@ hirom
 ; This master file includes all bugfixes and patches for RC33
 ; of Brave New World 2.0.
 
-incsrc formation-randomness.asm
 incsrc run-fast-2.asm
 incsrc gau-stepping.asm
 incsrc phantom-bug.asm

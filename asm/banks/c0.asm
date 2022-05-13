@@ -104,13 +104,8 @@ org $C0C48C
 
 ; -------------------------------------------------------------------------
 ; Formation selection RNG
-; TODO: This RNG change is a bug, which is fixed by a later bropedio patch
 
-org $C0C4A9
-  LDA #$E9          ; 233
-  JSR RandomRangeC0 ; random(233) [uses C2 routine]
-  CLC               ; clear carry
-  ADC #$04          ; random(4..236)
+org $C0C4A9 : JSL $C0FD00
 
 ; #########################################################################
 ; Unequip Character (General Action $8D) [end of routine]
