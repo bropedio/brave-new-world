@@ -1642,7 +1642,7 @@ org $C23392
   JSR GetRowFlag                    ; if respect row, #10 will be set in A
   ASL                               ; move respect row flag to #20
   AND #$20                          ; if respect row, A = #20, else, A = #00
-org $C233A3 : JSR Imp_Nerf          ; add hook for new Imp damage nerf routine
+org $C233A3 : JSR ImpNerf           ; add hook for new Imp damage nerf routine
 org $C233BA : JSR SetTarget         ; Enable target's counterattack, even if we miss
 org $C233EA : BRA NoImpCrit         ; skip Imp critical handling
 org $C233F2 : NoImpCrit:            ; label for BRA above
@@ -2298,9 +2298,12 @@ org $C2418F : JSR DiceHelp ; corrects dice issue (by Seibaby)
 
 ; #########################################################################
 ; Old Revenge Routine (now freespace)
+; TODO: This old "Imp Nerf" routine is no longer used, because it was
+; overwriting part of Palidor effect, and was moved elsewhere. It can
+; be removed. The overlapping portion has been removed.
 
 org $C241E6
-Imp_Nerf:
+OldImpNerf:
   LDA $B5        ; command ID
   CMP #$01       ; "Item"
   BEQ .exit      ; exit if ^
@@ -2308,9 +2311,7 @@ Imp_Nerf:
   BIT #$20       ; "Imp"
   BEQ .exit      ; branch if not ^
   LSR $11B1      ; damage / 2 (hibyte)
-  ROR $11B0      ; damage / 2 (lobyte)
-.exit
-  JMP $14AD      ; [displaced]
+org $C241F9 : .exit
 
 ; #########################################################################
 ; Spiraler (per-strike special effect)
@@ -3426,6 +3427,23 @@ AddEL:
 .next
   LDA #$00        ; clear finished bonus
   BRA .doone      ; loop for second bonus byte
+
+; --------------------------------------------------------------------------
+; Img Damage Reduction Helper (in freespace)
+
+ImpNerf:
+  LDA $B5           ; command id
+  CMP #$01          ; is command "Item"
+  BEQ .skip         ; exit if so
+  LDA $3EE4,X       ; status byte 1
+  BIT #$20          ; "imp"
+  BEQ .skip         ; exit if not imped
+  LSR $11B1         ; half damage (high byte)
+  ROR $11B0         ; half damage (low byte)
+.skip
+  JMP $14AD         ; continue to hitting back check
+
+; --------------------------------------------------------------------------
 
 padbyte $FF       ; TODO: freespace here
 pad $C261E9
