@@ -1484,7 +1484,7 @@ org $CC65F8 : db $1B,$1E,$C1,$87,$E0,$0C,$8D,$E0,$0C,$82,$E0,$10,$80,$E0,$0C,$84
 ; ------------------------------------------------------------------------
 ; Lower the price for hiring Shadow at Kohlingen to 1000 GP.
 
-org $CC7001 : db $85,$E8,$03
+org $CC7001 : db $85 : dw $03E8 ; 1000 GP
 
 ; ------------------------------------------------------------------------
 ; Locke and Terra, after banquet with Gestahl (new level averaging behavior)

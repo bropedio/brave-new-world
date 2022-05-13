@@ -7,7 +7,6 @@ hirom
 ; This master file includes all bugfixes and patches for RC33
 ; of Brave New World 2.0.
 
-incsrc shadow-fee.asm
 incsrc esper-level-simplify.asm
 incsrc lvl-avg.asm
 incsrc elemental-lite.asm
