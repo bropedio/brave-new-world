@@ -1998,16 +1998,24 @@ CoinHelp:
 ; Modified by dn's "Scan Status" patch to skip the "Cannot Scan" check and
 ; message preparation. This is done so the new "Status" and "Weakness" scan
 ; results are available during boss fights. "Cannot Scan" flag means "Boss".
+;
+; Make Scan a free action, but only for characters.
 
 org $C23C5B
 ScanEffect:
-  TYX
-  LDA #$27
-  STZ $341A        ; prevent enemies from countering scan
-  JMP $4E91        ; queue command in special action queue
+  LDA $05,S     ; attacker index
+  TAX           ; place in X
+  CPX #$08      ; monster range
+  BCS .done     ; skip free turn if monster
+  JSR $3CB8     ; use steal subroutine to set ATB refill flag 
+.done
+  STZ $341A     ; prevent counterattack
+  TYX           ; put target index in X
+  LDA #$27      ; scan command id
+  JMP $4E91     ; queue scan command in global action queue
+warnpc $C23C6E+1
 padbyte $FF
 pad $C23C6E
-warnpc $C23C6E+1
 
 ; #########################################################################
 ; Air Anchor Routine (now freespace)
