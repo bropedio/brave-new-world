@@ -7,7 +7,6 @@ hirom
 ; This master file includes all bugfixes and patches for RC33
 ; of Brave New World 2.0.
 
-incsrc double-gp.asm
 incsrc palidor-bug.asm              ; uses freespace from "esper-level-simplify"
 incsrc weapon-swap-complete.asm
 incsrc death-counter-status.asm

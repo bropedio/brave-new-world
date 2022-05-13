@@ -3235,6 +3235,23 @@ org $C25D0A : BCC .loop
 ; Make EP gains display after combat
 org $C25E0B : JSR Show_EP
 
+; Double GP when Experience is off
+org $C25E10
+DoubleGP:
+  LDA $1D4D           ; config byte
+  BIT #$08            ; "gain exp" flag
+  BNE .skip           ; branch if experience on
+  ASL $2F3E           ; else, double GP reward
+  ROL $2F3F
+  ROL $2F40
+.skip
+  LDY #$0006          ; shifted vanilla code below
+.loop
+  LDA $3018,Y
+  BIT $3A74
+  BEQ NextVictoryLoop
+  BRA AfterMorph
+
 ; The following branch bypasses the function that adjusts Terra's Morph supply.
 org $C25E2F : BRA AfterMorph
 
@@ -3267,6 +3284,8 @@ org $C25E4C
 ; Remove learning spells from post-combat routine
 org $C25E6A : BRA No_Spells
 org $C25E72 : No_Spells:
+org $C25E73 : NextVictoryLoop:
+org $C25E75 : BPL DoubleGP_loop
 
 ; Synchysi's note:
 ; The instruction here would seem to prevent the game from ever displaying
