@@ -4091,25 +4091,27 @@ NewVariance:
   LDA $3B2C,Y    ; else, load target's Vigor (x2)
   LSR            ; / 2 to get real Vigor value
 .variance
-  PHA            ; store defense stat
-  ASL            ; x2
-  ADC $01,S      ; x3
-  LSR #2         ; stat * 3/4
-  STA $E8        ; save in scratch ^
-  LDA #$E1       ; 225
+  PHA            ; store stat (stam or vig/2) on stack
+  LSR #2         ; stat / 4
+  STA $E8        ; store in scratch ^
+  LDA #$1E       ; A = 30
   SEC            ; set carry
-  SBC $E8        ; 225 - (stat * 3/4)
-  STA $E8        ; save ^
-  PLA            ; restore defense stat
-  EOR #$FF       ; 255 - stat
-  SEC            ; set carry
-  SBC $E8        ; variance cap - floor
-  BCC .multiply  ; branch if floor is larger than the cap
-  INC            ; +1
-  JSR $4B65      ; random(cap - floor + 1)
-  CLC            ; clear carry
-  ADC $E8        ; get variance value
-  STA $E8        ; save multiplier
+  SBC $E8        ; A = 30 - stat/4 (this is the variance range)
+                 ; (hi = 255-stat, lo=225-.75stat. hi - lo = 30 - .25stat)
+  BCC .store     ; if negative, immediately store this value as E8
+  INC
+  JSR $4B65      ; A = random(0...max_variance)
+.store
+  STA $E8        ; E8 = random variance OR negative diff between hi and lo
+  PLA            ; A = stat
+  EOR #$FF       ; A = 255 - stat
+  SEC
+  SBC $E8        ; A = (255 - stat) - random_variance
+  STA $E8        ; if E8 is negative, A will equal the low bound
+
+padbyte $EA      ; TODO: Remove this padding
+pad $C2A7A9
+
 .multiply 
   REP #$20       ; 16-bit A
   LDA $F0        ; maximum damage
@@ -4136,9 +4138,6 @@ NewVariance:
 .old_var
   JSR $4B5A      ; random(256)
   JMP OldVariance; jump back to damage mod routine
-
-
-
 
 ; -------------------------------------------------------------------------
 org $C2A7DD
