@@ -500,6 +500,32 @@ Random:
   PLP            ; restore flags
   RTL
 
+; -------------------------------------------------------------------------
+; Elemental Damage Modification Helper
+
+org $C0FD40
+EleModLoop:
+  BIT $3BCD,X      ; check immunities
+  BNE .next        ; if immune, skip dmg increments
+.inys
+  BIT $3BE1,X      ; check resistances
+  BNE .half        ; only iny 50%
+  INY
+.half
+  INY
+  BCS .skip        ; skip weakness check 2nd time
+  SEC              ; track weakness loop
+  BIT $3BE0,X      ; check weaknesses
+  BNE .inys        ; double increments via loop
+.skip
+  CLC
+.next
+  INC $EE
+  DEC $EE          ; check if no remaining attack elems
+  RTL
+padbyte $FF
+pad $C0FD84
+
 ; #########################################################################
 ; Freespace
 

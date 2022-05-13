@@ -428,6 +428,80 @@ Tick_Calc:
 warnpc $C20B4A+1
 
 ; ########################################################################
+; Damage Mod, Elemental Mod, Undead Reverse (per-target)
+;
+; Based on Elemental Share, new elemental algorithm simplifies damage
+; output to either 0%, 50%, 100%, or 200%
+
+org $C20B8B
+AllTargetDmgMod:
+  JMP .exit        ; elemental routine start - exit if zero battle power
+org $C20B9D
+  LDA $3EE4,Y      ; status-1
+  ASL              ; N: "Petrified"
+  BMI .null        ; branch to null dmg if ^
+org $C20BB9
+  BNE .exit        ; exit if reviving dead?
+org $C20BD3
+  LDA $11A1        ; attack element types
+  BEQ .atma_chk    ; skip elemental mod if no attack elements
+  STA $EE          ; save copy of elemental byte (used in C0 routine)
+  AND $3BCC,Y      ; check absorbs
+  BEQ .step2       ; if no absorb, continue elemental check
+  LDA $F2
+  EOR #$01
+  STA $F2          ; toggle heal flag
+  BRA .atma_chk    ; finish elemental check
+.step2
+  PHX              ; store X on stack
+  TYX              ; X = target index
+  TDC              ; C0 routine requires 0 lo-A
+  TAY              ; Y = 0 (modifier count)
+  STZ $E8          ; E8 = 0 (# attack elems)
+  SEC              ; so first ROR in C0 loop yields A=#$80
+.loop
+  ROR              ; A = next bit to check 
+  TRB $EE          ; test for attack element
+  BEQ .loop        ; if not used, try next
+  INC $E8          ; increment # attack elems
+  JSL EleModLoop   ; increment elements and modifiers
+  BNE .loop        ; if not zero, loop again 
+  TYA              ; A = modifier count
+  TXY              ; reset Y to target index
+  PLX              ; restore X value
+  CMP #$00         ; is modifier count zero (immune)?
+  BNE .step_3      ; if not, continue
+.null
+  STZ $F0
+  STZ $F1          ; zero damage
+  BRA .apply_dmg   ; skip past Atma Weapon check
+.step_3
+  LSR              ; A = modifier count / 2
+  CMP $E8
+  BEQ .atma_chk    ; if equals elem count, regular dmg
+  BCS .double      ; if count > elems, double dmg
+  LSR $F1          ; else half dmg
+  ROR $F0
+  BRA .atma_chk    ; finish
+.double  
+  LDA $F1
+  BMI .atma_chk    ; don't double damage if over 32k
+  ASL $F0
+  ROL $F1          ; double damage
+  NOP              ; 1 free byte
+.atma_chk
+  LDA $11A9        ; from here to rts, reverted to vanilla
+  CMP #$04
+  BNE .apply_dmg   ; branch if not Atma Weapon special effect
+  JSR $0E39        ; Atma Weapon damage modification
+.apply_dmg
+  JSR $0C2D        ; apply damage/healing to be done
+.exit
+  PLP
+  RTS
+warnpc $C20C2E
+
+; ########################################################################
 ; Damage Modification (per-target)
 
 org $C20CA6 : SEP #$30        ; 8-bit A, X/Y
