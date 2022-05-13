@@ -287,20 +287,17 @@ Palettes:
   incbin bin/palettes-bnw.bin ; include binary palette data
 
 StatusATB:
-  TAX              ; Character index (0-6)
-  LDA $3EF8,X      ; Status byte 3
+  LDA $0011,X      ; Status byte 3 (buffer)
   BIT #$10         ; Is Stop status set?
   BEQ .slow        ; Branch if not Stopped
   LDA #$3D         ; Select palette #8           STOPPED
   BRA .store       ; Store palette
 .slow
-  LDA $3EF8,X      ; Status byte 3
   BIT #$04         ; Is Slow status set?
   BEQ .haste       ; Branch if not Slowed
   LDA #$2D         ; Select palette #4           SLOW
   BRA .store       ; Store palette
 .haste
-  LDA $3EF8,X      ; Status byte 3
   BIT #$08         ; Is Haste status set?
   BEQ .normal      ; Branch if not Hasted
   LDA #$39         ; Select palette #7           HASTE
@@ -309,6 +306,14 @@ StatusATB:
   LDA #$35         ; Select palette #6           NORMAL
 .store
   RTL
+
+; TODO: Remove code below -- no longer used
+  LDA #$39         ; Select palette #7           HASTE
+  BRA .store2      ; Store palette
+  LDA #$35         ; Select palette #6           NORMAL
+.store2
+  RTL
+; TODO: Remove code above -- no longer used
 
 LeftCap:
   LSR A

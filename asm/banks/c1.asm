@@ -240,25 +240,28 @@ drawGauge:
   LDA $2021        ; ATB gauge setting
   LSR              ; Gauge enabled?
   BCC .draw_hp     ; Branch if disabled
-  LDA $3A8F        ; nATB: is ATB paused?
-  LSR              ; (01 = paused)
-  BCS .exit        ; Don't update bars while ATB is paused
   LDA $4E          ; Text color
   PHA              ; Save it
+  LDX $10          ; Offset to character data
+  JSL StatusATB    ; Get ATB color based on status
+  STA $4E          ; Store palette
   LDA $18          ; Which character is it (0-3)
   TAX              ; Index it
   LDA $619E,X      ; Character's ATB gauge value
-  PHA              ; Save it for later
-  TXA              ; A = character 0-3
-  ASL              ; Double it
-  JSL StatusATB    ; get palette based on status
-  STA $4E          ; Store palette
-  PLA              ; Restore ATB gauge value
   JSR $6854        ; Draw the gauge
   PLA              ; Get saved text color
   STA $4E          ; Store text color
 .exit
   RTS
+
+; Leftover from earlier version of patch TODO: Remove below
+  PLA              ; Restore ATB gauge value
+  JSR $6854        ; Draw the gauge
+  PLA              ; Get saved text color
+  STA $4E          ; Store text color
+  RTS
+; Leftover from earlier version of patch TODO: Remove above
+
 org $C16898
 .draw_hp
   LDA #$C0         ; Draw a "/" as HP divider
