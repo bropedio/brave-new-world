@@ -990,6 +990,12 @@ org $C21D61 : dw MPLowCounter ; FC command $06 (HP low counter)
 org $C21D63 : dw MPLowCounter ; FC command $07 (MP low counter)
 
 ; -------------------------------------------------------------------------
+; Figure out what type of command a spell is
+; Modify ranges to account for replacement of MagiTek moves
+
+org $C21DE0 : db $84 ; Start Lore/EnemyAttack range with spell ID 84 (Exploder)
+
+; -------------------------------------------------------------------------
 ; Script $F1, Target $45 - Last Character or Enemy to Attack
 ; Previously, this targeting would include muddled monsters who recently
 ; attacked. Now, vindictive targeting is only used when the last entity
