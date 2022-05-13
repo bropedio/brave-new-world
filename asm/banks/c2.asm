@@ -1542,8 +1542,9 @@ org $C23225 : SkipImpMute:
 org $C2334B : JSR SpecialAttStam    ; handle enemy special attacks stamina flag
 org $C2336B : NOP #2                ; remove second INC $BC from morph (+50%)
 org $C23392
-  LDA $11A7                         ; Special byte 3
-  JSR Row_Chk                       ; check for row respecting flags (eg. Aurabolt)
+  JSR GetRowFlag                    ; if respect row, #10 will be set in A
+  ASL                               ; move respect row flag to #20
+  AND #$20                          ; if respect row, A = #20, else, A = #00
 org $C233A3 : JSR Imp_Nerf          ; add hook for new Imp damage nerf routine
 org $C233BA : JSR SetTarget         ; Enable target's counterattack, even if we miss
 org $C233EA : BRA NoImpCrit         ; skip Imp critical handling
@@ -3449,12 +3450,15 @@ PlayerPhys:
   PLX             ; restore X (attacker index)
   JMP PhysDmgJump ; jump back to physical damage fork
 
-Row_Chk:
-  EOR #$FF        ; flip bits so bit 4 is now "respect row"
-  ASL             ; move to bit 5 to match $B3
-  ORA $B3         ; combine row-respecting bytes
-  AND #$20        ; if attack respects row, bit 5 should be set
+GetRowFlag:
+  LDA $B3         ; attack flags
+  EOR #$FF        ; flip bits, so #20 goes from "ignore row" to "respect row"
+  LSR             ; move "respect row" bit to #10
+  ORA $11A7       ; combine with 11A7's "respect row" bit
   RTS
+
+padbyte $FF
+pad $C2653A
 
 ; -------------------------------------------------------------------------
 ; Rage on-clear status removal helper
