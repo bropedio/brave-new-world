@@ -1103,7 +1103,8 @@ wpn_common:
 common:
   JSR $A150       ; sort list of eligible gear by Battle Power or Defense
   LDY $F3         ; load character index
-  JMP $9819       ; pick best gear that's compatible with Optimum,
+  JMP CheckEmpty  ; hook, then pick best gear that's compatible with Optimum
+                  ; TODO: Just insert CheckEmpty inline here ^
 stuff_9B59:
   JSR $9C2A       ; Generate fallback list of 9 FFs, in case none found
   JSR $9C41       ; set equippability word
@@ -1113,7 +1114,13 @@ stuff_9B59:
 WeaponList:       ; TODO: pointless [?]
   JSR stuff_9B59  ; do early parts of Function C3/9B59
   JMP $9B72       ; generate list of equippable Weapons and Shields.
-  NOP #20
+CheckEmpty:
+  LDA $7E9D89     ; A = list size
+  BEQ .empty      ; branch if no items ^
+  JMP $9819       ; else, pick item
+.empty
+  JMP $9881       ; jump to finish
+  NOP #8
 
 ; #########################################################################
 ; Sustain Equip and Relic Menus (continued)
