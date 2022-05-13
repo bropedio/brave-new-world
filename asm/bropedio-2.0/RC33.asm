@@ -7,7 +7,6 @@ hirom
 ; This master file includes all bugfixes and patches for RC33
 ; of Brave New World 2.0.
 
-incsrc weapon-swap-complete.asm
 incsrc death-counter-status.asm
 incsrc inform-miss-3.asm            ; requires "mind-blast"
 incsrc chainsaw-fix.asm             ; requires "inform-miss-3"

@@ -950,6 +950,36 @@ org $C218FF : NOP #2
 org $C21908 : JSR CoinHelp
 
 ; #########################################################################
+; Row (command)
+
+org $C21955
+HalfSelf:
+  JSL HalfTurn      ; reset ATB to 50%
+  BRA SelfHit       ; execute self-hit
+warnpc $C2195C
+
+; #########################################################################
+; Runic (command)
+
+org $C21964 : SelfHit: ; [label] load command data and hit self (Runic)
+
+; #########################################################################
+; Defend (command)
+;
+; Defend/Row/WeaponSwap Command handling
+; Changed to consume 1/2 turns only, and
+; flag equipment update for WeaponSwap,
+; which enters with the "Defend" command id.
+
+org $C2196B
+  JSL SwapOrDefend  ; prep status-to-clear and return 0 or 2
+  JSR $5BAB         ; set defend flag (or no flag)
+  TYX               ; setup indexes properly for self-hit
+  BRA HalfSelf      ; flag half-turn self-hit
+  NOP
+warnpc $C21977
+
+; #########################################################################
 ; Code Pointers for Commands
 
 org $C219ED : dw PreDanceCmd ; changed to add Moogle Charm hook
@@ -1019,6 +1049,13 @@ org $C21DE0 : db $84 ; Start Lore/EnemyAttack range with spell ID 84 (Exploder)
 ; who attacked the target is a character (0-3)
 
 org $C22002 : CMP #$04 ; Vindictive Targeting Fix
+
+; #########################################################################
+; Recalculate Character Properties from Equipment
+; * Support for HP/MP, Statuses
+; * Detect 2-hand/dual-wield properties
+
+org $C220D5 : JSR ExtraProps ; hook to expand equipment prop support
 
 ; #########################################################################
 ; Hit Determination
@@ -1299,6 +1336,89 @@ org $C22716 : .skip
 ; #########################################################################
 ; Load Character Equipment Properties
 
+; -------------------------------------------------------------------------
+; Rearranged initialize-battle-stat routine
+; Extracts status and HP/MP subroutines for reuse
+; Also makes room for helper "Extra" for equipment update
+
+org $C227A8
+BattleInit:         ; 93 bytes
+  PHP
+  REP #$30          ; Set 16-bit Accumulator & Index Registers
+  STZ !unequip      ; zero needs-unequip byte
+  LDY $3010,X       ; get offset to character info block
+  LDA $1609,Y       ; get current HP
+  STA $3BF4,X       ; HP
+  LDA $160D,Y       ; get current MP
+  STA $3C08,X       ; MP
+  JSL NewMaxHP
+  LDA $3018,X       ; Holds character bit mask
+  BIT $B8           ; is this character a Colosseum combatant
+  BEQ .status1      ; branch if neither
+  LDA $3C1C,X       ; Max HP
+  STA $3BF4,X       ; HP
+  LDA $3C30,X       ; Max MP
+  STA $3C08,X       ; MP
+  LDA $1614,Y       ; outside battle statuses 1-2 (1 and 4)
+  AND #$FF2D
+  STA $1614,Y       ; remove Clear, Petrify, Death, Zombie
+.status1
+  LDA $1614,Y       ; outside battle statuses 1-2 (1 and 4)
+  SEP #$20
+  STA $3DD4,X       ; Status to set byte 1
+  BIT #$08
+  BEQ .status4      ; If not set M-Tek
+  LDA #$1D
+  STA $3F20         ; save MagiTek as default last command for Mimic
+  LDA #$83
+  STA $3F21         ; save Fire Beam as default last attack for Mimic
+.status4
+  XBA               ; outside battle status 2
+  AND #$C0          ; only keep Dog Block and Float
+  STA $3DE9,X       ; Status to set byte 4
+  JSL SetStatus     ; add equipment statuses to set
+  LDA $1608,Y
+  STA $3B18,X       ; Level
+  PLP 
+  RTS 
+
+ExtraProps:              ; 47 bytes
+  PHX               ; store X
+  REP #$30          ; 16-bit A,X,Y
+  LDY $3010,X       ; Y = offset to character block
+  JSL NewMaxHP      ; update in-battle max HP/MP
+  SEP #$20          ; 8-bit A
+  LDA $3018,X       ; character's unique bit
+  TRB !unequip      ; clear unequip flag
+  BEQ .skip         ; skip to set status if wasn't set
+  LDA $32F4,X       ; unequip item id (currently in reserve)
+  JSR $2B63         ; multiply A (item id) by 30
+  PHX               ; prepare X<->Y swap
+  TAX               ; item data offset in X
+  PLY               ; character index in Y
+  JSL ClearStatus   ; clear unequip status, then set equip status
+  TYX               ; character index back in X
+.skip
+  JSL SetStatus     ; set equip statuses
+  SEP #$10          ; 8-bit X,Y
+  PLX               ; restore X
+  JSR $4391         ; update all statuses
+  JMP $2675         ; set status immunity to innate statuses
+
+ItemLookup:         ; 4 bytes
+  JSR $54DC         ; copy item data into $2E72-2E76 (long access)
+  RTL
+
+HPLookup:           ; 4 bytes
+  JSR $283C         ; get max HP after equipment/relic boosts
+  RTL
+
+warnpc $C2283D
+padbyte $FF
+pad $C2283C
+
+; -------------------------------------------------------------------------
+
 org $C22872
   BRA NoMog    ; skip turning Moogle Suit wearing into Moogle
 
@@ -1316,8 +1436,20 @@ Sap_Chk2:
   JMP AtlasEnd    ; jump back instead (to end of routine)
 
 ; -------------------------------------------------------------------------
+; Skip Gengi Glove Effect check, use freespace for Weapon Swap Helper
 
-org $C22883 : NoMog:
+org $C22883
+NoMog:
+  BRA GenjiSkip     ; skip gengi glove effect setting
+LongUpdate:
+  JSR $2095         ; long access to run equipment updates
+  RTL
+  NOP #4
+GenjiSkip:
+warnpc $C2288E
+
+; -------------------------------------------------------------------------
+
 org $C22917 : STA $3330,X ; clear correct immunities byte [vanilla bug]
 
 ; #########################################################################
@@ -3030,6 +3162,14 @@ CmdBlanks:
   db $17 ; X-Magic
   db $0C ; Lore
 warnpc $C2546E+1
+
+; ########################################################################
+; Copy Item Properties into Buffer
+
+; ------------------------------------------------------------------------
+; Set Dual Wield flags on battle inventory items
+
+org $C25528 : JSL FlagDual   ; set item flags for 2-hand and dual-wield
 
 ; ########################################################################
 ; Construct Magic and Lore Menus

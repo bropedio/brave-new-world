@@ -1,5 +1,8 @@
 ; Battle RAM
 
+!unequip = $2E6E ; (1 byte) - Bitmask for which characters are unequipping
+; $2E6F $2E70 $2E71 (3 bytes) - Free. Was for genji effect
+
 ; Used by dn's aura cycling hack (1 byte per character)
 !aura_cycle = $2EA9 ; $2EC9 ; $2EE9 ; $2F09
 
