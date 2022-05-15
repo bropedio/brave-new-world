@@ -20,6 +20,13 @@ org $C3B33F
 	db $8b,$58,$0d,$01	;Left Item
 	db $a9,$58,$0d,$01	;Right Item
 
+;Moving challenger data
+org $c3aefa
+	ldy #$7c51
+
+org $C3B427
+	db $cd,$78,"?????????????",$00
+	
 ;Fix gradient scale
 
 org $D4CB42
@@ -51,7 +58,7 @@ org $c33402
 org $C38A4C
 	dw #Itemowned
 	
-org $C3fe04
+org $C38E41
 Itemowned:
 	db $8d,$79,"Owned:",$00
 
@@ -114,8 +121,11 @@ org $d863a6 : db $0a        ;Defibrillator
 ;;
 ;;-----------------------------------------------------
 
+;Fix print routine
+org $c3f9c4 : beq $31	     ;Branch if is a throwing item(fixed, original code excludes print routine)
+
 ;Set Attack print value
-org $d8579e : db $16,$08,$10	;Shuriken
+org $d8579e : db $11,$08,$10	;Shuriken
 org $d86428 : db $16,$08,$10	;Ninja scroll water
 org $d8640a : db $16,$08,$10	;Ninja scroll fire
 org $d86446 : db $16,$08,$10	;Ninja scroll bolt
@@ -126,3 +136,14 @@ org $d86428+20 : db $64		;Ninja scroll water
 org $d8640a+20 : db $64		;Ninja scroll fire
 org $d86446+20 : db $64		;Ninja scroll bolt
 org $d86482+20 : db $00		;Ninja scroll smoke
+
+;------------------------------------------------------------------
+;Cinematic&Title Program&GFX
+;------------------------------------------------------------------
+check bankcross off
+org $C2686C
+	incbin "../asm/C2686C_Cinematic_Progam.bin"	;Cinematic Program
+	
+org $D8f000
+	incbin "../asm/D8F000_Cinematich_Title_Isle_GFX.bin"	;Cinematic, Title, Isle GFX & Tilemap Properties
+check bankcross on
