@@ -51,7 +51,7 @@ db $31                      ; Formations 96-103
 db $50                      ; Formations 104-111
 db $C9                      ; Formations 112-119
 db $98                      ; Formations 120-127
-db $09                      ; Formations 128-135
+db $11                      ; Formations 128-135
 
 ; Insert event command into apocalypse cutscene event script
 org $CA51CD
