@@ -147,3 +147,9 @@ org $C2686C
 org $D8f000
 	incbin "../asm/D8F000_Cinematich_Title_Isle_GFX.bin"	;Cinematic, Title, Isle GFX & Tilemap Properties
 check bankcross on
+
+; BNW Versioning
+
+org $C338C9 : LDA #$28 ; yellow font
+org $C33BB8 : dw $78D1 : db "Brave New World 2.1.1 b2",$00
+org $C33BD7 : db $81,$9A ; correct first letter of "Battle Msg Speed" label
