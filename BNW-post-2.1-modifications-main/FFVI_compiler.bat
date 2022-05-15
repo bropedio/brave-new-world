@@ -18,8 +18,8 @@ echo.
 echo Applying hacks...
 %ASAR% --pause-mode=on-error %PATCHES%\new_intro.asm %EDITED_ROM%
 %ASAR% --pause-mode=on-error %PATCHES%\misc.asm %EDITED_ROM%
-%ASAR% --pausa-mode=on-error %PATCHES%\veldt-freebies.asm %EDITED_ROM%
-%ASAR% --pausa-mode=on-error %PATCHES%\lore_curative.asm %EDITED_ROM%
+%ASAR% --pause-mode=on-error %PATCHES%\veldt-freebies.asm %EDITED_ROM%
+%ASAR% --pause-mode=on-error %PATCHES%\lore_curative.asm %EDITED_ROM%
 
 echo Applying ips...
 %flips% --apply "graphic_fixes.ips" %EDITED_ROM%
