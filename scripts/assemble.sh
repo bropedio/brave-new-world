@@ -33,9 +33,6 @@ assemble "$allbanks"
 rm "$allbanks"
 cd ../../scripts
 
-# Assemble asm files in synchysi directory one at a time
-assemble_batch synchysi
-
 # Assemble bropedio asm using master files
 assemble_master bropedio-2.0 RC33.asm
 assemble_master bropedio-2.1 RC-18.asm

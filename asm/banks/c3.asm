@@ -9,6 +9,38 @@ table vwf.tbl,rtl
 !_ellipsis = #$C7
 
 ; #########################################################################
+; Draw Character HP/MP/LV Values
+
+org $C30C81 : JSR Esp_Lvl ; Also draw EL value
+
+; #########################################################################
+; Animation Queue
+
+; Remove infinite loop that existed for some reason (TODO: Test this)
+; Change included in "Esper Changes" hack for EP/EL/Spell Bank features
+org $C311AD : NOP #2
+
+; #########################################################################
+; In Game Time Update
+
+org $C3140D : JSR FrameCounter ; hook to increment RNG frame counter
+
+; #########################################################################
+; Initialize Skills Menu
+
+org $C31B61 : JSR StChr ; store character ID in $A3 (for esper restrict)
+
+; #########################################################################
+; Open Equip Menu After Optimizing Gear
+
+org $C31C1D : NOP #3 ; skip optimize routine
+
+; #########################################################################
+; Allows the player to equip Umaro manually.
+
+org $C31E6E : CMP #$0E
+
+; #########################################################################
 ; Initialize Magic Menu
 
 org $C32125 : NOP #3 ; skip drawing MP Cost in Magic Menu
@@ -61,9 +93,41 @@ org $C32341
 org $c32806 : NOP #3 ; skip drawing MP cost
 
 ; #########################################################################
+; Draw Esper
+
+org $C32937 : JMP DrawEsperHook ; include esper equip bonuses
+
+; #########################################################################
+; Field Spell Usage
+
+org $C32C32 : CMP #$29 ; update spell ID for float (allow field usage)
+org $C32C36 : CMP #$1F ; update spell ID for Imp (allow field usage)
+org $C32C67 : AND #$65 ; add Imp status to curable by Remedy item in field
+
+; #########################################################################
 ; Return to Magic Menu
 
 org $C32D56 : NOP #3 ; skip drawing MP cost
+
+; #########################################################################
+; Character Display
+
+; Change position of LV to make room for EL
+; If espers have been acquired, write EL label after LV label
+org $C33303 : JSR EL_Main_1 ; Main menu, character 1
+org $C3332D : dw $39A5
+org $C3334F : JSR EL_Main_2 ; Main menu, character 2
+org $C33379 : dw $3B25
+org $C3339B : JSR EL_Main_3 ; Main menu, character 3
+org $C333C5 : dw $3CA5
+org $C333E7 : JSR EL_Main_4 ; Main menu, character 4
+org $C33411 : dw $3E25
+
+
+; #########################################################################
+; Positioned Text for Main Menu
+
+org $C33819 : db "GP" ; instead of Gp
 
 ; #########################################################################
 ; Config Menu Initialize
@@ -108,6 +172,25 @@ org $C33BB7
   RTS           ; automatically return from battle speed jump
 BNWText:   dw $78CF : db "   ",$81,"rave New World 2.1b18 ",$00 ; Issue w/ "B" char
 BattleTxt: dw $3A4F : db $81,"attle","$00
+warnpc $C33BDE+1
+padbyte $FF
+pad $C33BDE
+
+; -------------------------------------------------------------------------
+; Helper for Loading Summon Descriptions (in freespace)
+
+org $C33BDE           ; 18 bytes, we'll use 17 :)
+LoadDescription:
+  LDA $4B             ; On esper name?
+  BEQ .esper          ; Branch if so
+  CMP #$06            ; On bonus?
+  BEQ .bonus          ; Branch if so
+  JMP $5BE3           ; Load magic description
+.esper
+  JMP SummonDescription
+.bonus
+  JMP $5BF6           ; Load EL description
+
 warnpc $C33BF2+1
 padbyte $FF
 pad $C33BF2
@@ -221,15 +304,25 @@ MagicMenuCursorPositions:
   dw $C878    ; Spell 16
 
 ; #########################################################################
-; Draw Skills Menu
+; Draw Skills Menu(s)
 
 org $C34C80 : JSR FlipMPDisplay : NOP #2 ; default MP display to "on"
 org $C34CC0 : NOP #6 ; skip drawing "title box" window
-
-; #########################################################################
-; Draw Magic Menu
-
 org $C34D8C : NOP #6 ; skip drawing "MP" label
+org $C34EEA : JSR EL_Skill  ; draw EL in skills display
+org $C34F12 : db $35,$42 ; make room for EL display
+
+; Data table for magic order in menus
+org $C34F49
+  db $2D,$00,$19,$FF
+  db $2D,$19,$00,$FF
+  db $00,$19,$2D,$FF
+  db $00,$2D,$19,$FF
+  db $19,$2D,$00,$FF
+  db $19,$00,$2D,$FF
+
+org $C34F69 : LDX #$0014 ; the number of grey magic spells
+org $C34F6E : LDX #$0019 ; the number of black magic spells
 org $C34FAC : LDX #$0011 ; increase space between spell list columns (was $10)
 
 ; #########################################################################
@@ -253,6 +346,12 @@ org $c35082
   LDA #$FF           ; space character
   JMP EndDrawPercent ; finish drawing percentage learned
   db $FF             ; [fill unused]
+
+; -------------------------------------------------------------------------
+; Skip Imp disabling magic usage in field
+
+org $C3518D : BRA No_Imp
+org $C3519B : No_Imp:
 
 ; #########################################################################
 ; Draw MP Cost in Magic Menu
@@ -357,7 +456,12 @@ warnpc $C35452+1
 ; #########################################################################
 ; Draw Esper Menu
 
-org $C35460 : NOP #6 ; skip drawing "Esper" title
+org $C35460 : NOP #6       ; skip drawing "Esper" title
+org $C35524 : JSR ChkEsp   ; handle restrictions when choosing esper palette
+org $C35576 : ChkEq:       ; [label] check if any espers are already equipped
+org $C35593 : LDA #$2C     ; color: grey-blue (esper equipped by someone else)
+org $C35595 : SetTxtColor: ; [label] used in restrict espers hack
+org $C355B2 : JMP Uneq     ; handle printing name of unequippable esper
 
 ; #########################################################################
 ; Draw Blitz Menu
@@ -377,10 +481,133 @@ org $C3565D : JSR BlitzNames
 org $C3577E : NOP #6 ; skip drawing "Dance" title
 
 ; #########################################################################
+; Initialize Esper Data Menu
+
+org $C358B9 : JSL InitEsperDataSlice ; ($C4)
+
+; #########################################################################
+; Sustain Esper Data Menu
+
+org $C358DB : JMP Pressed_A : NOP ; support Spell Bank and EL Bonus selection
+
+org $C358E1           ; handle restrictions when choosing esper palette
+  STA $E0             ; memorize esper
+  LDX $FD             ; retrieve stored offset for who has esper equipped
+  NOP                 ; filler byte to get us back in the right spot
+  LDA $FC             ; retrieve stored esper palette
+
+; Checks if the text color is gray, and BZZTs the character if it is. Since
+; we're also using blue to indicate an unequippable esper, we'll simply
+; change the comparison from "if not gray, branch" to "if white, branch"
+
+org $C358E8
+  CMP #$20        ; is esper color white
+  BEQ WhiteTxt    ; branch if ^
+org $C35902 : WhiteTxt:
+
+; #########################################################################
+; Draw Selected Esper Data Info
+
+org $C3599D : dw $B810  ; Reposition EL bonus cursor
+org $C359AC : JSR Blue_Bank_Txt
+org $C359B1 : JSR ChkEsp ; handle restrictions when choosing esper palette
+org $C359CF : JSR DrawEsperMP ; end of drawing esper name
+org $C35A3B : JSR Unspent_EL ; add unspent EL draw to esper bonus draw
+org $C35A4C : db $0B    ; Remove 2 spaces between label and bonus
+org $C35A84 : JMP $7FD9 ; skip drawing spell progress
+
+; Re-formats the esper screen to properly display SP cost
+org $C35AFF
+  LDA #$FF          ; " "
+  STA $2180         ; write ^
+  STA $2180         ; write ^
+  JSR Learn_Chk
+SPCost:
+  JSR $04E0         ; turn SP cost (A) into displayable digits
+  LDA $F8           ; tens digit
+  STA $2180         ; write ^
+  LDA $F9           ; ones digit
+  STA $2180         ; write ^
+  LDA #$FF          ; " "
+  STA $2180         ; write ^
+  LDA #$92          ; "S"
+  STA $2180         ; write ^
+  JMP FinishSP      ; jump to second part of routine
+
+org $C35B26 : JSR No_Spell_In_Slot
+org $C35BA6 : JSR LoadDescription
+
+; #########################################################################
 ; Positioned Text for Skills Menu (and Submenus)
 
 org $C35C59 : dw $7A8D : db "Bushido",$00 ; rename "Swdtech"
 org $C35CB8 : dw $81B7 : db "Bushido",$00 ; rename "Swdtech"
+org $C35CE2
+  SPLabel:    dw $47B1 : db "SP ",$00
+  LearnLabel: dw $4437 : db "Learn",$00
+  SPMax:      dw $47BB : db "/30",$00
+              db $00   : db " EL Bonus:    "
+
+; #########################################################################
+; Gogo's Command Select Menu
+; BNW Hardcodes Gogo's available commands
+; TODO: Convert this to simple data
+
+org $C35DC9
+GogoCmdList:
+  SEP #$20        ; 8-bit A
+  LDA #$00        ; 0
+  STA $2180       ; "Fight"
+  INC             ; 1
+  STA $2180       ; "Item"
+  INC             ; 2
+  STA $2180       ; "Magic"
+  LDA #$05        ; 5
+  STA $2180       ; "Steal"
+  LDA #$07        ; 7
+  STA $2180       ; "Bushido"
+  INC             ; 8 
+  STA $2180       ; "Throw"
+  INC             ; 9
+  STA $2180       ; "Tools"
+  INC             ; 10
+  STA $2180       ; "Blitz"
+  INC             ; 11
+  STA $2180       ; "Runic"
+  INC             ; 12
+  STA $2180       ; "Lore"
+  INC             ; 13
+  STA $2180       ; "Sketch"
+  LDA #$0F        ; 15
+  STA $2180       ; "Slot"
+  INC             ; 16
+  STA $2180       ; "Rage"
+  LDA #$13        ; 19
+  STA $2180       ; "Dance"
+  NOP #10
+.build_list
+  LDX #$9D8A      ; 7E/9D8A
+  STX $2181       ; Set WRAM LBs
+  LDA #$FF        ; Cmd: Empty
+  STA $2180       ; Add to list
+  TDC             ; Clear A
+  TAX             ; Cmd slot: 1
+  TAY             ; Cmd count: 0
+.loop
+  TDC             ; ...
+  PHX             ; Save cmd slot
+  LDA $7E9E09,X   ; Available cmd
+  STA $2180       ; Add to list
+  INY             ; Cmd count +1
+  PLX             ; Cmd slot
+  INX             ; Cmd slot +1
+  CPX #$000E      ; Done 16 x 4?
+  BNE .loop       ; Loop if not
+  INY             ; Cmd count +1
+  TYA             ; Put it in A
+  STA $7E9D89     ; Set list size
+  BRA .layout
+org $C35E6D : .layout
 
 ; #########################################################################
 ; Draw command names based on availability
@@ -401,7 +628,7 @@ CmdListB:
   JSR $612C          ; check blanked commands (Magic/Morph/Leap/etc)
   BMI .blank         ; branch if ^
 .skip
-  JSR CmdPalette     ; pick a palette
+  JSR Grey_Shock     ; pick a palette, handle Shock palette, too 
   STA $E2            ; save command number
   ASL                ; x2
   CLC : ADC $E2      ; x3
@@ -426,10 +653,11 @@ CmdListB:
   LDA #$FF           ; space character
   SEC                ; set carry (indicates null-cmd)
   BRA .init_loop     ; write 7 spaces
+  PHA                ; store command ID ; TODO: Remove unused byte
 CmdPalette:
-  PHA                ; store command ID
   CMP #$0B           ; "Runic"
   BNE .bushido       ; branch if not ^
+.runic
   LDA $11DA          ; right hand properties
   ORA $11DB          ; left hand properties
   BPL .gray          ; branch if no Runic support
@@ -468,11 +696,51 @@ warnpc $C35F50+1
 org $C35f50 : LDX #$620A ; nudge mask around Gogo portrait
 
 ; #########################################################################
+; Draw Status Screen
+
+; -------------------------------------------------------------------------
+; Skip over useless code, create freespace used for Battle Power helper
+
+org $C36002
+  BRA Skip       ; skip over unused code, now freespace for helper function
+PowHelper:       ; in freespace branched over
+  LDX #$300C     ; use addresses $300C and $300D for hand Battle Powers
+  STX $E0        ; save in temp variable
+  LDX $CE        ; just want bottom half, top half will be ignored
+  CLC
+  LDA $A0        ; check for Gauntlet, setting Zero Flag accordingly
+  NOP
+  RTS
+Skip:
+  JSR $052E      ; [vanilla] unchanged, left for context
+
+; -------------------------------------------------------------------------
+; Modify the status screen to display EP and esper level to the player
+; Change total exp display to exp to next level
+org $C36068
+  JSR $60A0         ; get experience needed to level
+  JSR $0582         ; convert to digit tiles
+  LDX #$7CD7        ; tilemap position
+  JSR $04A3         ; write experience needed to status screen
+  JSR EL_Status     ; draw "Total EP" label
+  JSR Calc_EP_Status ; $F1: needed ep, Carry: show ep
+  BCC .done         ; branch if hiding EP numbers
+  JSR $0582         ; convert $F1 into text digits
+  LDX #$7DD7        ; tilemap position for EP number
+  JSR $04A3         ; draw EP needed
+.done
+  STZ $47           ; [displaced] turn ailments off
+  JSR $11B0         ; [displaced] hide ailment icons
+  JMP $625B         ; [displaced] display status
+
+; #########################################################################
 ; Status Screen Commands
 ; 
 ; Rewritten as part of Assassin's "Brushless Sketch" patch to make room
 ; for a helper function. This new helper exposes $C36172 (command upgrades)
 ; to the C2 menu command routine(s).
+
+org $C36096 : db $25,$3A ; make room for EL in Character display
 
 org $C36102
 StatusCmdOpt:
@@ -494,6 +762,17 @@ Long6172:
 warnpc $C3612C+1
 
 ; #########################################################################
+; Relic Effects
+
+; -------------------------------------------------------------------------
+; Force-enable Shock for escape from Floating Continent
+org $C36176 : JSR Shock_Chk
+; Replaces Runic with Shock if Leo's Crest is equipped
+org $C3619A : db $0B ; Runic
+; Commands to upgrade above due to Relics
+org $C3619F : db $1B ; Shock
+
+; #########################################################################
 ; Menu Label Changes (part 1)
 ;
 ; Percent symbols (%) overwritten with spaces by dn's "No Percents" patch
@@ -502,9 +781,122 @@ org $C36482 : db $FF ; replace '%' with ' '
 org $C36486 : db $FF ; replace '%' with ' '
 org $C364BB : db $FF ; replace '%' with ' '
 org $C364C5 : db $FF ; replace '%' with ' '
+org $C36511 : dw $7C4D : db "Exp to lv. up:",$00 ; status menu exp text
+
+; #########################################################################
+; Character Lineup
+org $C3797D : JSR EL_Party  ; draw EL after LV in party select screen
+org $C379E6 : dw $3A75      ; shift LV label to make room for EL display
+
+; #########################################################################
+; Draw Item Row (used in item menu and colosseum)
+
+org $C37FD0 : JMP ItemNameFork ; hook for colosseum item row
+
+; #########################################################################
+; [fork] Draw Offensive Properties
+; Rewritten to always draw "Runic", "2-Hand", "Bushido" but grayed out
+
+org $C38743 : RTS ; skip drawing "Spell Taught" in gear details
+
+org $C38746
+OffensiveProps:
+  JSR $879C           ; draw Bat.Pwr
+  JSR OffensiveHelp   ; draw evasions, attack label, elements
+  JSR ItemProperties  ; get item properties
+  AND #$80            ; "Allows Runic"
+  JSR UpdateTxtColor  ; set palette to grey or white, depending on ^
+  LDY #$8E30          ; "Runic" text data address
+  JSR DrawTextData    ; draw ^
+  JSR ItemProperties  ; get item properties
+  AND #$40            ; "Allows 2-Hand"
+  JSR UpdateTxtColor  ; set palette to grey or white, depending on ^
+  LDY #$8E38          ; "2-Hand" text data address
+  JSR DrawTextData    ; draw ^
+  JSR ItemProperties  ; get item properties
+  AND #$02            ; "Allows Bushido"
+  JSR UpdateTxtColor  ; set palette to grey or white, depending on ^
+  LDY #$8E26          ; "Bushido" text data address
+  JSR DrawTextData    ; draw ^
+  RTS
+padbyte $FF : pad $C38777
+
+; ------------------------------------------------------------------------
+; Helper for Summon Descriptions (in freespace)
+
+org $C38777           ; 29 bytes, we'll use 24 >.>
+SummonDescription:    ; Load Esper summon description
+  LDX #EsperDescPointers
+  STX $E7             ; Set ptr loc LBs
+  LDX $00
+  STX $EB             ; Set text loc LBs
+  LDA #$C4            ; Pointer/text bank
+  STA $E9             ; Set ptr loc HB
+  STA $ED             ; Set text loc HB
+  LDA #$10
+  TRB $45             ; Description: On
+  RTS                 ;   It expects (in a roundabout way) this value to be in the X
+                      ;   register in the event a character tries to equip an Esper
+                      ;   that doesn't belong to them, because it needs an offset to
+                      ;   a region of memory where there will be a large swath of
+                      ;   values below #$80 /shrug
+
+padbyte $FF : pad $C38795
+
+; ------------------------------------------------------------------------
+; Resume equipment properties code
+; Modify IDs that do not display battle power
+
+org $C387A3 : CMP #$1C       ; Atma Weapon
+org $C387A7 : CMP #$17       ; Omega Weapon
+org $C387AB : CMP #$51       ; Dice
+org $C387AF : CMP #$52       ; Fixed Dice
+
+; ------------------------------------------------------------------------
+; dn's "Shop Hack" patch changes where to write elemental effects
+org $C388CE : LDX #$7B65 ; where to write resisted elements
+org $C388DA : LDX #$7BE5 ; where to write absorbed elements
+org $C388E6 : LDX #$7C65 ; where to write immune elements
+org $C388F2 : LDX #$7CE5 ; where to write weak elements
+
+; #########################################################################
+; Sustain Item Usage Menu
+
+org $C38B7B
+  CMP #$FC        ; check if "Slim Jim" to allow field use (was Green Cherry)
+  BEQ Heal        ; branch to regular healing item check if "Slim Jim" ^
+
+org $C38B81
+  JMP More_Checks ; hook into extended field item usage validation
+  RTS             ; Just in case
+
+; -------------------------------------------------------------------------
+; Handle "Snake Oil" usage (was Soft in vanilla)
+
+org $C38BA0
+  JSR Heal        ; carry: target needs healing
+  BCC Remedy      ; branch to status check if not ^
+
+org $C38BB2 : Remedy:
+org $C38BC4 : Heal:
+
+; #########################################################################
+; Menu Label Changes (part 1.5)
+
+; -------------------------------------------------------------------------
+; dn's "Shop Hack" patch: Text pointers for gear data menu (point to new text)
+
+org $C38D69
+  dw EleResist
+  dw EleAbsorb
+  dw EleImmune
+  dw EleWeak
+
+; -------------------------------------------------------------------------
+; Percent symbols (%) overwritten with spaces by dn's "No Percents" patch
+
 org $C38D9B : db $FF ; replace '%' with ' '
 org $C38DA5 : db $FF ; replace '%' with ' '
-
 org $C38E26 : dw $822F : db "Bushido",$00 ; rename "SwdTech" gear attribute
 
 ; #########################################################################
@@ -547,15 +939,93 @@ org $C38F7D : JSR DrawEsperName
 
 ; #########################################################################
 ; Draw Equip Menu
-;
+
+; -------------------------------------------------------------------------
 ; Reduce options loop from 4 to 3, now that "Optimize" is removed. (dn)
 
 org $C39055 : LDY #$0006 ; 3 loops 
 
+; -------------------------------------------------------------------------
+; Hook into new routine to include Gauntlet in Battle Power calculation
+
+org $C39182 : JSR DefineBatPwr
+
 ; #########################################################################
 ; Sustain Relic and Sustain Equip Menus
-;
-; Modifictions to button press handlers to handle Y button presses to
+
+; -------------------------------------------------------------------------
+; Hook into new routine to include Gauntlet in Battle Power calculation
+
+org $C3934F : JSR $9382  
+
+; -------------------------------------------------------------------------
+; Rewrite "Define New Battle Power" routine to account for Gauntlet
+; 32 bytes freed starting at C3/93C9.
+
+org $C39371
+  LDX #$11AC      ; use addresses $11AC and $11AD for hand Battle Powers
+  STX $E0         ; save in temp variable
+  LDX $CD         ; just want bottom half, top half will be ignored
+  CLC
+  LDA $A1         ; check for Gauntlet, setting Zero Flag accordingly
+  JSR General
+  STA $F3         ; save 16-bit sum of hands' Battle Powers
+  BRA CleanUpPwr  ; do cleanup and return
+DefineBatPwr:
+  JSR PowHelper   ; do moved code
+  JSR General
+  STA $F1         ; save 16-bit sum of hands' Battle Powers
+CleanUpPwr:
+  TDC             ; clear A/B
+  SEP #$20        ; 8-bit A
+  RTS
+
+General:
+  BEQ .skip       ; branch if Gauntlet not present
+  SEC             ; set Carry if it is
+.skip
+  PHB             ; push bank ($00)
+  LDA #$7E        ; RAM bank
+  PHA             ; add to stack
+  PLB             ; set bank to $7E
+  LDY #$0001      ; offset to left hand battle power
+  PHP             ; store gauntlet flag
+  BCS .add        ; skip Genji Glove check if Gauntlet in use
+  TXA             ; get value of Variable $CD or $CE, Genji Glove presence
+  ORA #$00        ; TODO: Remove unnecessary ORA
+  BNE .add        ; branch if Genji Glove
+  LDA ($E0)       ; get right hand Battle Power
+  BEQ .add        ; branch if zero ^
+  TDC             ; zero A/B
+  STA ($E0),Y     ; if rh battle power, then zero left hand
+.add
+  TDC             ; make sure top half of A is clear for addition
+  LDA ($E0)       ; right hand battle power
+  CLC             ; clear carry
+  ADC ($E0),Y     ; sum of two hands' [modified] battle powers
+  XBA             ; hi-byte
+  ADC #$00        ; add carry if overflow
+  XBA             ; now 16-bit A = sum of hands' battle powers
+  PLP             ; restore gauntlet flag in carry
+  REP #$20        ; 16-bit A
+  BCC .exit       ; branch if no Gauntlet
+  JSR OneAndAHalf ; else add 50% power
+.exit
+  PLB             ; restore old Data Bank ($00)
+  RTS
+
+OneAndAHalf:
+  PHA             ; store A
+  LSR             ; A / 2
+  CLC             ; clear carry
+  ADC $01,S       ; add A
+  STA $01,S       ; save result to stack
+  PLA             ; A * 1.5
+  RTS
+  RTS
+
+; -------------------------------------------------------------------------
+; Modifications to button press handlers to handle Y button presses to
 ; swap between relic and equip menus. Part of dn's "Y Screen Swap" patch
 ; Modify jump table pointers for Equip menu option
 
@@ -568,10 +1038,122 @@ EquipOptionJumpTable:
   dw $969F     ; "Empty" option
   dw $969F     ; [NOTE: Unused]
 
+; -------------------------------------------------------------------------
+; Handle "Optimum" option
+
+org $C39685 : NOP #3 ; skip optimize routine entirely
+
+; -------------------------------------------------------------------------
+; General Event Command "Optimize Equipment"
+; Rewritten to fix errors when no valid equipment found (assassin)
+
+org $C396E9
+  NOP #3
+  JSR $96F0       ; [unchanged] Optimum command - fully equips standard equipment
+  RTL             ; [unchanged]
+
+; Optimum command
+  JSR $9110       ; [unchanged] Checks equipment by jumping to C2/0E77
+  JSR $96A8       ; [unchanged] Empty command - Removes standard equipment
+  JSR $93F2       ; [unchanged] get character index
+  STY $F3         ; [unchanged] store character index
+  LDA $11D8       ; [unchanged] relic flags
+  AND #$08        ; [unchanged] Check "attack with 2 hands" bit
+  BEQ .no_gaunt   ; [unchanged] branch if not set
+  NOP #2
+  JSR WeaponList  ; generate list of equippable Weapons and Shields.
+  JSR $9795       ; [unchanged] generate list of equippable Weapons
+  JSR $A150       ; [unchanged] sort list of eligible weapons by Battle Power
+  JSR $983F       ; [unchanged] pick best weapon that's compatible with Optimum,
+  LDY $F3         ; [unchanged] load character index
+  STA $001F,Y     ; [unchanged] store to right hand
+  JSR $9D97       ; [unchanged] Remove item from inventory
+  BRA .helmet     ; advance to the helmet slot
+.no_gaunt
+  JSR wpn_common  ; pick the best weapon that's compatible with Optimum
+  STA $001F,Y     ; store to right hand
+  JSR $9D97       ; remove item from inventory
+  LDA $11D8       ; relic flags
+  AND #$10        ; "Dual Wield"
+  BNE .dual       ; branch if ^
+  JSR WeaponList  ; generate list of equippable Weapons and Shields.
+  JSR $97D7       ; generate list of equippable Shields
+  JSR common      ; sort list of shields by Defense, then pick the best
+  STA $0020,Y     ; store to left hand
+  JSR $9D97       ; remove item from inventory
+  BRA .helmet     ; do the helmet slot now
+.dual
+  JSR wpn_common  ; pick the best weapon that's compatible with Optimum
+  STA $0020,Y     ; store to left hand
+  JSR $9D97       ; remove item from inventory
+.helmet
+  JSR stuff_9B59  ; do early parts of Function C3/9B59
+  JSR $9BB2       ; generate list of equippable Helmets
+  JSR common      ; sort list of helmets by Defense, then pick the best
+  STA $0021,Y     ; store to head
+  JSR $9D97       ; remove item from inventory
+  JSR stuff_9B59  ; do early parts of Function C3/9B59
+  JSR $9BEE       ; generate list of equippable Armors
+  JSR common      ; sort list of armors by Defense, then pick the best
+  STA $0022,Y     ; store to body
+  JMP $9D97       ; remove item from inventory
+wpn_common:
+  JSR WeaponList  ; generate list of equippable Weapons and Shields.
+  JSR $9795       ; generate list of equippable Weapons
+common:
+  JSR $A150       ; sort list of eligible gear by Battle Power or Defense
+  LDY $F3         ; load character index
+  JMP CheckEmpty  ; hook, then pick best gear that's compatible with Optimum
+                  ; TODO: Just insert CheckEmpty inline here ^
+stuff_9B59:
+  JSR $9C2A       ; Generate fallback list of 9 FFs, in case none found
+  JSR $9C41       ; set equippability word
+  LDA #$20        ; color: white
+  STA $29         ; set text color to white.  99.5% sure it's pointless here
+  RTS
+WeaponList:       ; TODO: pointless [?]
+  JSR stuff_9B59  ; do early parts of Function C3/9B59
+  JMP $9B72       ; generate list of equippable Weapons and Shields.
+CheckEmpty:
+  LDA $7E9D89     ; A = list size
+  BEQ .empty      ; branch if no items ^
+  JMP $9819       ; else, pick item
+.empty
+  JMP $9881       ; jump to finish
+  NOP #8
+
+; #########################################################################
+; Sustain Equip and Relic Menus (continued)
+
+; -------------------------------------------------------------------------
 org $C398C8 : JMP EquipSubSwap : NOP #4
 org $C39908 : JMP EquipSubSwap : NOP #4
 
+; -------------------------------------------------------------------------
+; Use Yellow to indicate two handed weapon use
+
+org $C399BD : LDA #$28 ; Yellow
+org $C399E2 : LDA #$28 ; Yellow
+
+; -------------------------------------------------------------------------
+; Support validation for dual-wield, two-handed, katana equips
+
+org $C39A5D : JSR Wpn_Index ; save selected item index in scratch
+org $C39A90 : JMP DW_Chk_RH ; handle right hand slot
+org $C39ABC : JMP DW_Chk_LH ; handle left hand slot
+
+; -------------------------------------------------------------------------
 org $C39EDC : JSR RelicSwap
+
+; -------------------------------------------------------------------------
+; Test Re-Equip Activiation (in relic menu)
+; Bypasses all relic checks for optimizing - frees up a bunch of space in C3.
+; TODO: Freespace between this BRA
+
+org $C39F5C : BRA EndRequipChk
+org $C39FA9 : EndRequipChk:
+
+; -------------------------------------------------------------------------
 org $C3A047 : JSR RelicSwap
 org $C3A146 : JSR RelicSwap
 
@@ -608,13 +1190,645 @@ org $C3A395 : db $FF ; replace '%' with ' '
 org $C3A39F : db $FF ; replace '%' with ' '
 
 ; #########################################################################
+; Button Settings
+
+; Fixes vanilla bug where the Select button was getting mapped to the R button
+org $C3A5D7 : LDY #$0756
+
+; #########################################################################
+; Sustain Main Shop Menu
+
+; Modifies "buy item" list handling to update full details ("Shop Hack")
+org $C3B4BD
+  JSR BuyItemDetails
+  RTS
+DrawItemNameNMI:
+  JSR $1368        ; refresh screen (NMI)
+  JSR $7FD9        ; draw item name
+  RTS
+padbyte $FF : pad $C3B4E6
+
+; #########################################################################
+; Initialize Main Shop Menu
+;
+; "Shop Hack" - Insert hooks to draw gear details windows and labels and
+; handle hiding the details until required.
+
+org $C3B8C4
+  JSR ShopClearBG  ; clear BG maps and draw detail windows
+  NOP #6
+
+org $C3B95A
+; TODO Don't know why this is rewritten to free up 6 (unused) bytes
+  JSR ClearBG3     ; clear background 3 maps
+  JSR $BFD3        ; Draw title
+  LDY #$C338       ; Text pointer
+  JSR $02F9        ; Draw "GP"
+  JSR $C2F2        ; Color: User's
+  LDY $1860        ; Gold LBs
+  STY $F1          ; Memorize it
+  LDA $1862        ; Gold HB
+  STA $F3          ; Memorize it
+  JSR $0582        ; Turn into text
+  LDX #$7A33       ; Text position
+  JSR $04AC        ; Draw GP total
+  RTS
+warnpc $C3B986+1
+
+org $C3B989 : LDY #HelpText
+org $C3BABA : NOP #3 ; skip drawing "Power" info on buy order menu
+org $C3BAC9 : JSR DrawItemNameNMI ; refresh screen before name draw
+org $C3C037 : db $2F,$06,$00      ; change text shifting for shop "Shop Hack"
+
+; #########################################################################
 ; Shop Menu equippability UI
 
 org $C3C29C : BRA $3F ; Never show equipped/up/down/equal icons
 
 ; #########################################################################
+; Draw "Owned" and "Equipped" window
+;
+; dn's "Shop Hack" interrupts drawing "Owned and "Equipped" window
+
+org $C3C2E1 : JSR DrawDetailsLabels
+
+; #########################################################################
+; Positioned Text for Shop Menu
+
+org $C3C357 : dw $7B8F : db "Attack",$00
+
+; #########################################################################
 ; Freespace Helpers
 
+; Restricts espers to be equippable only by certain characters set in the
+; tables at the bottom.
+org $C3F091
+
+StChr:
+  TAX           ; index slot
+  LDA $69,X     ; character ID in slot
+  STA $A3       ; save in scratch RAM
+  RTS
+
+; Checks if a character can use an esper before checking if someone else
+; has it equipped.
+
+ChkEsp:
+  STZ $FB           ; reserve for equippability flag
+  STA $E0           ; store Esper ID in $E0
+  LSR #3            ; /8 (determine which byte the esper is in)
+  STA $FC           ; store offest to scratch
+  LDA $A3           ; load character ID
+  ASL #2            ; x4 (4 equippability bytes per character?)
+  ADC $FC           ; add stored offset
+  TAX               ; index it in X
+  LDA $E0           ; load esper ID
+  AND #$07          ; which bit of the equippability byte corresponds to this esper?
+  TAY
+  LDA EsperData,X   ; get equippability byte for esper/character pair
+- LSR               ; Do: shift right
+  DEY               ; | Y--
+  BPL -             ; + loop until Y negative
+                    ;
+  ROR $FB           ; ############## // New Swag Alert! \\ ###############
+                    ; | At this point, the C flag will be 1 if the esper |
+                    ; | is equippable. I roll it onto the MSB of $FB     |
+                    ; | so that we can use the shorthand `BIT $FB` later |
+                    ; | to evaluate the equippability of the currently   |
+                    ; | loaded esper without having to destroy A         |
+                    ; ####################################################
+                    ;
+  BPL +             ; if positive, esper cannot be equipped; branch
+  JSR ChkEq         ; can equip; check for equip conflict with another character
+  STX $FD           ; keep track of who has the current esper equipped, if anyone
+  PHA
+  LDA $29
+  STA $FC           ; keep track of the esper palette
+  PLA
+  RTS
++ LDA #$28          ; cannot equip; gray text
+  STA $FC           ; keep track of the esper palette
+  JMP SetTxtColor   ; return
+
+; Handle error messages in the case of trying to equip a grey esper.
+; This prints out the name of the person currently using the esper you're trying to
+; equip, which was originally the only thing stopping someone from equipping a certain
+; esper. We need to change this, as the name will be blank if the character simply
+; can't equip it.
+Uneq:
+  BIT $FB           ; Is esper equippable?
+  BPL +               
+  LDA $1602,X       ; Character's name; displaced from calling function
+  JMP $55B5         ; If esper is equippable, go back and display who has it equipped
++ LDX $00           ; Else, print "Can't Equip!" error message
+- LDA.l NoEqTxt,X
+  STA $2180         ; Print the current letter.
+  BEQ .exit         ; If the letter written was null ($00), exit.
+  INX               ; Go to the next letter.
+  BRA -
+.exit
+  JMP $7FD9
+
+NoEqTxt:
+  db "Can't equip!",$00,$00,$00 ; TODO: Remove unneeded 2x $00 padding here
+
+; Character esper data table. See below for specifics.
+EsperData:
+  db $C0,$84,$88,$04 ; Terra
+  db $03,$00,$02,$04 ; Locke
+  db $80,$40,$02,$00 ; Cyan
+  db $00,$00,$10,$01 ; Shadow
+  db $08,$02,$C0,$00 ; Edgar
+  db $10,$01,$40,$00 ; Sabin
+  db $0D,$40,$31,$00 ; Celes
+  db $04,$08,$0C,$00 ; Strago
+  db $02,$20,$04,$02 ; Relm
+  db $20,$00,$20,$02 ; Setzer
+  db $70,$02,$00,$00 ; Mog
+  db $00,$01,$00,$01 ; Gau
+  db $00,$00,$00,$00 ; Gogo
+  db $00,$00,$00,$00 ; Umaro
+  db $00,$00,$00,$00 ; Slot 15
+  db $00,$00,$00,$00 ; Slot 16
+
+; Byte 1        Byte 2         Byte 3         Byte 4
+; $01: Ramuh    $01: Stray     $01: Alexandr  $01: Fenrir
+; $02: Ifrit    $02: Palidor   $02: Kirin     $02: Starlet
+; $04: Shiva    $04: Tritoch   $04: Zoneseek  $04: Phoenix
+; $08: Siren    $08: Odin      $08: Carbunkle $08: N/A
+; $10: Terrato  $10: Raiden    $10: Phantom   $10: N/A
+; $20: Shoat    $20: Bahamut   $20: Seraph    $20: N/A
+; $40: Maduin   $40: Crusader  $40: Golem     $40: N/A
+; $80: Bismark  $80: Ragnarok  $80: Unicorn   $80: N/A
+
+; ------------------------------------------------------------------------
+; Helpers for Dual-Wield and Two-Handed equip restrictions
+
+org $C3F137
+Wpn_Index:
+  LDA $1869,X         ; item in equipment list slot
+  STA $A3             ; store item ID
+  RTS
+DW_Chk_RH:
+  LDA $0020,Y         ; left hand weapon ID
+  BRA Item_Chk        ; branch
+DW_Chk_LH:
+  LDA $001E,Y         ; right hand weapon ID
+Item_Chk:
+  PHA                 ; store lh/rh weapon ID
+  LDA $A3             ; equipment list item ID
+  CMP #$5A            ; in "weapon" range?
+  PLA                 ; restore lh/rh weapon ID
+  BCS .allow          ; branch if item not a weapon (allow)
+  LDA $D8500C,X       ; lh/rh weapon properties (special byte 3)
+  AND #$18            ; isolate "Genji Glove" and "Gauntlet"
+  CMP #$08            ; check if only "Gauntlet" (eg. spear)
+  BEQ .exit           ; branch if ^ (disallow all off-hand weapons)
+  CMP #$10            ; check if only "Genji Glove" (eg. claw)
+  BEQ .spear_chk      ; branch if ^
+  JSR GetItemOffset   ; get selected weapon flags
+  CMP #$10            ; check if only "Genji Glove" (eg. claw)
+  BEQ .allow          ; branch to allow if ^
+.exit
+  CLC                 ; clear carry (=unequippable)
+  RTS
+.spear_chk
+  JSR GetItemOffset   ; get selected weapon flags
+  CMP #$08            ; check if only "Gauntlet" (eg. spear)
+  BEQ .exit           ; branch to disallow if ^
+.allow
+  SEC                 ; set carry (=equippable)
+  RTS
+GetItemOffset:
+  LDA $A3             ; selected weapon ID
+  JSR $8321           ; get item data offset (x30)
+  LDX $2134           ; load offset into X
+  LDA $D8500C,X       ; selected weapon properties (special byte 3)
+  AND #$18            ; isolate "Genji Glove" and "Gauntlet"
+  RTS
+
+; ------------------------------------------------------------------------
+; Helpers for Shock Command
+
+org $C3F17C
+Shock_Chk:
+  LDA $1E9C             ; event byte (0E0 - 0E7) - Unused bits
+  BIT #$10              ; bit 0E4 - "FC Escape Sequence"
+  BEQ .end              ; exit if clear ^
+  LDA #$10              ; "Runic -> Shock"
+  TSB $11D6             ; set relic effect ^
+.end
+  LDA $11D6             ; [displaced] get relic effects
+  RTS
+  
+Grey_Shock:
+  PHA                   ; store command ID
+  CMP #$1B              ; "Shock"
+  BNE .next             ; branch if not ^
+  JMP CmdPalette_runic  ; else, use Runic disable code
+.next
+  JMP CmdPalette        ; check Runic
+
+; ------------------------------------------------------------------------
+; Helper for field item usage target validation
+; TODO: Sleeping Bag handling should be removed altogether
+; TODO: May be able to inline this helper once sleeping bag is skipped
+
+org $C3F197
+More_Checks:
+  BEQ .sleeping_bag   ; branch if was sleeping bag
+  CMP #$FB            ; "Red Bull" item ID
+  BEQ .red_bull       ; branch if ^
+  JMP $8BD0           ; else return with clear carry
+.sleeping_bag
+  JMP $8BD2           ; jump to sleeping bag handler [vanilla]
+.red_bull
+  JMP Heal            ; jump to check if target needs healing
+
+; ------------------------------------------------------------------------
+; Helpers for nATB freezing time during animations
+
+org $C3F1A6
+MagicFunction1:
+  LDA ($76)        ; [displaced]
+  CMP #$FF         ; "null" EOL
+  BEQ .exit        ; exit if ^
+  INC $3A8F        ; else, freeze time
+.exit
+  RTL
+MagicFunction2:
+  DEC $3A8F        ; allow time to progress
+  REP #$20         ; [displaced]
+  LDA $76          ; [displaced]
+  RTL
+
+; ------------------------------------------------------------------------
+; Colosseum Item Row drawing helpers
+; Include prize item on line with item row
+
+org $C3F1B8
+ItemNameFork:
+  LDA $26                 ; current system op
+  CMP #$71                ; "Init Colosseum Item Selection"
+  BEQ .colosseum_menu     ; branch if ^
+  CMP #$72                ; "Sustain Colosseum Item Selection"
+  BEQ .colosseum_menu     ; branch if ^
+  JSR $80B9               ; else, do regular "Item Menu" rows
+  JSR $7FD9               ; display text
+  JMP $7FE6               ; display item type
+.colosseum_menu
+  JSR colosseum_setup     ; setup colosseum variables
+  JSR string_init         ; init the string
+  JSR string_bet          ; display bet item
+  JSR string_display      ; display the string
+  JSR position_advance_1A ; advance position for next display
+  JSR string_init         ; init the string
+  JSR string_delimiter    ; dislay delimiter
+  JSR string_display      ; display the string
+  JSR position_advance_02 ; advance position for next display
+  JSR string_init         ; init the string
+  JSR string_reward       ; display reward item
+  JSR string_display      ; display the string
+  JSR position_advance_1A ; advance position for next display
+  RTS
+
+colosseum_setup:
+  TDC                     ; zero A/B
+  LDA $E5                 ; row index in menu
+  TAY                     ; index it
+  LDA $1869,Y             ; item ID in slot
+  STA $0205               ; save item to bet
+  JSR $B22C               ; setup Colosseum variables
+  RTS
+
+string_init:
+  LDX #$9E8B              ; start of text in WRAM buffer
+  STX $2181               ; set WRAM destination
+  RTS
+
+string_display:
+  JSR $7FD9               ; draw string [TODO: remove needless wrapper]
+  RTS
+
+string_fill:
+  LDX #$000D              ; length of item name
+.loop
+  STA $2180               ; write fill character
+  DEX                     ; decrement iterator
+  BNE .loop               ; loop till all written
+  STZ $2180               ; set EOL
+  RTS
+
+position_advance_02:
+  LDX #$0002              ; advance $02 spaces
+  BRA position_advance
+position_advance_1A:
+  LDX #$001A              ; advance $1A spaces
+position_advance:
+  REP #$20                ; 16-bit A
+  TXA                     ; tiles to advance
+  CLC                     ; clear carry
+  ADC $7E9E89             ; add to text tilemap position
+  STA $7E9E89             ; set new text tilemap position
+  SEP #$20                ; 8-bit A
+  RTS
+
+string_reward:
+  LDA $0209               ; mask flag
+  BNE .case_mask          ; branch if hidden prize
+  LDA $0205               ; bet item ID
+  CMP #$FF                ; null?
+  BEQ .case_empty         ; branch if empty item
+.case_default
+  LDA $0207               ; reward item
+  JSR $C068               ; load item name [TODO JMP]
+  RTS
+.case_mask
+  LDA #$BF                ; '?' character
+  JSR string_fill         ; fill item name with '????'
+  RTS
+.case_empty
+  LDA #$FF                ; ' ' character
+  JSR string_fill         ; fill item name with '    '
+  RTS
+
+string_delimiter:
+  LDA $0205               ; bet item ID
+  CMP #$FF                ; null?
+  BEQ .case_empty         ; branch if ^
+.case_default
+  LDA #$D5                ; '>' character (right-facing arrow)
+  BRA .set_char           ; branch and write ^
+.case_empty
+  LDA #$FF                ; ' ' character
+.set_char
+  STA $2180               ; write chosen delimiter
+  STZ $2180               ; end of string
+  RTS
+
+string_bet:
+  LDA $0205               ; item ID to bet
+  CMP #$FF                ; null?
+  BEQ .case_empty         ; branch if ^
+.case_default
+  LDA $0205               ; item ID to bet [TODO: Redundant]
+  JSR $C068               ; load item name [TODO: JMP]
+  RTS
+.case_empty
+  LDA #$FF                ; space character
+  JSR string_fill         ; fill item name with spaces
+  RTS    
+
+; ------------------------------------------------------------------------
+; EL/EP/Spell bank text data and helpers
+; Many new label and text positions and tiles
+org $C3F277
+EPUpTxt:
+  dw $7D4D : db "EP to lv. up:",$00
+EPUpClr:
+  dw $7D4D : db "             ",$00 ; 13 blanks for Gogo+
+EPClear:
+  dw $7DDD : db "     ",$00         ;  5 blanks for Gogo+ EP
+
+; TODO: Lots of duplicated code here
+; Many "EL" text positions, plus extra $FF buffer for indexing purposes
+  dw $39AB : db "EL",$00,$FF,$FF,$FF
+  dw $3B2B : db "EL",$00,$FF,$FF,$FF
+  dw $3CAB : db "EL",$00,$FF,$FF,$FF
+  dw $3E2B : db "EL",$00,$FF,$FF,$FF
+  dw $423B : db "EL",$00,$FF,$FF,$FF
+  dw $3A2B : db "EL",$00,$FF,$FF,$FF
+  dw $3A7B : db "EL",$00,$FF,$FF,$FF
+
+; TODO: Lots of duplicated code here
+; Many "EL" text positions, but with spaces instead, to overwrite
+  dw $39AB : db "     ",$00
+  dw $3B2B : db "     ",$00
+  dw $3CAB : db "     ",$00
+  dw $3E2B : db "     ",$00
+  dw $423B : db "     ",$00
+  dw $3A2B : db "     ",$00
+  dw $3A7B : db "     ",$00
+UnspentTxt:
+  db "Unspent EL:",$00
+
+Calc_EP_Status:
+  LDA $1E8A         ; event byte
+  AND #$08          ; "met Ramuh"
+  BEQ .no_ep        ; branch if not ^
+  LDX $67           ; character data offset
+  LDA $0000,X       ; character ID
+  CMP #$0C          ; Gogo or above
+  BCC .yes_ep       ; branch if not ^
+.no_ep
+  LDY #EPClear      ; pointer for spaces to blank out EP value
+  JSR $02F9         ; draw ^
+  LDY #EPUpClr      ; pointer for spaces to blank out "EP to lv. up"
+  JSR $02F9         ; draw ^
+  CLC               ; clear carry (hide EP needed)
+  RTS
+.yes_ep
+  PHA               ; store character ID
+  LDA #$2C          ; color: gray-blue
+  STA $29           ; set text palette
+  LDY #EPUpTxt      ; pointer for "EP to lv. up" text display
+  JSR $02F9         ; draw ^
+  TDC               ; zero A/B
+  LDA #$20          ; color: white
+  STA $29           ; set text palette
+  PLA               ; restore character ID
+  TAY               ; index it
+  LDA !EL,Y         ; character's esper level
+  CMP #$19          ; at max (25)
+  BNE .needed_ep    ; branch if not ^
+  SEC               ; set carry (show EP needed)
+  JMP $60C3         ; display zero and exit
+.needed_ep
+  ASL               ; EL x2
+  TAX               ; index to EP lookup
+  TYA               ; character ID
+  ASL               ; x2
+  TAY               ; index it
+  REP #$30          ; 16-bit A, X/Y
+  LDA !EP,Y         ; character's total EP
+  STA $F1           ; store ^
+  LDA EP_Chart,X    ; EP needed for next level
+  SEC               ; set carry
+  SBC $F1           ; EP needed - total EP
+  STA $F1           ; store ^
+  SEP #$20          ; 8-bit A
+  SEC               ; set carry (show EP needed)
+  RTS
+
+Esp_Lvl:
+  JSR $04B6         ; [displaced] draw two digits
+  JSR Ramuh_Chk     ; check if optained espers yet
+  BEQ .exit         ; exit if not ^
+  JSR Char_Chk      ; check if Gogo or above
+  BCS .exit         ; exit if ^
+  TAY               ; index character ID
+  LDA !EL,Y         ; character's esper level
+  JSR $04E0         ; turn into digit tiles
+  REP #$20          ; 16-bit A
+  LDA [$EF]         ; tilemap position for level display
+  CLC               ; clear carry
+  ADC #$000C        ; move X position for esper level display
+  TAX               ; index it
+  SEP #$20          ; 8-bit A
+  JMP $04B6         ; write esper level to screen
+.exit
+  RTS
+
+Ramuh_Chk:
+  TDC               ; zero A/B
+  LDA $1E8A         ; event byte
+  AND #$08          ; "met Ramuh"
+  RTS
+
+Char_Chk:
+  LDX $67           ; character data offset
+  TDC               ; zero A/B
+  LDA $0000,X       ; character ID
+  CMP #$0C          ; carry: Gogo or higher
+  RTS
+
+EL_Main_1:
+  LDA #$00          ; slot 1 offset for "EL" label in main menu
+  PHA               ; store ^
+  BRA Write_Text    ; draw "EL" label
+
+EL_Main_2:
+  LDA #$08          ; slot 2 offset for "EL" label in main menu
+  PHA               ; store ^
+  BRA Write_Text    ; draw "EL" label
+
+EL_Main_3:
+  LDA #$10          ; slot 3 offset for "EL" label in main menu
+  PHA               ; store ^
+  BRA Write_Text    ; draw "EL" label
+
+EL_Main_4:
+  LDA #$18          ; slot 4 offset for "EL" label in main menu
+  PHA               ; store ^
+  BRA Write_Text    ; draw "EL" label
+
+EL_Skill:
+  LDA #$24          ; color: blue
+  STA $29           ; set text palette
+  LDA #$20          ; offset for "EL" label in skills menu
+  PHA               ; store ^
+  BRA Stat_Skill_Ent ; draw "EL" label
+
+EL_Status:
+  LDA #$24          ; color: blue
+  STA $29           ; set text palette
+  LDA #$28          ; offset for "EL" label in status menu
+  PHA               ; store ^
+  BRA Stat_Skill_Ent ; draw "EL" label
+
+EL_Party:
+  LDA #$30          ; offset for EL label in party lineup menu
+  PHA               ; store ^
+Write_Text:
+  JSR $69BA         ; [displaced] draw multiple strings
+
+Stat_Skill_Ent:
+  JSR Ramuh_Chk     ; obtained espers
+  BEQ No_Ramuh      ; branch if not ^
+  JSR Char_Chk      ; Gogo check
+  PLA               ; restore text offset
+  PHP               ; store flags
+  REP #$20          ; 16-bit A
+  BCS Gogo          ; branch if Gogo or higher
+  ADC #$F29F        ; else, add "EL" text location
+  BRA Write_EL      ; branch to write ^
+
+No_Ramuh:
+  PLA               ; restore text offset
+  PHP               ; store flags
+  REP #$20          ; 16-bit A
+
+Gogo:
+  CLC               ; clear carry
+  ADC #$F2D7        ; add black spaces text location
+
+Write_EL:
+  TAY               ; index text source
+  PLP               ; restore flags
+  JMP $02F9         ; draw source text
+
+; Adds "Unspent EL" display under the esper bonuses
+Unspent_EL:
+  LDA #$24          ; color: blue
+  STA $29           ; set text palette
+  LDY #$4791        ; tilemap position to write to
+  JSR $3519         ; initialize WRAM buffer with ^
+  LDX $00           ; zero X
+.write_uel
+  LDA UnspentTxt,X  ; get "Unspent EL:" tile
+  BEQ .finish       ; break if EOL
+  STA $2180         ; else, write to WRAM
+  INX               ; next tile index
+  BRA .write_uel    ; loop till EOL ($00)
+.finish
+  STZ $2180         ; write EOL
+  JSR $7FD9         ; draw string from WRAM buffer
+  LDA #$20          ; color: white
+  STA $29           ; set palette
+  JSR Char_Chk      ; current character's ID
+  TAY               ; index it
+  LDA !EL_bank,Y    ; available ELs for character to spend
+  JSR $04E0         ; turn into digit tiles
+  LDY #$47A9        ; tilemap position to write to
+  JSR $3519         ; initialize WRAM buffer with ^
+  LDA $F8           ; tens digit of ELs
+  STA $2180         ; write ^
+  LDA $F9           ; ones digit of ELs
+  STA $2180         ; write ^
+  STZ $2180         ; write EOL
+  JSR $7FD9         ; draw string from WRAM buffer
+  LDY #$470F        ; next tilemap position (shifted left 2 spaces)
+  RTS
+
+; ---------------------------------------------------------
+; Esper Equip Bonus Drawing helper
+
+org $C3F43B
+DrawEsperHook:
+  JSR $9110         ; Recalculate numbers
+  JSR $4EED         ; Properly update display
+  JMP $4F08         ; draw esper name [?]
+
+; ---------------------------------------------------------
+; Handle in-battle gauge mode toggle via Select button
+
+org $C3F444
+SwapGauge:
+  LDA $1D4E       ; Is gauge disabled in config?
+  BMI .off
+  LDA $0B
+  BIT #$20
+  BEQ .skip
+  STZ $021
+  BRA .exit
+.skip
+  LDA #$FF
+  STA $2021
+.exit
+  RTL
+.off
+  LDA $0B
+  BIT #$20
+  BNE .skip2
+  STZ $2021
+  BRA .exit2
+.skip2
+  LDA #$FF
+  STA $2021
+.exit2
+  RTL
+
+; ---------------------------------------------------------
 org $C3F480
 DrawEsperName:
   PHY           ; store actor name position
@@ -752,6 +1966,63 @@ EquipSubSwap:
   BRA HandleLR      ; branch
 warnpc $C3F570+1
 
+; -------------------------------------------------------------------------
+; Keep frame counter updated for RNG algorithm
+
+org $C3F570
+FrameCounter:
+  INC $021E      ; increment frame counter
+  INC $01F0      ; increment RNG frame counter [TODO: Why not use 021E?]
+  RTS
+
+; -------------------------------------------------------------------------
+; Helpers for new Counterattack variable triggers
+    
+org $C3F577
+InitAttackVars:
+  TXA                ; [displaced]
+  STA $3290,Y        ; [displaced]
+  LDA $B3            ; If Bit 5 is set it ignores attacker row
+  EOR #$FF           ; Invert it so bit 5 is set if melee
+  LSR                ; Shift it to bit 4
+  ORA $11A7          ; Merge with bit 4 of $11A7 ("respects row")
+  AND #$10           ; Isolate bit 4 (1 = respects row)
+  PHA        
+  LDA $11A2          ; Bit 0 = physical damage if set
+  LSR                ; Carry = 1 if physical damage
+  PLA        
+  ROL                ; Bit 1 = physical, Bit 5 = melee
+  ASL                ; Shift again
+  PHA        
+  LDA $11A3     
+  ROL                ; Carry = 1 if affects MP
+  PLA        
+  ROR                ; bit 1: physical, bit 5: melee, bit 7: affects MP    
+  STA $327D,Y        ; Save attack properties to unused var $327D,index
+.exit
+  RTL
+
+MeleeParamsLong:
+  LDA $3A2F          ; Script command byte 4
+  LSR                ; Check if it's 1 (melee counter)
+  BCS .melee        
+  LSR                ; Check if it's 2 (MP damage counter)
+  BCC .omni          ; If not set, it's a normal counter
+  LDA $327D,Y        
+  CMP #$80           ; Check if attack affects MP
+  BNE .exit          ; Exit if not
+  BRA .omni          ; Counter if attack affects MP      
+.melee
+  LDA $327D,Y        ; Attack properties
+  CMP #$21           ; Check respect row, physical
+  BNE .exit          ; Exit if not both are set
+.omni
+  JML doCounter
+.exit
+  CLC
+  JML RTS_C2
+
+; -------------------------------------------------------------------------
 org $C3F700
 FlipMPDisplay:
   LDA #$FF       ; MP display = on
@@ -789,4 +2060,632 @@ C3_BlindJump:
 .exit
   RTL
 warnpc $C3F737+1
+
+; TODO: Another two unused bytes here
+
+; EL, EP, Spell Bank Helpers (Synchysi)
+org $C3F739
+Blue_Bank_Txt:
+  LDA #$24          ; color: blue
+  STA $29           ; set text palette ^
+  JSR $02F9         ; display "SP" in blue text
+  LDA #$20          ; color: white
+  STA $29           ; set text palette ^
+  LDX $67           ; character data offset
+  TDC               ; zero A/B
+  LDA $0000,X       ; character ID
+  TAY               ; index it
+  LDA !spell_bank,Y ; character's banked SP
+  JSR $04E0         ; convert to displayable digits
+  LDX #$47B7        ; where to display
+  JMP NewLabels     ; Output banked SP and other new static labels
+
+Finish_Esper_Txt:   ; TODO: Label unused
+  LDA #$8F          ; "P"
+  STA $2180         ; add ^ to WRAM
+  LDA #$FF          ; " "
+  STA $2180         ; add ^ to WRAM
+  STA $2180         ; add ^ to WRAM
+  STA $2180         ; add ^ to WRAM
+  LDA $AA           ; spell learned
+  LSR               ; C: learned
+  BCC .unknown      ; branch if not ^
+  LDA #$CF          ; "checkmark"
+  BRA .finish       ; draw ^ and finish
+.unknown
+  LDA #$FF          ; " "
+.finish
+  STA $2180         ; add ^ to WRAM
+  STZ $2180         ; add EOL to WRAM
+  JMP $7FD9         ; finish drawing spell row
+
+Learn_Chk:
+  STZ $AA
+  LDA $E0           ; SP cost of the spell
+  PHA               ; Preserve it, because C3/50A2 mutilates $E0
+  BIT $FB           ; Is esper equippable? (new)
+  BPL .cantEquip
+  LDA $E1           ; If so, get spell ID
+  JSR $50A2         ; See if it's known yet
+  BEQ .notLearned
+  INC $AA           ; If so, flag $AA
+.notLearned
+  LDA #$20          ; White text if esper is equippable
+  BRA .done
+.cantEquip
+  LDA #$28          ; Gray text if not (moved from above)
+.done
+  STA $29           ; Set palette
+  PLA               ; Retrieve SP cost
+  RTS
+  RTS               ; TODO: Remove duplicated, unused RTS
+
+Pressed_A:
+  LDA $4B           ; pointer index
+  BNE .spell        ; branch if pointing at a spell
+  JMP $C358DF       ; vanilla "can equip esper" fork
+.spell
+  LDA $99           ; load esper ID
+  STA $4202         ; set multiplier
+  BIT $FB           ; Is esper equippable?
+  BRA $04           ; Skip the next 4 bytes
+  NOP #4            ; Dummy them out to be sure TODO: Remove these NOPs
+  BPL .nope         ; branch if ^
+  LDA #$0B          ; size of esper data block (11)
+  STA $4203         ; set multiplicand
+  LDA $4B           ; pointer index
+  CMP #$06          ; "esper bonus" index
+  BEQ Apply_Bonus   ; branch if ^
+  DEC               ; else, decrement index
+  ASL               ; and *2
+  CLC               ; clear carry
+  REP #$20          ; 16-bit A
+  ADC $4216         ; add spell offset to esper data offset
+  STA $A5           ; store ^
+  TAX               ; index it
+  SEP #$20          ; 8-bit A
+  LDA $D86E01,X     ; spell ID the pointer is currently on
+  STA $E0           ; store ^
+  CMP #$FF          ; null?
+  BEQ Exiter        ; branch if ^
+  JSR $50A2         ; check spell mastery
+  BNE .nope         ; exit if already learned
+  LDX $A5           ; restore spell offset
+  TDC               ; zero A/B
+  LDA $D86E00,X     ; SP cost of the spell
+  STA $A4           ; store ^
+  LDX $67           ; character data offset
+  LDA $0000,X       ; character ID
+  TAX               ; index it
+  STA $4202         ; set multiplier
+  LDA !spell_bank,X ; character's banked SP
+  SEC               ; set carry
+  SBC $A4           ; subtract spell SP cost
+  BCC .nope         ; exit if not enough SP
+  STA !spell_bank,X ; else, reduce banked SP
+  LDA #$36          ; size of character spell lists (54)
+  STA $4203         ; set multiplicand
+  JSR $0ECE         ; sound: "cha-ching"
+  TDC               ; zero A/B
+  LDA $E0           ; spell ID
+  REP #$20          ; 16-bit A
+  CLC               ; clear carry
+  ADC $4216         ; add spell index to character spell list offset
+  TAX               ; index it
+  SEP #$20          ; 8-bit A
+  LDA #$FF          ; "learned"
+  STA $1A6E,X       ; set spell learned
+  JMP $5913         ; jump to vanilla "press B" esper menu fork
+.nope
+BzztPlayer:
+  JMP $0EC0         ; sound: Bzzt
+
+Chk_Esper_Eq:
+  STA $4203         ; save SP cost of spell [TODO: Why?]
+  LDA $99           ; esper ID
+  JSR ChkEsp        ; check esper restriction
+  LDA $29           ; text color palette
+  CMP #$2C          ; color: gray-blue (equipped)
+  BNE .exit         ; exit if not ^
+  LDA #$20          ; color: white (equippable)
+.exit
+Exiter:
+  RTS
+
+No_Spell_In_Slot:
+  LDX #$B492        ; tilemap position [?]
+  STX $2181         ; set WRAM destination
+  LDA #$FF          ; " " space
+  STA $2180         ; write ^
+  STZ $2180         ; write EOL
+  JMP $7FD9         ; draw esper name
+
+Apply_Bonus:        ; F834
+  LDX $67           ; character data offset
+  LDA $0000,X       ; character ID
+  TAX               ; index it
+  LDA !EL_bank,X    ; unspent esper levels
+  BEQ BzztPlayer    ; branch if none ^
+  DEC !EL_bank,X    ; else, decrement unspent ELs
+  JSL Do_Esper_Lvl  ; and apply esper boost
+  JSR $0ECE         ; sound: "cha-ching"
+  JSR $4EED         ; redraw HP/MP on the status screen
+  JMP $5913         ; jump to vanilla "Press B" esper menu fork
+
+org $C3F850
+OffensiveHelp:
+  JSR $87EB      ; [displaced] draw evasions
+  JSR $C2F7      ; [optimized] set blue palette
+  LDY #$8E1D     ; [displaced] text pointer
+  JSR $02F9      ; [displaced] draw "Attack"
+  JMP $88A0      ; [displaced] draw elements
+
+UpdateTxtColor:
+  BEQ .gray      ; branch to gray if property missing
+  LDA #$20       ; "user's color" palette (white)
+  BRA .done      ; set ^
+.gray
+  LDA #$24       ; grey text
+.done
+  STA $29        ; set palette ID
+  RTS
+
+ItemProperties:
+  LDX $2134        ; item index
+  LDA $D85013,x    ; byte to look at
+  RTS
+
+DrawTextData:
+  STY $E7
+  JSR $8795
+  RTS
+
+ShopClearBG:
+  JSR $6A28        ; clear bg2 map a
+  JSR $6A2D        ; clear bg2 map b
+  JSR $6A32        ; clear bg2 map c
+  JSR $6A37        ; clear bg2 map d
+  LDY #GearWindow  ; offset to main gear window specs
+  JSR $0341        ; draw window ^
+  LDY #GearActors  ; offset to actor window specs
+  JSR $0341        ; draw window ^
+  LDY #GearNameBox ; offset to name window specs
+  JSR $0341        ; draw window ^
+  LDY #GearDesc    ; offset to desc window specs
+  JSR $0341        ; draw window ^
+ClearBG3:
+  JSR $6A3C        ; clear bg3 map a
+  JSR $6A41        ; clear bg3 map b
+  JSR $6A46        ; clear bg3 map c
+  JSR $6A4B        ; clear bg3 map d
+  RTS
+
+draw_title_dupe:
+  JSR $02FF        ; draw title
+
+BuyItemDetails:
+  LDA #$10         ; reset/stop desc
+  TSB $45          ; set menu flags
+  JSR $0F39        ; queue text upload
+  JSR $1368
+  JSR $0F4D        ; queue text upload 2
+  JSR $B8A6        ; handle d-pad
+  JSR check_stats
+  JSR $BC84        ; draw quantity owned
+  JSR $BCA8        ; draw quantity worn
+;Handle hold Y
+shop_handle_y:
+  LDA $0D
+  BIT #$40         ; holding Y?
+  BEQ .handle_b    ; branch if not
+  REP #$20         ; 16-bit A
+  LDA #$0100       ; BG2 scroll position
+  STA $3B          ; BG2 Y position
+  STA $3D          ; BG3 X position
+  SEP #$20         ; 8-bit A
+  LDA #$04         ; bit 2
+  TRB $45          ; set bit in menu flags A
+  JSR gear_desc
+  RTS
+;Fork: Handle B
+.handle_b
+  STZ $3C
+  STZ $3E
+  LDA #$04
+  TSB $45
+  LDA $09          ; No-autofire keys
+  BIT #$80         ; Pushing B?
+  BEQ .handle_a    ; Branch if not
+  JSR $0EA9        ; Sound: Cursor
+  JMP $B760        ; Exit submenu
+;Fork: Handle A
+.handle_a
+  LDA $08          ; no-autofire keys
+  BIT #$80         ; pushing (A)
+  BEQ .exit        ; exit if not ^
+  JSR $B82F        ; set buy limit
+  JSR $B7E6        ; test GP, stock
+.exit
+  RTS
+
+DrawDetailsLabels:
+  JSR $1368        ; trigger NMI
+  JSR $C2F7        ; [displaced] color: blue
+  LDY #VigorText   ; text: vigor
+  JSR $02F9        ; draw text
+  LDY #SpeedText   ; text: speed
+  JSR $02F9        ; draw text
+  LDY #StaminaText ; text: stamina
+  JSR $02F9        ; draw text
+  LDY #MagicText   ; text: magic
+  JSR $02F9        ; draw text
+  LDY #DefText     ; text: defense
+  JSR $02F9        ; draw text
+  LDY #MDefText    ; text: magic defense
+  JSR $02F9        ; draw text
+  LDY #EvadeText   ; text: evasion
+  JSR $02F9        ; draw text
+  LDY #MEvadeText  ; text: magic evasion
+  JSR $02F9        ; draw text
+  LDY #PowerText   ; text: bat.pow.
+  JSR $02F9        ; draw text
+  JSR $BFC2        ; get item ID in A [TODO why]
+  RTS
+
+check_stats:
+  PHA               ; store A
+  PHX               ; store X
+  PHY               ; store Y
+  PHP               ; store flags
+  JSR $C2F2         ; set palette to white
+  JSR $BFC2         ; get item
+  JSR $8321         ; Compute index
+  LDX $2134         ; Load it
+  TDC               ; Terminator
+  STA $7E9E8D       ; Set mod B3
+  STA $7E9E8E       ; Set mod B4
+  REP #$20          ; 16-bit A
+  LDA #$8223        ; Tilemap ptr
+  STA $7E9E89       ; Set position
+  SEP #$20          ; 8-bit A
+  TDC               ; Clear A
+  LDA $D85010,X     ; Stat mods LB
+  PHA               ; Memorize them
+  AND #$0F          ; Vigor index
+  ASL A             ; Double it
+  JSR $8836         ; Draw modifier
+  REP #$20          ; 16-bit A
+  LDA #$8323        ; Tilemap ptr
+  STA $7E9E89       ; Set position
+  SEP #$20          ; 8-bit A
+  TDC               ; Clear A
+  PLA               ; Stat mods LB
+  AND #$F0          ; Speed index
+  LSR A             ; Put in b3-b6
+  LSR A             ; Put in b2-b5
+  LSR A             ; Put in b1-b4
+  JSR $8836         ; Draw modifier
+  REP #$20          ; 16-bit A
+  LDA #$83A3        ; Tilemap ptr
+  STA $7E9E89       ; Set position
+  SEP #$20          ; 8-bit A
+  LDX $2134         ; Item index
+  TDC               ; Clear A
+  LDA $D85011,X     ; Stats mods HB
+  PHA               ; Memorize them
+  AND #$0F          ; Stamina index
+  ASL A             ; Double it
+  JSR $8836         ; Draw modifier
+  REP #$20          ; 16-bit A
+  LDA #$82A3        ; Tilemap ptr
+  STA $7E9E89       ; Set position
+  SEP #$20          ; 8-bit A
+  TDC               ; Clear A
+  PLA               ; Stat mods HB
+  AND #$F0          ; Mag.Pwr index
+  LSR A             ; Put in b3-b6
+  LSR A             ; Put in b2-b5
+  LSR A             ; Put in b1-b4
+  JSR $8836         ; Draw modifier
+
+;draw defensive properties
+  LDX $2134         ; Item index
+  LDA $D85000,X     ; Properties
+  AND #$07          ; Get class
+  BEQ not_weapon    ; branch if tool
+  CMP #$01          ; Weapon?
+  BEQ is_weapon     ; Branch if so
+  CMP #$06          ; item?
+  BEQ not_weapon    ; branch if so
+  LDA $D85014,X     ; Defense
+  JSR $04E0         ; Turn into text
+  LDX #$823F        ; Text position
+  JSR $04C0         ; Draw 3 digits
+  LDX $2134         ; Item index
+  LDA $D85015,X     ; Mag.Def
+  JSR $04E0         ; Turn into text
+  LDX #$833F        ; Text position
+  JSR $04C0         ; Draw 3 digits
+  LDY #PowerDash
+  JSR $02f9
+is_weapon:
+  TDC
+  LDX $2134        ; item index
+  LDA $D85000,x    ; properties
+  AND #$07
+  CMP #$01
+  BNE not_weapon
+  LDA #$20       ; Palette 0
+  STA $29        ; Color: User's
+  CMP #$51       ; Dice?
+  BEQ hide_bpow      ; Hide if so
+  LDX $2134
+  LDA $D85014,X  ; Bat.Pwr
+  JSR $04E0      ; Turn into text
+  LDX #$813F        ; Text position
+  JSR $04C0      ; Draw 3 digits
+  LDY #DefDash
+  JSR $02F9
+  LDY #MDefDash
+  JSR $02F9
+  BRA not_weapon
+
+hide_bpow:
+  LDY #UnknownTxt     ; Text pointer
+  JSR $02F9      ; Draw "???"
+
+not_weapon:
+  JSR all_dashes
+  REP #$20       ; 16-bit A
+  LDA #$82BF     ; Tilemap ptr
+  STA $7E9E89    ; Set position
+  SEP #$20       ; 8-bit A
+  LDX $2134      ; Item index
+  TDC            ; Clear A
+  LDA $D8501A,X  ; Evasion mods
+  PHA            ; Memorize them
+  AND #$0F       ; Evade index
+  ASL A          ; x2
+  ASL A          ; x4
+  JSR $881A      ; Draw modifier
+  REP #$20       ; 16-bit A
+  LDA #$83BF     ; Tilemap ptr
+  STA $7E9E89    ; Set position
+  SEP #$20       ; 8-bit A
+  LDX $2134      ; Item index
+  TDC            ; Clear A
+  PLA            ; Evasion mods
+  AND #$F0       ; MBlock index
+  LSR A          ;
+  LSR A          ;
+  TAX            ; Index it
+  LDA $C38854,X  ; Sign
+  STA $7E9E8B    ; Add to string
+  LDA $C38855,X  ; Tens digit
+  STA $7E9E8C    ; Add to string
+  LDA $C38856,X  ; Ones digit
+  STA $7E9E8D    ; Add to string
+  JSR $8847      ; Draw modifier
+
+; name and cleanup
+  REP #$20
+  LDA #$810D        ; tilemap ptr
+  STA $7E9E89
+  SEP #$20        
+  JSR $BFC2        ; get item
+  JSR $C068        ; load item name
+  JSR $7FD9
+  PLP
+  PLY
+  PLX
+  PLA
+  JSR $BC92
+  RTS
+
+all_dashes:
+  LDX $2134
+  LDA $D85000,x
+  AND #$07
+  CMP #$06
+  BNE skip_all_dashes
+  LDY #PowerDash
+  JSR $02F9
+  LDY #DefDash
+  JSR $02F9
+  LDY #MDefDash
+  JSR $02F9
+skip_all_dashes:
+  RTS
+gear_desc:
+  LDA $02
+  CMP $4B
+  BNE gear_desc_end
+  JSR gear_desc2    ; build description tilemap for shop menu
+  JSR $B4E6        ; set description flags
+  JSR $B4EF        ; load item description for buy menu
+gear_desc_end:
+  LDA $4B
+  STA $02
+  RTS
+
+gear_desc2:
+  LDX #$7849     ; Base: 7E/7849
+  STX $EB        ; Set map ptr LBs
+  LDA #$7E       ; Bank: 7E
+  STA $ED        ; Set ptr HB
+  LDY #$0CBC     ; Ends at 30,19
+  STY $E7        ; Set row's limit
+  LDY #$0C84     ; Starts at 3,19
+  LDX #$3500     ; Tile 256, pal 5
+  STX $E0        ; Priority enabled
+  JSR $A783      ; Do line 1, row 1
+  LDY #$0CFC     ; Ends at 30,20
+  STY $E7        ; Set row's limit
+  LDY #$0CC4     ; Starts at 3,20
+  LDX #$3501     ; Tile 257, pal 5
+  STX $E0        ; Priority enabled
+  JSR $A783      ; Do line 1, row 2
+  LDY #$0D3C     ; Ends at 30,21
+  STY $E7        ; Set row's limit
+  LDY #$0D04     ; Starts at 3,21
+  LDX #$3538     ; Tile 312, pal 5
+  STX $E0        ; Priority enabled
+  JSR $A783      ; Do line 2, row 1
+  LDY #$0D7C     ; Ends at 30,22
+  STY $E7        ; Set row's limit
+  LDY #$0D44     ; Starts at 3,22
+  LDX #$3539     ; Tile 313, pal 5
+  STX $E0        ; Priority enabled
+  JMP $A783      ; Do line 2, row 2
+
+HelpText:
+  dw $791F : db "Hold",$FE,"Y",$FE,"for",$FE,"details.",$00 ; TODO: Why FE?
+VigorText:
+  dw $820D : db "Vigor",$00
+SpeedText:
+  dw $830D : db "Speed",$00
+StaminaText:
+  dw $838D : db "Stamina",$00
+MagicText:
+  dw $828D : db "Magic",$00
+DefText:
+  dw $822B : db "Defense",$00
+MDefText:
+  dw $832B : db "M.Def.",$00
+EvadeText:
+  dw $82AB : db "Evade",$00
+MEvadeText:
+  dw $83AB : db "M.Evade",$00
+PowerText:
+  dw $812B : db "Attack",$00,$00 ; TODO Remove extra $00 here
+UnknownTxt:
+  dw $813F : db "???",$00
+PowerDash:
+  dw $813F : db "---",$00
+DefDash:
+  dw $823F : db "---",$00
+MDefDash:
+  dw $833F : db "---",$00
+EleResist:
+  dw $7B8D : db "Resist:",$00
+EleAbsorb:
+  dw $7C0D : db "Absorb:",$00
+EleImmune:
+  dw $7C8D : db "Nullify:",$00
+EleWeak:
+  dw $7D0D : db "Weakness:",$00
+
+; Window layout data
+GearWindow:  : dw $718B : db $1C,$06
+GearActors:  : dw $750B : db $1C,$06
+GearNameBox: : dw $708B : db $1C,$02
+GearDesc:    : dw $738B : db $1C,$04
+
+; ------------------------------------------------------------------------
+; More EL/EP/SpellBank Helpers
+; TODO: Some of this code deprecates unused labels above
+; TODO: Some of this code may not be used at all
+
+org $C3FD08
+FinishSP:
+  LDA #$8F          ; P
+  STA $2180
+  STZ $2180         ; EOS
+  JMP $7FD9         ; String done, now print it
+
+MPCost:             ; TODO: Apparently unused [??]
+  PHA               ; Store SP cost for retrieval
+  PHX               ; Preserve X for isolation purposes
+  LDA #$FF
+  STA $2180
+  LDA $E1           ; ID of the spell
+  JSR $50F5         ; Compute index
+  LDX $2134         ; Load it
+  LDA $C46AC5,X     ; Base MP cost
+  PLX               ; Restore X
+  JSR $04E0         ; Turns A into displayable digits
+  LDA $F8           ; tens digit
+  STA $2180
+  LDA $F9           ; ones digit
+  STA $2180
+  LDA #$FF          ; space
+  STA $2180
+  LDA #$8C          ; M
+  STA $2180
+  LDA #$8F          ; P
+  STA $2180
+  LDA #$FF          ; 3 spaces
+  STA $2180
+  STA $2180
+  STA $2180
+  LDA $AA
+  LSR
+  BCC .unknown
+.known
+  PLA
+  JMP Known         ; print a checkmark
+.unknown
+  PLA
+  JSR $04E0         ; Turns A into displayable digits
+  JMP SPCost        ; go back to where we sliced in and output SP cost
+
+Known:  
+  LDA #$FF          ; 2 spaces to center checkmark
+  STA $2180
+  STA $2180
+  
+  LDA #$CF          ; checkmark
+  STA $2180
+  
+  LDA #$FF          ; 2 more spaces to overwrite stale text in this slot
+  STA $2180
+  STA $2180
+
+  STZ $2180         ; EOS
+  JMP $7FD9
+
+NewLabels:
+; The flip-flopping from white to blue for all of the static positioned
+; text could be streamlined, but this is just so much simpler to grap
+; than having to slice the blue in with the blue and the white in with
+; the white, etc.
+  JSR $04B6         ; Write banked SP to screen (relocated)
+  LDY #SPMax
+  JSR $02F9         ; Print "/30" with SP bank
+  LDA #$24
+  STA $29           ; Set text color to blue
+  LDY #LearnLabel
+  JSR $02F9         ; Print "Learn"
+  LDA #$20
+  STA $29           ; Set text color back to white
+  LDA #$00
+  XBA               ; Wipe HB of A
+  LDA $99
+  RTS
+
+DrawEsperMP:
+  LDA #$FF
+  STA $2180         ; 3 spaces
+  STA $2180
+  STA $2180
+  LDA $99           ; Current Esper
+  ADC #$36          ; Get attack ID
+  PHX
+  JSR $50F5         ; Compute index
+  LDX $2134         ; Load it
+  LDA $C46AC5,X     ; Base MP cost
+  PLX
+  JSR $04E0         ; Turns A into displayable digits
+  LDA $F8           ; tens digit
+  STA $2180
+  LDA $F9           ; ones digit
+  STA $2180
+  LDA #$FF          ; space
+  STA $2180
+  LDA #$8C          ; M
+  STA $2180
+  LDA #$8F          ; P
+  STA $2180
+  STZ $2180         ; EOS
+  RTS
 

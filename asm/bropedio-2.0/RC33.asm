@@ -7,26 +7,6 @@ hirom
 ; This master file includes all bugfixes and patches for RC33
 ; of Brave New World 2.0.
 
-incsrc death-immunity-bugfix.asm
-incsrc esper-boosts.asm
-incsrc green-cherry-full-fix.asm
-incsrc mind-blast.asm
-incsrc respect-row.asm
-incsrc variance-overflow-fix.asm
-incsrc x-fight-crits.asm
-incsrc filter-rages.asm             ; uses freespace from "respect-row"
-incsrc optimize-fix.asm
-incsrc pincer-atb.asm
-incsrc rng-gen.asm
-incsrc shadow-fee.asm
-incsrc esper-level-simplify.asm
-incsrc lvl-avg.asm
-incsrc elemental-lite.asm
-incsrc formation-randomness.asm
-incsrc run-fast-2.asm
-incsrc gau-stepping.asm
-incsrc phantom-bug.asm
-incsrc scan-free.asm
 incsrc atb-draw-fix.asm
 incsrc quickfill.asm
 incsrc double-gp.asm

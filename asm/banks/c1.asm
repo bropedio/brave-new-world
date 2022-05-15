@@ -2,7 +2,18 @@ hirom
 
 ; C1 Bank
 
-incsrc ram.asm
+; ########################################################################
+; NMI
+
+; ------------------------------------------------------------------------
+; Add hook to listen for "Select" button press
+
+org $C10CFA : JSR CheckSel
+
+; ########################################################################
+; RNG
+
+org $C11861 : JSL Random
 
 ; ########################################################################
 ; Status Graphics (cont.)
@@ -99,16 +110,46 @@ org $C12EF7
 .get_color
 
 ; ########################################################################
+; Fix Vanilla Bug that blocks running animation for Morph instead of
+; the Frozen status. From assassin
+
+org $C1353F : AND #$02
+
+; ########################################################################
+; Keep time frozen during some battle actions
+
+org $C17792 : NOP #3 ; when selecting target via "Fight" command cursor
+org $C17D25 : NOP #3 ; [?]
+
+; ########################################################################
 ; Bushido Menu
 
 org $C17D8A : JSR SwdTechMeter ; add handling for bushido meter scroll
 
 ; ########################################################################
-; Rage Battle Menu
-;
-; Modify max scroll value for shortened rage battle menu (dn)
+; Slots Battle Menu
+; De-rigs the slots
 
-org $C184F9 : CMP #$1C ; (64 rages / 2) - 4(onscreen)
+org $C1806D
+SlotsBatMenu:
+  BRA .r2_rig
+org $C18089 : .r2_rig
+org $C180A6
+  BRA .r3_rig
+org $C180D7 : .r3_rig
+
+; ########################################################################
+; Lore Battle Menu
+
+org $C18336 : CMP #$0C    ; lore menu length - 4 (x2)
+org $C1838F : LDA #$0C    ; lore menu scrollbar rows + 4 (see above)
+
+; ########################################################################
+; Rage Battle Menu
+
+org $C184F9 : CMP #$1C    ; (64 rages / 2) - 4(onscreen)
+org $C1854A : LDA #$1C    ; rage menu scrollbar rows (see above)
+org $C1854E : LDX #$0140  ; pixels per rage menu scrollbar row [?]
 
 ; ########################################################################
 ; Damage number color palette routine
@@ -120,6 +161,109 @@ org $C12D2B : NOP : NOP : JSL PaletteMP
 org $C12B9B : NOP : NOP : JSL PaletteMP_mass
 
 ; #######################################################################
+; Relocate 2bpp palettes
+
+org $C140A8 : LDA Palettes,X     ; Load battle text palettes white and gray
+org $C140AF : LDA Palettes+16,X  ; Load battle text palettes yellow and cyan
+org $C14100 : LDA Palettes+40,X  ; Load battle gauge palette
+
+; #######################################################################
+; Status Text Display for targeting window
+
+org $C14587
+StatusTextDisp: ; @returns: bit 0 = Regen, Bit 1 = Rerise, Bit 2 = Sap
+  XBA           ; get B
+  PHA           ; store ^
+  XBA           ; get A again
+  LDA $2EBE,X   ; Status byte 2 (for Sap)
+  ROL #2        ; Rotate Sap into carry
+  TDC           ; Clear A
+  ROL           ; Rotate Sap into bit 0
+  XBA           ; Save Sap
+  LDA $2EC0,X   ; Status byte 4 (Rerise byte)
+  LSR #3        ; Shift Rerise into carry
+  XBA           ; Get Sap again
+  ROL           ; Rotate Rerise into bit 0, Sap into bit 1
+  XBA           ; Save Sap and Rerise
+  LDA $2EBF,X   ; Status byte (for Regen)
+  LSR #2        ; Shift Regen into carry
+  XBA           ; Get Sap and Rerise
+  ROL           ; Rotate Regen into bit 0, Rerise into bit 1, Sap into bit 2
+  XBA           ; store A
+  PLA           ; restore original B
+  XBA           ; store in B ^
+  RTS
+padbyte $FF : pad $C145B3
+
+; #######################################################################
+; Spell Name Message Display
+;
+; dn's "Spell Dot" hack shifts loop to include prefix dot
+
+org $C1602E : NOP #3 ; skip decrementing spell name length
+org $C16031 : LDA $E6F567,X ; decrement starting offset by 1
+
+; #######################################################################
+; Draw HP or ATB Gauge
+
+; -----------------------------------------------------------------------
+; Gauge drawing
+; Change the endcaps on the ATB bar based on whether ATB is full or not.
+; Requires two new glyphs in the 8x8 font tileset (the two tiles
+; immediately following the ATB endcaps, left and right). The endcaps
+; are changed so that the uncharged ones don't use colors 2 or 4, just
+; the grey and transparency. Then the charged endcaps use colors 4
+; (the brightest) and optionally color 2 like the vanilla endcaps did.
+
+org $C16854
+ATBEndCaps:
+  PHA
+  JSL LeftCap
+  JSR $66F3        ; Draw opening end of ATB gauge
+  LDA #$04
+  STA $1A
+.loop
+  LDA $C168AC,X    ; Get the ATB gauge character
+  JSR $66F3        ; Draw tile A
+  INX
+  DEC $1A          ; Decrement tiles to do
+  BNE .loop        ; Branch if we haven't done 4
+  PLA
+  JML RightCap
+  NOP
+
+; -----------------------------------------------------------------------
+; Add checks for statuses to ATB drawing routine
+
+org $C16872
+drawGauge:
+  LDA $2021        ; ATB gauge setting
+  LSR              ; Gauge enabled?
+  BCC .draw_hp     ; Branch if disabled
+  LDA $3A8F        ; nATB: is ATB paused?
+  LSR              ; (01 = paused)
+  BCS .exit        ; Don't update bars while ATB is paused
+  LDA $4E          ; Text color
+  PHA              ; Save it
+  LDA $18          ; Which character is it (0-3)
+  TAX              ; Index it
+  LDA $619E,X      ; Character's ATB gauge value
+  PHA              ; Save it for later
+  TXA              ; A = character 0-3
+  ASL              ; Double it
+  JSL StatusATB    ; get palette based on status
+  STA $4E          ; Store palette
+  PLA              ; Restore ATB gauge value
+  JSR $6854        ; Draw the gauge
+  PLA              ; Get saved text color
+  STA $4E          ; Store text color
+.exit
+  RTS
+org $C16898
+.draw_hp
+  LDA #$C0         ; Draw a "/" as HP divider
+
+; #######################################################################
 ; Battle Dynamics Commands Jump Table
 
 ; Add aliases for existing damage number commands
@@ -127,6 +271,12 @@ org $C12B9B : NOP : NOP : JSL PaletteMP_mass
 
 org $C191A0 : dw $A4B3  ; battle dynamics $05, alias to $0B (cascade)
 org $C191A6 : dw $9609  ; battle dynamics $08, alias to $03 (mass)
+
+; ######################################################################
+; Decode Battle Dynamics Script
+
+org $C1953B : JSL MagicFunction1 ; hook for nATB [$C3](before animation)
+org $C19544 : JSL MagicFunction2 ; hook for nATB [$C3](after animation)
 
 ; ######################################################################
 ; Damage Numbers Animation Handler(s)
@@ -138,9 +288,35 @@ org $C1A5A9 : NOP : JSL SetMPDmgFlag
 org $C1A6E6 : NOP : JSL SetMPDmgFlagMass
 
 ; ######################################################################
+; Odin Animation
+; Skip "Cleave" effect in Odin animation
+
+org $C1B0E4 : BRA No_Odin_Cleave
+org $C1B0EC : No_Odin_Cleave:
+
+; ######################################################################
+; RNG
+
+org $C1CD53 : JSL Random
+
+; ######################################################################
+; RNG
+
+org $C1CECF : JSL Random
+
+; ######################################################################
 ; Freespace (stats at $C1FFE5)
 
-org $C1FFEC
+org $C1FFE5
+
+; ----------------------------------------------------------------------
+; During NMI, if Select button pressed, swap gauge display
+
+CheckSel:
+  JSL SwapGauge  ; (in $C3)
+  JMP $0B73      ; [displaced]
+
+; ----------------------------------------------------------------------
 SwdTechMeter:
   INC $7B82      ; increment meter position
   LDA $7B82      ; get new meter postion
