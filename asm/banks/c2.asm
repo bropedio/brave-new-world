@@ -1856,6 +1856,7 @@ org $C235E9 : JSL InitAttackVars ; hook to track more counterattack vars
 ; #########################################################################
 ; Weapon "Addition" Magic
 
+org $C23649 : JSL ProcFix : NOP ; hook to handle case of no valid targets
 org $C23651 : JSR RandomCast : NOP #2 ; add hook for better procrate
 
 ; #########################################################################
@@ -2391,9 +2392,10 @@ Aero:
   STZ $11A6     ; zero battle power (attack itself does no damage)
   LDA #$99      ; "Aero v.2" spell ID
 .proc
-  STA $3400     ; set spellcast proc
-  INC $3A70     ; increment remaining hits for spellcast
-.exit
+  XBA           ; save spell #
+  JSL ProcFix2  ; set spellcast proc, increment hits, handle no targets
+  RTS
+.exit           ; TODO: Remove duplicate RTS
   RTS
 
 ; -------------------------------------------------------------------------

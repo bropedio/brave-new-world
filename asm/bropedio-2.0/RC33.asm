@@ -7,7 +7,6 @@ hirom
 ; This master file includes all bugfixes and patches for RC33
 ; of Brave New World 2.0.
 
-incsrc proc-bug.asm
 incsrc gau-targeting.asm
 incsrc review-screen-esper.asm
 incsrc drain-swirly.asm

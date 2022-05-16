@@ -595,6 +595,31 @@ HandleXFight:            ; 27 bytes
   RTL
 
 ; -------------------------------------------------------------------------
+; Helpers for Invalid Targets Spellproc fix (C2)
+; Fix vanilla bug that allows procs to fire even if
+; the accompanying weapon strike had no targets to
+; strike.
+
+org $C0D9F0
+ProcFix:               ; 12 bytes
+  LDA $B8              ; character targets
+  ORA $B9              ; enemy targets
+  BEQ .exit            ; if none, abort spellcast
+  LDA $3A89            ; spellcast byte (vanilla code)
+  BIT #$40             ; "cast randomly" flag
+.exit
+  RTL                  ; on return, abort spellcast if Z flag set
+ProcFix2:              ; 14 bytes
+  LDA $B8              ; character targets
+  ORA $B9              ; enemy targets
+  BEQ .exit            ; if none, abort spellcast
+  XBA                  ; get spell #
+  STA $3400            ; [displaced] set addition magic
+  INC $3A70            ; [displaced] increment number of remaining strikes
+.exit
+  RTL
+
+; -------------------------------------------------------------------------
 
 org $C0DE5E
 SetMPDmgFlag:
