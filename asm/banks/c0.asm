@@ -413,6 +413,167 @@ EarringFix:         ; TODO: Move this code in-line
   RTS
 
 ; -------------------------------------------------------------------------
+; Informative Miss Helpers
+
+org $C0D835
+MaybeNull:        ; 33 bytes
+  LDA $11A4       ; attack flags
+  AND #$0004      ; does attack lift status?
+  BEQ SetNull     ; set null flag if not
+  TDC             ; set Z flag
+  RTL
+SetKill:
+  LDA $3AA1,Y     ; check immune to instant death bit
+  BRA BitSet
+SetFrac:
+  LDA $3C80,Y     ; check fractional dmg immunity bit
+BitSet:
+  BIT #$04        ; immune to instant death (or fractional)
+  BEQ SetEnd      ; if not immune, exit
+SetNull:
+  PHP             ; save M, Z flags
+  REP #$20        ; 16-bit A
+  LDA $3018,Y     ; get unique bit for target
+  TSB !null       ; set null miss bit
+  PLP             ; restore 8-bit A, no zero flag
+SetEnd:
+  RTL
+
+StamPhase:        ; 27 bytes
+  LDA $11A4
+  BIT #$20        ; check for "cannot dodge" flag (needed for 2nd phase)
+  BNE .exit       ; if cannot dodge, exit without Carry change
+  BIT #$10        ; check for stamina evade flag
+  BEQ .exit       ; if no stamina evade, exit without Carry change
+  ORA $11A3       ; top bit holds fractional|MP bit
+  BMI .first      ; first phase if Fractional or MP
+  LDA $11A9       ; special effect
+  CMP #$52        ; "North Cross"
+  BEQ .first      ; first phase if N.Cross
+.second
+  SEC             ; return carry set for second phase
+.exit
+  RTL
+.first
+  CLC             ; return carry clear for first phase
+  RTL
+
+TootHelp1:        ; 61 bytes
+  LDA $11A9       ; Special Effect index
+  AND #$00FF      ; zero B 
+  CMP #$0076      ; Evil Toot
+  BNE .mind       ; if not toot, check mind blast next
+  LDY #$01        ; else, set one random status
+  BRA .end
+.mind
+  CMP #$0050      ; Mind Blast
+  BNE TootHelp2   ; use regular handling if not mind blast or evil toot
+  STZ $E8         ; used to flag whether target was targeted
+  LDA $3018,Y     ; target's unique bit
+  LDY #$00        ; start w/ no random statuses
+  LDX #$08        ; prepare mind blast loop
+.loop
+  BIT !blast,X    ; check mind blast target bytes
+  BEQ .next       ; if not this target, try next
+  INC $E8         ; mark target as intended target
+  PHA             ; store unique bit
+  SEP #$20        ; 8-bit A
+  JSL $C0FD00     ; get rand(0..256)
+  LSR             ; rand(0..128)
+  CLC             ; this aligns with C2 stamina evade check math
+  SBC $3B40,Y     ; compare to stamina 
+  REP #$20        ; 16-bit A
+  PLA             ; restore unique bit
+  BCC .next       ; skip hit if stamina evades
+  INY             ; else, add 1 random status to set
+.next
+  DEX
+  DEX             ; get next mind blast target index
+  BPL .loop       ; end loop after checking index 0
+  DEC $E8
+  BMI .miss       ; if this target was not targeted, flag miss
+  CPY #$00
+  BNE .end        ; if was targeted, and a hit landed, exit
+  TSB !fail       ; if all hits were evaded, flag "fail"
+.miss
+  TSB !miss       ; flag "miss" (overriden by fail above)
+.end
+  RTL
+
+TootHelp2:        ; 10 bytes
+  LDA $11AA       ; attack status bytes 1-2
+  STA $FC         ; set status-to-set bytes 1-2
+  LDA $11AC       ; attack status bytes 3-4
+  STA $FE         ; set status-to-set bytes 3-4
+  PLA             ; remove C2 address of RTL
+  PEA $447A       ; make RTL below return to end (must keep aligned w/ old_miss)
+
+TootHelp3:        ; 9 bytes
+  LDA $F8         ; current status 1-2
+  TRB $FC         ; remove from status to set
+  LDA $FA         ; current status 3-4
+  TRB $FE         ; remove from status to set
+  RTL
+
+StatusHelp:       ; 20 bytes
+  BEQ .miss       ; if Z flag set, no fail bit
+  LDA $3018,Y     ; get unique bit for target
+  TSB !fail       ; set fail miss bit
+.miss
+  PHA             ; save unique bit (or zero)
+  LDA $11A7
+  LSR             ; "miss if status unchanged" flag
+  PLA             ; load unique bit (or empty)
+  BCC .end        ; if no full miss, exit
+  TSB !miss       ; else, set full miss bit
+.end
+  RTL
+
+; -------------------------------------------------------------------------
+; Status Removal After Death (delayed) Helpers
+;
+; When monsters die, avoid removing the following statuses
+; until after any possible counterattack or additional strike
+; has a chance to execute. Otherwise, that counterattack or
+; strike will behave as though these statuses were not set.
+; Statuses: Dark, Mute, Shell, Safe, Sleep, Muddle, Berserk, Freeze, Stop
+
+org $C0D8F0
+StatusRemove:
+  CPY #$08             ; is target a monster?
+  BCC .skip            ; branch if character
+  LDA $3018,Y          ; unique entity bit
+  TSB !died_flag       ; flag this entity for status cleanup
+.skip
+  LDA $FA              ; vanilla code (curr status 3-4)
+  ORA $FE              ; vanilla code (status to set 3-4)
+  AND #$9BFF           ; statuses removed by death
+  BCC .all
+  AND #$998F           ; skip removing Shell, Safe, Freeze, Stop
+.all
+  TSB $F6              ; set status-to-clear 3-4
+  RTL
+
+StatusFinHelp:         ; 33 bytes
+  LDX #$12             ; prepare loop through all entities
+.loop
+  LDA $3018,X          ; entity's unique bit
+  TRB !died_flag       ; did this entity just die?
+  BEQ .next            ; branch if not
+  LDA $3EE4,X          ; status 1-2
+  AND #$B801           ; Dark, Mute, Sleep, Muddle, Berserk
+  STA $3DFC,X          ; status-to-clear 1-2
+  LDA $3EF8,X          ; status 3-4
+  AND #$0270           ; Frozen, Stop, Safe, Shell
+  STA $3E10,X          ; status-to-clear 3-4
+.next
+  DEX
+  DEX                  ; point to next lowest entity
+  BPL .loop            ; loop through all entities
+  RTL
+
+
+; -------------------------------------------------------------------------
 
 org $C0DE5E
 SetMPDmgFlag:

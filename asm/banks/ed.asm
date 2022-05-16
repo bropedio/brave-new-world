@@ -3,6 +3,24 @@ hirom
 ; ED Bank
 
 ; #########################################################################
+; Some Character Data
+; Renable Weapon Swap (overwrites btb base, likely)
+
+org $ED7CB5 : db $02 ; Terra
+org $ED7CCB : db $00 ; Locke
+org $ED7CE1 : db $03 ; Cyan
+org $ED7CF7 : db $00 ; Shadow
+org $ED7D0D : db $02 ; Edgar
+org $ED7D23 : db $02 ; Sabin
+org $ED7D39 : db $01 ; Celes
+org $ED7D4F : db $03 ; Strago
+org $ED7D65 : db $01 ; Relm
+org $ED7D7B : db $02 ; Setzer
+org $ED7D91 : db $01 ; Mog
+org $ED7DA7 : db $00 ; Gau
+org $ED7DBD : db $0D ; Gogo
+
+; #########################################################################
 ; Optimize-Excluded Gear
 
 org $ED82E4

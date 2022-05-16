@@ -3,6 +3,15 @@ hirom
 ; C2 Bank
 
 ; #########################################################################
+; Primary Battle Loop
+
+; -------------------------------------------------------------------------
+; We now allow many statuses to persist through the end of counterattacks
+; e.g. Muted monsters who counter with spells
+
+org $C20081 : JSR StatusFinish ; finish removing statuses from dead
+
+; #########################################################################
 ; Part of Attack Prep
 
 ; -------------------------------------------------------------------------
@@ -682,10 +691,27 @@ org $C21031 : AfterImpEquip:
 org $C21124 : ORA $3A8F
 
 ; -------------------------------------------------------------------------
+; Quickfill
+; Rather than checking for the "menu open" flag, we
+; instead check for the characters' individual
+; battle menu positions, which are updated as soon
+; as ATB reaches 100%. This ensures that no additional
+; quick-loops take place once any character's battle
+; menu is ready to open.
+
+org $C2112C
+BattleFrameLoop:
+  CMP $0E         ; compare backup counter to frame count
+  BEQ .exit       ; if already ran this frame, exit (this is a change)
+  JSL Quickfill   ; determine if x2 speed
+  BEQ .exit       ; if slower speed, exit every other frame
+
+; -------------------------------------------------------------------------
 ; Skip morph gauge decrement
 
-org $C21143 : BRA BypassMorphCalc
-org $C2114B : BypassMorphCalc:
+org $C21143 : BRA .bypass_morph
+org $C2114B : .bypass_morph
+org $C21190 : .exit
 
 ; -------------------------------------------------------------------------
 ; Update ATB, check for "ATB Autofill"
@@ -933,6 +959,36 @@ org $C218FF : NOP #2
 org $C21908 : JSR CoinHelp
 
 ; #########################################################################
+; Row (command)
+
+org $C21955
+HalfSelf:
+  JSL HalfTurn      ; reset ATB to 50%
+  BRA SelfHit       ; execute self-hit
+warnpc $C2195C
+
+; #########################################################################
+; Runic (command)
+
+org $C21964 : SelfHit: ; [label] load command data and hit self (Runic)
+
+; #########################################################################
+; Defend (command)
+;
+; Defend/Row/WeaponSwap Command handling
+; Changed to consume 1/2 turns only, and
+; flag equipment update for WeaponSwap,
+; which enters with the "Defend" command id.
+
+org $C2196B
+  JSL SwapOrDefend  ; prep status-to-clear and return 0 or 2
+  JSR $5BAB         ; set defend flag (or no flag)
+  TYX               ; setup indexes properly for self-hit
+  BRA HalfSelf      ; flag half-turn self-hit
+  NOP
+warnpc $C21977
+
+; #########################################################################
 ; Code Pointers for Commands
 
 org $C219ED : dw PreDanceCmd ; changed to add Moogle Charm hook
@@ -1004,6 +1060,13 @@ org $C21DE0 : db $84 ; Start Lore/EnemyAttack range with spell ID 84 (Exploder)
 org $C22002 : CMP #$04 ; Vindictive Targeting Fix
 
 ; #########################################################################
+; Recalculate Character Properties from Equipment
+; * Support for HP/MP, Statuses
+; * Detect 2-hand/dual-wield properties
+
+org $C220D5 : JSR ExtraProps ; hook to expand equipment prop support
+
+; #########################################################################
 ; Hit Determination
 ;
 ; Modified by Synchysi's "Blind" patch
@@ -1015,8 +1078,8 @@ HitMiss:
   LDA $11A2        ; attack flags
   BIT #$02         ; "Instant Death"
   BEQ .chk_vanish  ; branch if not ^
-  LDA $3AA1,Y      ; special status flags
-  BIT #$04         ; "Immune to Instant Death"
+  JSL SetKill      ; test and set death immune miss
+  NOP              ; TODO: Remove NOP
   BNE .go_dodge    ; branch if ^
 .chk_vanish
   LDA $B3          ; attack flags
@@ -1057,11 +1120,11 @@ org $C22291 : .go_dodge
 org $C22293 : .golem
 
 org $C222A8           ; replace the old L? spells handling
-  BIT #$10            ; "Stamina Evasion"
-  BEQ EvadeChk        ; branch if not ^
-  JSR StamEvd         ; else, run the stamina check
-  BCS .dodge          ; branch if stam check succeeded
-  BRA EvadeChk        ; else branch to normal hit determination
+  NOP
+  SEC                 ; default to skipping stamina evade
+  JSL StamPhase       ; clear carry if 1st phase evasion
+  BCS EvadeChk        ; only second phase evasion, use reg evasion
+  JSR StamEvdChk      ; stamina/128 chance for C to be set
 
 org $C222B3 : .hit_miss
 org $C222B5 : .dodge
@@ -1134,6 +1197,20 @@ DiceHelp:
   LDA $3B7D,Y       ; lefthand hitrate (contains # of dice)
 .exit
   RTS
+
+; ------------------------------------------------------------------------
+; Informative Miss helper in freespace
+
+MissType2:       ; 7 bytes
+  ORA #$4000     ; add general "miss" flag
+  CMP #$4000     ; return wih Z flag set if no miss flags
+  RTS
+warnpc $C223B3
+
+; ------------------------------------------------------------------------
+; End of vanilla Stamina Evasion check
+
+org $C223B2 : StamEvdChk: ; [label] carry is set if stamina evades
 
 ; #########################################################################
 ; Initialize Many Things at Battle Start
@@ -1282,6 +1359,89 @@ org $C22716 : .skip
 ; #########################################################################
 ; Load Character Equipment Properties
 
+; -------------------------------------------------------------------------
+; Rearranged initialize-battle-stat routine
+; Extracts status and HP/MP subroutines for reuse
+; Also makes room for helper "Extra" for equipment update
+
+org $C227A8
+BattleInit:         ; 93 bytes
+  PHP
+  REP #$30          ; Set 16-bit Accumulator & Index Registers
+  STZ !unequip      ; zero needs-unequip byte
+  LDY $3010,X       ; get offset to character info block
+  LDA $1609,Y       ; get current HP
+  STA $3BF4,X       ; HP
+  LDA $160D,Y       ; get current MP
+  STA $3C08,X       ; MP
+  JSL NewMaxHP
+  LDA $3018,X       ; Holds character bit mask
+  BIT $B8           ; is this character a Colosseum combatant
+  BEQ .status1      ; branch if neither
+  LDA $3C1C,X       ; Max HP
+  STA $3BF4,X       ; HP
+  LDA $3C30,X       ; Max MP
+  STA $3C08,X       ; MP
+  LDA $1614,Y       ; outside battle statuses 1-2 (1 and 4)
+  AND #$FF2D
+  STA $1614,Y       ; remove Clear, Petrify, Death, Zombie
+.status1
+  LDA $1614,Y       ; outside battle statuses 1-2 (1 and 4)
+  SEP #$20
+  STA $3DD4,X       ; Status to set byte 1
+  BIT #$08
+  BEQ .status4      ; If not set M-Tek
+  LDA #$1D
+  STA $3F20         ; save MagiTek as default last command for Mimic
+  LDA #$83
+  STA $3F21         ; save Fire Beam as default last attack for Mimic
+.status4
+  XBA               ; outside battle status 2
+  AND #$C0          ; only keep Dog Block and Float
+  STA $3DE9,X       ; Status to set byte 4
+  JSL SetStatus     ; add equipment statuses to set
+  LDA $1608,Y
+  STA $3B18,X       ; Level
+  PLP 
+  RTS 
+
+ExtraProps:              ; 47 bytes
+  PHX               ; store X
+  REP #$30          ; 16-bit A,X,Y
+  LDY $3010,X       ; Y = offset to character block
+  JSL NewMaxHP      ; update in-battle max HP/MP
+  SEP #$20          ; 8-bit A
+  LDA $3018,X       ; character's unique bit
+  TRB !unequip      ; clear unequip flag
+  BEQ .skip         ; skip to set status if wasn't set
+  LDA $32F4,X       ; unequip item id (currently in reserve)
+  JSR $2B63         ; multiply A (item id) by 30
+  PHX               ; prepare X<->Y swap
+  TAX               ; item data offset in X
+  PLY               ; character index in Y
+  JSL ClearStatus   ; clear unequip status, then set equip status
+  TYX               ; character index back in X
+.skip
+  JSL SetStatus     ; set equip statuses
+  SEP #$10          ; 8-bit X,Y
+  PLX               ; restore X
+  JSR $4391         ; update all statuses
+  JMP $2675         ; set status immunity to innate statuses
+
+ItemLookup:         ; 4 bytes
+  JSR $54DC         ; copy item data into $2E72-2E76 (long access)
+  RTL
+
+HPLookup:           ; 4 bytes
+  JSR $283C         ; get max HP after equipment/relic boosts
+  RTL
+
+warnpc $C2283D
+padbyte $FF
+pad $C2283C
+
+; -------------------------------------------------------------------------
+
 org $C22872
   BRA NoMog    ; skip turning Moogle Suit wearing into Moogle
 
@@ -1299,8 +1459,26 @@ Sap_Chk2:
   JMP AtlasEnd    ; jump back instead (to end of routine)
 
 ; -------------------------------------------------------------------------
+; Skip Gengi Glove Effect check, use freespace for Weapon Swap Helper
 
-org $C22883 : NoMog:
+org $C22883
+NoMog:
+  BRA GenjiSkip     ; skip gengi glove effect setting
+LongUpdate:
+  JSR $2095         ; long access to run equipment updates
+  RTL
+  NOP #4
+GenjiSkip:
+warnpc $C2288E
+
+; -------------------------------------------------------------------------
+; Hook to set Overcast for Ghost Ring
+; Make sure Ghost Ring doesn't have "Zombie" immunity
+
+org $C228D4 : JSR FullUndead
+
+; -------------------------------------------------------------------------
+
 org $C22917 : STA $3330,X ; clear correct immunities byte [vanilla bug]
 
 ; #########################################################################
@@ -1410,20 +1588,22 @@ org $C22B1A
   dw Noiseblaster      ; now uses Stamina Evade
   dw ToolsRTS          ; Bio Blaster - RTS
   dw ToolsRTS          ; Flash - RTS
-  dw Chainsaw1         ; now always does dmg if target immune to death
+  dw ChainInit         ; now always does dmg if target immune to death
   dw ToolsRTS          ; Defibrillator - RTS (old Debilitator)
   dw Drill             ; Add "Sap" to status effects
   dw ToolsRTS          ; Mana Battery - RTS (old Air Anchor)
   dw Autocrossbow      ; check event bit for levelled up ACB
 
-Chainsaw1:
-  JSR $4B5A            ; random(0..256)
-  AND #$03             ; 75% chance of 0
-  BNE Drill_Saw        ; branch if ^ (no hockey mask)
-  LDA #$08             ; "Hockey Mask" animation
-  STA $B6              ; set ^
-  LDA #$AC             ; new "Chainsaw" special effect
-  STA $11A9            ; set ^ to handle instant death immunity
+padbyte $FF            ; clear 5 unused bytes
+pad $C22B2F            ; TODO: Remove this padding
+
+ChainEffect2:          ; 6 bytes
+  JSR $35BB            ; update animation queue
+  JMP $3A85            ; add "death" to statuses to set TODO: Should this add to 11AA instead?
+
+ChainInit:
+  LDA #$AC
+  STA $11A9            ; set special effect index
 
 Drill_Saw:             ; [fork]
   LDA #$20             ; "Ignore Defense"
@@ -1521,20 +1701,23 @@ DmgQtr:
 
 ; -------------------------------------------------------------------------
 ; Chainsaw helper (freespace from old Physical Formula)
+; Removes stamina evasion support
+; Only use hockey mask for death
 
 org $C22C09           
 Chainsaw2:
-  LDA $3AA1,Y      ; special status flags
-  BIT #$04         ; "Immune to instant death"
-  BNE .exit        ; exit if ^
-  STZ $11A6        ; zero battle power - this is instant death, no need for damage.
-  LDA #$80         ; "Death"
-  ORA $3DD4,Y      ; add ^ status-to-set TODO: Should this add to 11AA instead?
-  STA $3DD4,Y      ; update ^
-  LDA #$10         ; "Stamina Evade"
-  STA $11A4        ; set ^
-.exit
+  JSR $4B5A
+  CMP #$40
+  BCS .rts          ; exit 75% of the time
+  JSL SetKill       ; requires label defined in informative-miss
+  BNE .rts          ; exit if target immune to instant-death
+  LDA #$08
+  STA $B6           ; set Hockey Mask animation
+  STZ $11A6         ; zero battle power
+  JMP ChainEffect2  ; add "death" to statuses to set
+.rts
   RTS
+warnpc $C22C21+1
 
 ; #########################################################################
 ; Get Sketcher Level
@@ -1625,7 +1808,7 @@ org $C23392
   JSR GetRowFlag                    ; if respect row, #10 will be set in A
   ASL                               ; move respect row flag to #20
   AND #$20                          ; if respect row, A = #20, else, A = #00
-org $C233A3 : JSR Imp_Nerf          ; add hook for new Imp damage nerf routine
+org $C233A3 : JSR ImpNerf           ; add hook for new Imp damage nerf routine
 org $C233BA : JSR SetTarget         ; Enable target's counterattack, even if we miss
 org $C233EA : BRA NoImpCrit         ; skip Imp critical handling
 org $C233F2 : NoImpCrit:            ; label for BRA above
@@ -1725,6 +1908,11 @@ SpellProc:
 
 org $C2381D :  JSL AutoCritProcs ; power-up crit doom to x-zone, multitarget quartr
 org $C2382D : .cannot_miss
+
+; #########################################################################
+; X-Kill Effect
+
+org $C23891 : JSL SetKill : NOP ; test and set death immune miss (informative miss)
 
 ; #########################################################################
 ; Maneater Effect (now on Butterfly)
@@ -1947,11 +2135,58 @@ checkLeap:
   RTS
 
 ; #########################################################################
-; Mind Blast Effect
+; Mind Blast and Evil Tool Effects (moved by Informative Miss)
+; Now these are all various helpers for Informative Miss
+; TODO: Rewrite Informative Miss to be less spaghetti
 
-org $C23BB8
-  LDX #$08        ; loop through all 5 targets (instead of 4)
-  BIT !blast,X    ; check against targeting at new RAM location
+org $C23BB0
+StatusClear:
+  STZ $F4
+  STZ $F6
+  STZ $FC
+  STZ $FE
+  RTS
+
+StatusMiss:
+  LDA $F4
+  ORA $FC
+  ORA $F6
+  ORA $FE         ; are any still to be set/cleared?
+  BEQ .miss       ; if not, miss (w/o setting miss bits)
+  LDA $FC         ; status to set (1-2)
+  ORA $F4         ; status to clear (1-2)
+  BEQ .next       ; if none, check next status bytes
+  AND $331C,Y     ; are any vulnerable?
+  BNE .stun       ; if so, skip to stunner check
+.next
+  LDA $FE         ; status to set (3-4)
+  ORA $F6         ; status to clear (3-4)
+  AND $3330,Y     ; are any vulnerable?
+  BNE .stun       ; if yes, check stamina/stunner next
+  JSL MaybeNull   ; set null miss bit (and get unique bit in A)
+  BRA .miss       ; Z flag is still set
+.stun
+  SEP #$20        ; 8-bit A
+  LDA #$7E
+  CMP $11A9       ; is special effect "stunner"? ($3F)
+  BNE .stam       ; if not, do stamina check
+  JSR $4B5A       ; rand(0..256)
+  CMP $11A8       ; hitrate
+  BRA .fail
+.stam
+  CLC             ; default to no stam evade
+  JSL StamPhase
+  BCC .fail       ; if carry clear, skip stamina check
+  JSR StamEvdChk  ; set carry if stamina evaded
+.fail
+  REP #$22        ; 16-bit A, clear Z flag
+  BCC .exit       ; if carry clear, status hits
+  JSR StatusClear ; else, clear status changes
+.miss
+  JSL StatusHelp
+.exit
+  RTS             ; if Carry set, attack misses
+warnpc $C23C05
 
 ; #########################################################################
 ; Rippler Effect (now freespace)
@@ -2018,6 +2253,11 @@ padbyte $FF
 pad $C23C6E
 
 ; #########################################################################
+; Suplex Effect (now fractional immunity) [informative miss]
+
+org $C23C6E : JSL SetFrac : NOP ; test and set fractional immune miss
+
+; #########################################################################
 ; Air Anchor Routine (now freespace)
 
 org $C23C78
@@ -2050,6 +2290,11 @@ SetCantrip:
   RTS
 
 ; #########################################################################
+; Overcast Effect
+
+org $C23D1E : SetOvercast: ; [label]
+
+; #########################################################################
 ; X Kill Effect (now shifted down, freespace at top)
 
 ; -------------------------------------------------------------------------
@@ -2059,6 +2304,34 @@ SetCantrip:
 org $C23D43
   JSR $38F2        ; double damage for human targets (maneater)
   JMP NetEffect    ; Jump to function to randomly cast Net
+
+; #########################################################################
+; Stunner Effect (moved for Informative Miss -- now freespace helpers)
+
+org $C23D85
+SmartToot2:       ; 34 bytes
+.again
+  DEY
+  BMI .finish     ; add Y statuses
+  TXA             ; move status count to A
+  JSR $4B65       ; rand(0..A)
+  CMP $E8         ; clear carry if status is in bytes 1-2 
+  LDA $11AA
+  BCC .pick1
+  LDA $11AC       
+.pick1
+  JSR $522A       ; pick a random bit set in A
+  BCS .set2
+  TSB $FC         ; set in status to set bytes 1-2
+  BRA .cont
+.set2
+  TSB $FE         ; set in status to set bytes 3-4
+.cont
+  BRA .again
+.finish
+  JSL TootHelp3
+  RTS
+warnpc $C23DA9
 
 ; #########################################################################
 ; Metamorph Chance (unused in BNW, so now freespace)
@@ -2071,11 +2344,18 @@ SetIgnDef:
 
 ; #########################################################################
 ; Special Effect (per-target) Jump Table [C23DCD]
+;
+; Merge Mind Blast and Evil Toot special effect hooks directly
+; into status handling. This allows their status misses/evades
+; to be handled the same as all others.
 
 org $C23DE7 : dw Zantetsuken ; Effect [?] - Zantetsuken [?]
 org $C23DEB : dw Cleave      ; Effect [?] - Cleave [?]
 org $C23E11 : dw NewLife     ; Effect $22 - Life (was Stone)
 org $C23E13 : dw NoCounter   ; Effect [?] - Instant Death
+org $C23E1D : dw $388C       ; no per-target mind blast hook (now inline)
+org $C23E43 : dw $388C       ; no per-target evil toot hook (now inline)
+org $C23E4B : dw $388C       ; no per-target stunner hook (now inline)
 org $C23E79 : dw Chainsaw2   ; Effect $56 (was Debilitator, now Chainsaw)
 
 ; #########################################################################
@@ -2281,9 +2561,12 @@ org $C2418F : JSR DiceHelp ; corrects dice issue (by Seibaby)
 
 ; #########################################################################
 ; Old Revenge Routine (now freespace)
+; TODO: This old "Imp Nerf" routine is no longer used, because it was
+; overwriting part of Palidor effect, and was moved elsewhere. It can
+; be removed. The overlapping portion has been removed.
 
 org $C241E6
-Imp_Nerf:
+OldImpNerf:
   LDA $B5        ; command ID
   CMP #$01       ; "Item"
   BEQ .exit      ; exit if ^
@@ -2291,9 +2574,7 @@ Imp_Nerf:
   BIT #$20       ; "Imp"
   BEQ .exit      ; branch if not ^
   LSR $11B1      ; damage / 2 (hibyte)
-  ROR $11B0      ; damage / 2 (lobyte)
-.exit
-  JMP $14AD      ; [displaced]
+org $C241F9 : .exit
 
 ; #########################################################################
 ; Spiraler (per-strike special effect)
@@ -2382,6 +2663,126 @@ org $C24367 : dw Shock     ; Shock formula
 org $C24383 : dw CoinToss  ; Effect $51 ($C33FB7 now unused)
 
 ; #########################################################################
+; Determine Statuses to Set/Clear when Attack Hits (4406)
+
+; -------------------------------------------------------------------------
+; Rewritten for Informative Miss
+
+org $C24416        ; rearranged/replaced
+  BCC .status      ; $4490 will return with C set if full miss
+  INC $3A48        ; flag full miss
+  BRA .finish
+.status
+  SEP #$20         ; else set statuses
+  LDA $B3
+  BMI .undead      ; branch if not Ignore Clear
+  LDA #$10
+  TRB $F4          ; remove Vanish from Status to Clear
+.undead
+  LDA $3C95,Y
+  BPL .setem       ; branch if not undead
+  LDA #$08
+  BIT $11A2
+  BEQ .setem       ; branch if attack doesn't reverse dmg on undead
+  LSR 
+  BIT $11A4
+  BEQ .setem       ; branch if not lift status
+  LDA $11AA
+  BIT #$82
+  BEQ .setem       ; branch if attack doesn't involve Death or Zombie
+  LDA #$80
+  TSB $FC          ; mark Death in Status to set
+.setem
+  REP #$20
+  LDA $FC
+  JSR $0E32        ; update Status to set Bytes 1-2
+  LDA $FE
+  ORA $3DE8,Y
+  STA $3DE8,Y      ; update Status to set Bytes 3-4
+  LDA $F4
+  ORA $3DFC,Y
+  STA $3DFC,Y      ; update Status to clear Bytes 1-2
+  LDA $F6
+  ORA $3E10,Y
+  STA $3E10,Y      ; update Status to clear Bytes 3-4
+.finish
+  PLP
+  RTS
+warnpc $C24466
+
+; -------------------------------------------------------------------------
+; Informative Miss helper
+
+org $C24465
+SmartToot:        ; (from 44D1)
+  PHY             ; save Y (target's index)
+  JSL TootHelp1   ; regular handling jumps back
+  LDA $11AA
+  JSR $520E       ; set X to # of bytes in A
+  STX $E8         ; save for later
+  LDA $11AC
+  JSR $5210       ; X = total # of attack statuses
+  JSR SmartToot2
+.pea
+  PLY             ; restore Y to target's index
+  RTS
+warnpc $C24480
+
+; -------------------------------------------------------------------------
+; Initialize intermediate status-to-set bytes (partly rewritten)
+; [informative miss]
+
+org $C24490
+NewStatusInit:
+  PHX              ; save attacker index
+  REP #$20         ; set 16-bit A
+  LDA $11A4
+  AND #$000C       ; isolate "lift status" and "toggle status" bits
+  LSR              ; shift down
+  TAX              ; use as index for jump table
+  JSR StatusClear  ; zero status-to-set and status-to-clear bytes
+  JSR ($44D1,X)    ; set ^ based on attack data and current status
+  JSR StatusMiss
+  PLX              ; restore X now, making room for CLC before RTS
+  BCS .rts         ; if full miss, skip vanish/freeze clearing
+org $C244CF
+  CLC              ; clear C to indicate no full miss
+.rts
+  RTS
+
+; -------------------------------------------------------------------------
+; Route "Set Status" helper through new handling
+
+org $C244D1
+  dw SmartToot
+
+; -------------------------------------------------------------------------
+; Informative Miss helper
+
+org $C244D7
+MissType:
+  PHX            ; store X
+  LDX #$04       ; loop through miss type bytes
+.loop
+  BIT !miss,X    ; check this miss type (X=2,4)
+  BNE .finish    ; if matched, finish w/ flag
+  DEX
+  DEX            ; get next miss type index
+  BNE .loop      ; continue until 0 (regular miss)
+.finish
+  TXA
+  PLX            ; restore X
+  XBA            ; transfer miss type to B
+  JSR MissType2
+  RTS
+warnpc $C244EB
+
+; -------------------------------------------------------------------------
+; Hook "Toggle Status" helper into new handling
+
+org $C244F9 : JSR SmartToot
+
+; #########################################################################
 ; Status Setting/Clearing Routine
 ;
 ; Largely rewritten by Assassin's "Overcast Fix" patch, which ensures
@@ -2434,8 +2835,8 @@ OvercastFix:
   LDA $32DF,Y        ; hit by attack
   BPL .finish        ; branch if not ^
   JSR $447F          ; get new status
-  LDA $FC            ; new status-1/2
-  STA $3E60,Y        ; save quasi-status-1/2
+  BRA .finish        ; no longer set quasi status at all (was LDA $FC)
+  STA $3E60,Y        ; save quasi-status-1/2 ; TODO: Remove BRA-bypassed code
   LDA $FE            ; new status-3/4
   STA $3E74,Y        ; save quasi-status-3/4
 .finish
@@ -2464,6 +2865,17 @@ RageClear2:
 
 ; -------------------------------------------------------------------------
 ; Petrify & Death Set
+; New behavior so some statuses that can affect counterattacks will persist
+; until any potential counterattacks are processed.
+
+org $C2460E
+  JSL StatusRemove     ; handle bytes 3-4, death flag
+  LDA #$FE15           ; statuses removed by death
+  BCC .clear           ; branch if character
+  LDA #$4614           ; skip removing Dark, Mute, Sleep, Muddle, Berserk
+.clear
+  JSR $4598            ; mark statuses in A to be cleared
+warnpc $C2461E
 
 org $C2462F : ClearQueue: ; [label] clear queued actions
 
@@ -2527,6 +2939,15 @@ org $C24903 : NOP #3 ; skip morph gauge reset/update
 
 org $C24B5F : JSL Random
 org $C24B6F : JSL Random
+
+; #########################################################################
+; Run Monster Script (C24BF4)
+
+; -------------------------------------------------------------------------
+; Real statuses now persist longer after death, so quasi aren't used
+
+org $C24C11 : LDA $3EE4,X ; load real status 1-2, instead of quasi
+org $C24C19 : LDA $3EF8,X ; load real status 3-4, instead of quasi
 
 ; #########################################################################
 ; Prepare Counterattacks (C24C5B)
@@ -3014,6 +3435,14 @@ CmdBlanks:
 warnpc $C2546E+1
 
 ; ########################################################################
+; Copy Item Properties into Buffer
+
+; ------------------------------------------------------------------------
+; Set Dual Wield flags on battle inventory items
+
+org $C25528 : JSL FlagDual   ; set item flags for 2-hand and dual-wield
+
+; ########################################################################
 ; Construct Magic and Lore Menus
 
 org $C255BD : CMP #$19       ; extend "Black Magic" range by 1 (incl. Stone)
@@ -3218,6 +3647,23 @@ org $C25D0A : BCC .loop
 ; Make EP gains display after combat
 org $C25E0B : JSR Show_EP
 
+; Double GP when Experience is off
+org $C25E10
+DoubleGP:
+  LDA $1D4D           ; config byte
+  BIT #$08            ; "gain exp" flag
+  BNE .skip           ; branch if experience on
+  ASL $2F3E           ; else, double GP reward
+  ROL $2F3F
+  ROL $2F40
+.skip
+  LDY #$0006          ; shifted vanilla code below
+.loop
+  LDA $3018,Y
+  BIT $3A74
+  BEQ NextVictoryLoop
+  BRA AfterMorph
+
 ; The following branch bypasses the function that adjusts Terra's Morph supply.
 org $C25E2F : BRA AfterMorph
 
@@ -3250,6 +3696,8 @@ org $C25E4C
 ; Remove learning spells from post-combat routine
 org $C25E6A : BRA No_Spells
 org $C25E72 : No_Spells:
+org $C25E73 : NextVictoryLoop:
+org $C25E75 : BPL DoubleGP_loop
 
 ; Synchysi's note:
 ; The instruction here would seem to prevent the game from ever displaying
@@ -3391,7 +3839,43 @@ AddEL:
   LDA #$00        ; clear finished bonus
   BRA .doone      ; loop for second bonus byte
 
-padbyte $FF       ; TODO: freespace here
+; --------------------------------------------------------------------------
+; Img Damage Reduction Helper (in freespace)
+
+ImpNerf:
+  LDA $B5           ; command id
+  CMP #$01          ; is command "Item"
+  BEQ .skip         ; exit if so
+  LDA $3EE4,X       ; status byte 1
+  BIT #$20          ; "imp"
+  BEQ .skip         ; exit if not imped
+  LSR $11B1         ; half damage (high byte)
+  ROR $11B0         ; half damage (low byte)
+.skip
+  JMP $14AD         ; continue to hitting back check
+
+; --------------------------------------------------------------------------
+
+padbyte $FF         ; TODO: freespace here
+pad $C261D6+1
+
+; --------------------------------------------------------------------------
+
+org $C261D6
+StatusFinish:
+  REP #$20             ; 16-bit A
+  LDA !died_flag       ; bitmask of entities needing status cleanup
+  BEQ .done            ; if none, exit
+  JSL StatusFinHelp    ; prepare status cleanup
+  JSR $4391            ; cleanup statuses
+.done
+  SEP #$20             ; 8-bit A
+  JMP $47ED            ; [displaced] vanilla code
+warnpc $C261E9+1
+
+; --------------------------------------------------------------------------
+
+padbyte $FF            ; TODO: freespace here
 pad $C261E9
 
 ; #########################################################################
@@ -3427,6 +3911,47 @@ org $C26276 : dl $0F423F ; 999,999
 
 org $C263A9 : JSR DmgCmdAlias
 org $C263BB : JSR DmgCmdAliasMass
+
+; #########################################################################
+; Queue Damage Number animations (62EF-63DB)
+; Changes support "Null", "Fail" messages
+
+org $C2634D
+DmgNumberPrep:
+  JSR MissType
+
+org $C26361        ; this code is shifted upward to use the ChooseAnim JSR
+  JSR ChooseAnim   ; if msgs (Y) < 5, use cascading animation, else simultaneous 
+  LDA $F2
+  BEQ .skip        ; branch if no target had both damage and healing
+  LDX #$12
+  LDY $F0          ; start counting at last round count (changed from vanilla)
+.loop
+  LDA $33E4,X      ; healing (or null)
+  STA $33D0,X      ; store in damage bytes
+  INC
+  BEQ .next        ; if healing was null, check next target
+  INY              ; increment total message count
+.next
+  DEX
+  DEX              ; get next target
+  BPL .loop        ; loop until all 10 targets checked
+  STY $F0          ; save total target count so far
+  JSR ChooseAnim   ; if msgs < 5, use cascading dmg numbers; else, simultaneous
+  NOP
+.skip
+  LDX #$12         ; prepare second_miss loop/count
+  LDY $F0          ; start at total message count
+  JSR SecondMiss   ; queue miss messages (if any)
+.vanilla           ; code below this is unchanged, can be removed from patch
+  TDC
+  DEC
+  LDX #$12
+
+org $C26398
+AnimateMiss:
+  BCS .simult         ; branch directly to simultaneous code to save space
+org $C263B6 : .simult ; address of simultaneous dmg messages
 
 ; #########################################################################
 ; Freespace (C26469-C26800)
@@ -3672,6 +4197,22 @@ NCross2:
   JSR $522A        ; Pick one at random
   TSB $A4          ; Save new target(s)
   SEP #$20         ; Set 8-bit A
+  RTS
+
+; --------------------------------------------------------------------------
+; Ghost Ring helper
+;
+; To avoid the un-revivable state caused by dying while undead,
+; give undead characters the Overcast flag as well, so death
+; sets Zombie instead (if not immune).
+
+org $C26626
+FullUndead:           ; 10 bytes
+  STA $3C95,X         ; (vanilla code)
+  BPL .skip           ; branch if not undead
+  TXY                 ; JSR below indexes by Y
+  JSR SetOvercast     ; else, set overcast bit
+.skip
   RTS
 
 ; --------------------------------------------------------------------------
@@ -3956,35 +4497,43 @@ CheckCantrip:
   RTS
 
 ; -------------------------------------------------------------------------
-; Helper for Stamina Evasion
+; Helper for Stamina Evasion (moved by Informative Miss)
+; Now freespace for various Informative Miss helpers
 
 org $C267C5
-StamEvd:
-  JSR $4B5A       ; random(0..255)
-  AND #$7F        ; random(0..127)
-  STA $EE         ; save ^
-  LDA $3B40,Y     ; target's stamina
-  CMP $EE         ; >= random(0..127)
-  BCC .exit       ; exit if not ^
-  LDA $11A6       ; attack power
-  BEQ .miss       ; miss if no ^ (and Stamina evade)
-  LDA $11A4       ; attack flags
-  AND #$84        ; "Fractional", "Redirection"
-  BNE .miss       ; miss if ^ (and Stamina evade)
-  LDA $11A3       ; attack flags
-  AND #$80        ; "MP Damage"
-  BNE .miss       ; miss if ^ (and Stamina evade)
-  LDX #$03        ; else, strip statuses off the attack (BUG)
+SecondMiss:
 .loop
-  STZ $11AA,X     ; clear status attack byte
-  DEX             ; next status byte index
-  BPL .loop       ; clear all 4 status bytes
-  CLC             ; clear carry to direct through regular hit evasion
+  INY            ; assume status miss
+  LDA $3018,X    ; unique target bit
+  BIT $3A5A      ; missed targets
+  BNE .zero      ; branch if target already missed
+  JSR MissType   ; get miss flags in A
+  BNE .setflags  ; if status miss flags, branch
+.zero
+  DEY            ; no status miss
+  TDC
+  DEC            ; A = #FFFF (null)
+.setflags
+  STA $33D0,X    ; save miss flag(s) or null
+  DEX
+  DEX            ; get next entity index
+  BPL .loop      ; branch if more entities to check
+  STZ !fail      ; zero two status miss bytes
+  STZ !null
+  CPY $F0
+  BEQ MissExit   ; if no new miss messages, exit
+
+ChooseAnim:
+  CPY #$05       ; are total targets < 5?
+  JSR AnimateMiss; if ^, use (faster) cascading animation
+
+MissExit:
   RTS
-.miss
-  SEC             ; C: attack misses completely
-.exit
-  RTS
+
+; TODO: This code preserved for initial integration checksum, but unused
+  db $FA : CLC : RTS : SEC : RTS
+
+warnpc $C267F2+1
 
 ; -------------------------------------------------------------------------
 ; Helper for Blackbelt Counter chance
