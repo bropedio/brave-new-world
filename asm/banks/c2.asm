@@ -3,6 +3,15 @@ hirom
 ; C2 Bank
 
 ; #########################################################################
+; Primary Battle Loop
+
+; -------------------------------------------------------------------------
+; We now allow many statuses to persist through the end of counterattacks
+; e.g. Muted monsters who counter with spells
+
+org $C20081 : JSR StatusFinish ; finish removing statuses from dead
+
+; #########################################################################
 ; Part of Attack Prep
 
 ; -------------------------------------------------------------------------
@@ -2584,8 +2593,8 @@ OvercastFix:
   LDA $32DF,Y        ; hit by attack
   BPL .finish        ; branch if not ^
   JSR $447F          ; get new status
-  LDA $FC            ; new status-1/2
-  STA $3E60,Y        ; save quasi-status-1/2
+  BRA .finish        ; no longer set quasi status at all (was LDA $FC)
+  STA $3E60,Y        ; save quasi-status-1/2 ; TODO: Remove BRA-bypassed code
   LDA $FE            ; new status-3/4
   STA $3E74,Y        ; save quasi-status-3/4
 .finish
@@ -2614,6 +2623,17 @@ RageClear2:
 
 ; -------------------------------------------------------------------------
 ; Petrify & Death Set
+; New behavior so some statuses that can affect counterattacks will persist
+; until any potential counterattacks are processed.
+
+org $C2460E
+  JSL StatusRemove     ; handle bytes 3-4, death flag
+  LDA #$FE15           ; statuses removed by death
+  BCC .clear           ; branch if character
+  LDA #$4614           ; skip removing Dark, Mute, Sleep, Muddle, Berserk
+.clear
+  JSR $4598            ; mark statuses in A to be cleared
+warnpc $C2461E
 
 org $C2462F : ClearQueue: ; [label] clear queued actions
 
@@ -2677,6 +2697,15 @@ org $C24903 : NOP #3 ; skip morph gauge reset/update
 
 org $C24B5F : JSL Random
 org $C24B6F : JSL Random
+
+; #########################################################################
+; Run Monster Script (C24BF4)
+
+; -------------------------------------------------------------------------
+; Real statuses now persist longer after death, so quasi aren't used
+
+org $C24C11 : LDA $3EE4,X ; load real status 1-2, instead of quasi
+org $C24C19 : LDA $3EF8,X ; load real status 3-4, instead of quasi
 
 ; #########################################################################
 ; Prepare Counterattacks (C24C5B)
@@ -3585,7 +3614,26 @@ ImpNerf:
 
 ; --------------------------------------------------------------------------
 
-padbyte $FF       ; TODO: freespace here
+padbyte $FF         ; TODO: freespace here
+pad $C261D6+1
+
+; --------------------------------------------------------------------------
+
+org $C261D6
+StatusFinish:
+  REP #$20             ; 16-bit A
+  LDA !died_flag       ; bitmask of entities needing status cleanup
+  BEQ .done            ; if none, exit
+  JSL StatusFinHelp    ; prepare status cleanup
+  JSR $4391            ; cleanup statuses
+.done
+  SEP #$20             ; 8-bit A
+  JMP $47ED            ; [displaced] vanilla code
+warnpc $C261E9+1
+
+; --------------------------------------------------------------------------
+
+padbyte $FF            ; TODO: freespace here
 pad $C261E9
 
 ; #########################################################################

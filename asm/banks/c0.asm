@@ -413,6 +413,50 @@ EarringFix:         ; TODO: Move this code in-line
   RTS
 
 ; -------------------------------------------------------------------------
+; Status Removal After Death (delayed) Helpers
+;
+; When monsters die, avoid removing the following statuses
+; until after any possible counterattack or additional strike
+; has a chance to execute. Otherwise, that counterattack or
+; strike will behave as though these statuses were not set.
+; Statuses: Dark, Mute, Shell, Safe, Sleep, Muddle, Berserk, Freeze, Stop
+
+org $C0D8F0
+StatusRemove:
+  CPY #$08             ; is target a monster?
+  BCC .skip            ; branch if character
+  LDA $3018,Y          ; unique entity bit
+  TSB !died_flag       ; flag this entity for status cleanup
+.skip
+  LDA $FA              ; vanilla code (curr status 3-4)
+  ORA $FE              ; vanilla code (status to set 3-4)
+  AND #$9BFF           ; statuses removed by death
+  BCC .all
+  AND #$998F           ; skip removing Shell, Safe, Freeze, Stop
+.all
+  TSB $F6              ; set status-to-clear 3-4
+  RTL
+
+StatusFinHelp:         ; 33 bytes
+  LDX #$12             ; prepare loop through all entities
+.loop
+  LDA $3018,X          ; entity's unique bit
+  TRB !died_flag       ; did this entity just die?
+  BEQ .next            ; branch if not
+  LDA $3EE4,X          ; status 1-2
+  AND #$B801           ; Dark, Mute, Sleep, Muddle, Berserk
+  STA $3DFC,X          ; status-to-clear 1-2
+  LDA $3EF8,X          ; status 3-4
+  AND #$0270           ; Frozen, Stop, Safe, Shell
+  STA $3E10,X          ; status-to-clear 3-4
+.next
+  DEX
+  DEX                  ; point to next lowest entity
+  BPL .loop            ; loop through all entities
+  RTL
+
+
+; -------------------------------------------------------------------------
 
 org $C0DE5E
 SetMPDmgFlag:
