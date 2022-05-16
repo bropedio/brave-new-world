@@ -2868,6 +2868,8 @@ RageClear2:
 ; New behavior so some statuses that can affect counterattacks will persist
 ; until any potential counterattacks are processed.
 
+org $C24603 : JSR SOSReset ; hook to reset SOS relics
+
 org $C2460E
   JSL StatusRemove     ; handle bytes 3-4, death flag
   LDA #$FE15           ; statuses removed by death
@@ -5002,6 +5004,21 @@ SketchFix:
 ; Freespace used for various helper functions
 
 org $C2FAA4
+
+; -------------------------------------------------------------------------
+; Helper for SOS Relic Reset on death
+; On death, SOS Relics are recharged, so their effect can be
+; reapplied when the character next enters "Near Fatal" status.
+
+SOSReset:           ; 13 bytes
+  JSR $4598         ; relocate vanilla code (clear some statuses)
+  LDA #$0002        ; "SOS status can activate" flag
+  ORA $3205,Y       ; set it again
+  STA $3205,Y       ; save updated flags
+  RTS
+
+; -------------------------------------------------------------------------
+
 padbyte $FF       ; TODO: Remove this padbyte usage
 pad $C2FAB4
 
