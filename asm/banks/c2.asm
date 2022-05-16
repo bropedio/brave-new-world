@@ -1794,6 +1794,16 @@ warnpc $C230BC+1
 ; Entity Executes One Hit
 
 ; -------------------------------------------------------------------------
+; In vanilla, the offering causes the Fight command to strike
+; 4 times, randomized after the first. In BNW, X-Fight no longer
+; randomizes, but the "don't retarget if targets are dead/invalid"
+; flag is still set by default for every strike after the first.
+;
+; This patch resets that flag for X-Fight strikes.
+
+org $C231B6 : JSL HandleXFight ; hook to fix X fight randomization
+
+; -------------------------------------------------------------------------
 ; Skip muting all magic except the Imp spell for Imps
 
 org $C2320D : BRA SkipImpMute

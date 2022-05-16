@@ -572,6 +572,27 @@ StatusFinHelp:         ; 33 bytes
   BPL .loop            ; loop through all entities
   RTL
 
+; -------------------------------------------------------------------------
+; Helper for X Fight Retargeting Fix (in C2)
+
+org $C0D9D0
+HandleXFight:            ; 27 bytes
+  LDA #$20               ; "First strike of turn"
+  TRB $B2                ; test and clear
+  BNE .retarget          ; if set, exit without setting "no retarget"
+  LDA $B5                ; command ID
+  BNE .no_retarget       ; if not "Fight", set "no retarget"
+  LDA #$01               ; odd bit set for right-hand swings
+  BIT $3A70              ; # of hits remaining (after this one)
+  BNE .retarget          ; if right-hand, skip setting "no retarget"
+  LDA $3B68,X            ; right-hand battle power
+  BNE .no_retarget       ; if nonzero, lefthand is dualwield, so no retarget
+.retarget
+  LDA #$20               ; prepare BIT check (and clear zero flag)
+  RTL
+.no_retarget
+  TDC                    ; set zero flag
+  RTL
 
 ; -------------------------------------------------------------------------
 
