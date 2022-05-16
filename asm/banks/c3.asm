@@ -794,6 +794,12 @@ org $C379E6 : dw $3A75      ; shift LV label to make room for EL display
 org $C37FD0 : JMP ItemNameFork ; hook for colosseum item row
 
 ; #########################################################################
+; Load Item Descriptions and Draw Item Count
+; BNW - Remove Inventory Count
+
+org $C382FB : db $4C
+
+; #########################################################################
 ; [fork] Draw Offensive Properties
 ; Rewritten to always draw "Runic", "2-Hand", "Bushido" but grayed out
 
