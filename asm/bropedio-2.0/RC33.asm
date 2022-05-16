@@ -7,7 +7,6 @@ hirom
 ; This master file includes all bugfixes and patches for RC33
 ; of Brave New World 2.0.
 
-incsrc drain-swirly.asm
 incsrc rage-dance-descriptions.asm
 incsrc skip-criticals-flag.asm
 incsrc xkill-anim.asm               ; requires "chainsaw-fix", uses freespace from "skip-criticals-flag"
