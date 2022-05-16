@@ -1582,20 +1582,22 @@ org $C22B1A
   dw Noiseblaster      ; now uses Stamina Evade
   dw ToolsRTS          ; Bio Blaster - RTS
   dw ToolsRTS          ; Flash - RTS
-  dw Chainsaw1         ; now always does dmg if target immune to death
+  dw ChainInit         ; now always does dmg if target immune to death
   dw ToolsRTS          ; Defibrillator - RTS (old Debilitator)
   dw Drill             ; Add "Sap" to status effects
   dw ToolsRTS          ; Mana Battery - RTS (old Air Anchor)
   dw Autocrossbow      ; check event bit for levelled up ACB
 
-Chainsaw1:
-  JSR $4B5A            ; random(0..256)
-  AND #$03             ; 75% chance of 0
-  BNE Drill_Saw        ; branch if ^ (no hockey mask)
-  LDA #$08             ; "Hockey Mask" animation
-  STA $B6              ; set ^
-  LDA #$AC             ; new "Chainsaw" special effect
-  STA $11A9            ; set ^ to handle instant death immunity
+padbyte $FF            ; clear 5 unused bytes
+pad $C22B2F            ; TODO: Remove this padding
+
+ChainEffect2:          ; 6 bytes
+  JSR $35BB            ; update animation queue
+  JMP $3A85            ; add "death" to statuses to set TODO: Should this add to 11AA instead?
+
+ChainInit:
+  LDA #$AC
+  STA $11A9            ; set special effect index
 
 Drill_Saw:             ; [fork]
   LDA #$20             ; "Ignore Defense"
@@ -1693,20 +1695,23 @@ DmgQtr:
 
 ; -------------------------------------------------------------------------
 ; Chainsaw helper (freespace from old Physical Formula)
+; Removes stamina evasion support
+; Only use hockey mask for death
 
 org $C22C09           
 Chainsaw2:
-  LDA $3AA1,Y      ; special status flags
-  BIT #$04         ; "Immune to instant death"
-  BNE .exit        ; exit if ^
-  STZ $11A6        ; zero battle power - this is instant death, no need for damage.
-  LDA #$80         ; "Death"
-  ORA $3DD4,Y      ; add ^ status-to-set TODO: Should this add to 11AA instead?
-  STA $3DD4,Y      ; update ^
-  LDA #$10         ; "Stamina Evade"
-  STA $11A4        ; set ^
-.exit
+  JSR $4B5A
+  CMP #$40
+  BCS .rts          ; exit 75% of the time
+  JSL SetKill       ; requires label defined in informative-miss
+  BNE .rts          ; exit if target immune to instant-death
+  LDA #$08
+  STA $B6           ; set Hockey Mask animation
+  STZ $11A6         ; zero battle power
+  JMP ChainEffect2  ; add "death" to statuses to set
+.rts
   RTS
+warnpc $C22C21+1
 
 ; #########################################################################
 ; Get Sketcher Level
