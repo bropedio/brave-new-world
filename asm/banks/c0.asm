@@ -673,6 +673,27 @@ PaletteMP:
   RTL
 warnpc $C0DEA0+1
 
+; -------------------------------------------------------------------------
+; Helper for Gau Targeting (single target across field) support
+
+org $C0DEA0
+SpreadRandom:        ; 24 bytes
+  LDA $BB            ; targeting byte (vanilla code)
+  AND #$2C           ; "multi" flags or "manual" flag
+  CMP #$20           ; "manual party select"
+  BEQ .chance        ; if only "manual" set, flip coin
+  AND #$0C           ; "both parties"/"one party" (vanilla code)
+  RTL
+.chance
+  JSL Random         ; random number
+  LSR                ; 50% chance of carry set
+  TDC                ; neither "multi" flags set
+  BCC .done          ; finish 50% of time (single target)
+  LDA #$08           ; "autoselect one party"
+  TSB $BB            ; spread targeting
+.done
+  RTL
+
 ; #########################################################################
 ; XOR Shift RNG Algorithm (replaces RNG Table)
 ; NOTE: The rest of RNG table is cleared out - 192 bytes free!

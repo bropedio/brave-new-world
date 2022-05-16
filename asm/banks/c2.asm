@@ -3535,11 +3535,32 @@ org $C2580C
 
 ; #########################################################################
 ; Big Ass Targeting Function (and friends)
-;
+
+; -------------------------------------------------------------------------
+; Small branch change to accommodate "Gau Targeting" hack
+
+org $C258E4 : BRA $07 ; skip redundant spread code
+
+; -------------------------------------------------------------------------
 ; Interrupt routine near "Abort on Characters" check to implement
 ; new "Abort on Enemies" helper routine. (Synchysi)
 
 org $C25902 : JSR EnemyAbort ; Add "abort-on-enemies" support
+
+; -------------------------------------------------------------------------
+; Update Randomize Targets subroutine
+; Allows Gau to single-target allies across the field during a Side Attack.
+;
+; Trick is, the side removal happens before the single-target coin flip.
+; The coin flip needs to be moved before this code, so if "single-target"
+; is selected, the side removal can be skipped.
+
+org $C259DA
+  JSL SpreadRandom   ; if manual target (and not multi), flip coin
+  PHA                ; store $0C mask on stack (vanilla code)
+  CMP #$08           ; "one party" and not "both parties"
+                     ; vanilla BNE will skip side/pincer filter
+                     ; for single-target or "both sides"
 
 ; #########################################################################
 ; Time Based Events for Entities
