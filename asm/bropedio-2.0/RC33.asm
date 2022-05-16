@@ -7,7 +7,6 @@ hirom
 ; This master file includes all bugfixes and patches for RC33
 ; of Brave New World 2.0.
 
-incsrc overcast-ring.asm
 incsrc sos-relics.asm
 incsrc inventory-count.asm
 incsrc x-fight-retarget.asm

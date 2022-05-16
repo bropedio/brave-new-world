@@ -1472,6 +1472,12 @@ GenjiSkip:
 warnpc $C2288E
 
 ; -------------------------------------------------------------------------
+; Hook to set Overcast for Ghost Ring
+; Make sure Ghost Ring doesn't have "Zombie" immunity
+
+org $C228D4 : JSR FullUndead
+
+; -------------------------------------------------------------------------
 
 org $C22917 : STA $3330,X ; clear correct immunities byte [vanilla bug]
 
@@ -2282,6 +2288,11 @@ SetCantrip:
   STA $3AA1,X      ; update special state flags
   LDA $3018,X      ; [displaced] attacker bit
   RTS
+
+; #########################################################################
+; Overcast Effect
+
+org $C23D1E : SetOvercast: ; [label]
 
 ; #########################################################################
 ; X Kill Effect (now shifted down, freespace at top)
@@ -4186,6 +4197,22 @@ NCross2:
   JSR $522A        ; Pick one at random
   TSB $A4          ; Save new target(s)
   SEP #$20         ; Set 8-bit A
+  RTS
+
+; --------------------------------------------------------------------------
+; Ghost Ring helper
+;
+; To avoid the un-revivable state caused by dying while undead,
+; give undead characters the Overcast flag as well, so death
+; sets Zombie instead (if not immune).
+
+org $C26626
+FullUndead:           ; 10 bytes
+  STA $3C95,X         ; (vanilla code)
+  BPL .skip           ; branch if not undead
+  TXY                 ; JSR below indexes by Y
+  JSR SetOvercast     ; else, set overcast bit
+.skip
   RTS
 
 ; --------------------------------------------------------------------------
