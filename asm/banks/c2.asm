@@ -1078,8 +1078,8 @@ HitMiss:
   LDA $11A2        ; attack flags
   BIT #$02         ; "Instant Death"
   BEQ .chk_vanish  ; branch if not ^
-  LDA $3AA1,Y      ; special status flags
-  BIT #$04         ; "Immune to Instant Death"
+  JSL SetKill      ; test and set death immune miss
+  NOP              ; TODO: Remove NOP
   BNE .go_dodge    ; branch if ^
 .chk_vanish
   LDA $B3          ; attack flags
@@ -1120,11 +1120,11 @@ org $C22291 : .go_dodge
 org $C22293 : .golem
 
 org $C222A8           ; replace the old L? spells handling
-  BIT #$10            ; "Stamina Evasion"
-  BEQ EvadeChk        ; branch if not ^
-  JSR StamEvd         ; else, run the stamina check
-  BCS .dodge          ; branch if stam check succeeded
-  BRA EvadeChk        ; else branch to normal hit determination
+  NOP
+  SEC                 ; default to skipping stamina evade
+  JSL StamPhase       ; clear carry if 1st phase evasion
+  BCS EvadeChk        ; only second phase evasion, use reg evasion
+  JSR StamEvdChk      ; stamina/128 chance for C to be set
 
 org $C222B3 : .hit_miss
 org $C222B5 : .dodge
@@ -1197,6 +1197,20 @@ DiceHelp:
   LDA $3B7D,Y       ; lefthand hitrate (contains # of dice)
 .exit
   RTS
+
+; ------------------------------------------------------------------------
+; Informative Miss helper in freespace
+
+MissType2:       ; 7 bytes
+  ORA #$4000     ; add general "miss" flag
+  CMP #$4000     ; return wih Z flag set if no miss flags
+  RTS
+warnpc $C223B3
+
+; ------------------------------------------------------------------------
+; End of vanilla Stamina Evasion check
+
+org $C223B2 : StamEvdChk: ; [label] carry is set if stamina evades
 
 ; #########################################################################
 ; Initialize Many Things at Battle Start
@@ -1885,6 +1899,11 @@ org $C2381D :  JSL AutoCritProcs ; power-up crit doom to x-zone, multitarget qua
 org $C2382D : .cannot_miss
 
 ; #########################################################################
+; X-Kill Effect
+
+org $C23891 : JSL SetKill : NOP ; test and set death immune miss (informative miss)
+
+; #########################################################################
 ; Maneater Effect (now on Butterfly)
 
 org $C238FD : ManRTS: ; [label] reusable RTS
@@ -2105,11 +2124,58 @@ checkLeap:
   RTS
 
 ; #########################################################################
-; Mind Blast Effect
+; Mind Blast and Evil Tool Effects (moved by Informative Miss)
+; Now these are all various helpers for Informative Miss
+; TODO: Rewrite Informative Miss to be less spaghetti
 
-org $C23BB8
-  LDX #$08        ; loop through all 5 targets (instead of 4)
-  BIT !blast,X    ; check against targeting at new RAM location
+org $C23BB0
+StatusClear:
+  STZ $F4
+  STZ $F6
+  STZ $FC
+  STZ $FE
+  RTS
+
+StatusMiss:
+  LDA $F4
+  ORA $FC
+  ORA $F6
+  ORA $FE         ; are any still to be set/cleared?
+  BEQ .miss       ; if not, miss (w/o setting miss bits)
+  LDA $FC         ; status to set (1-2)
+  ORA $F4         ; status to clear (1-2)
+  BEQ .next       ; if none, check next status bytes
+  AND $331C,Y     ; are any vulnerable?
+  BNE .stun       ; if so, skip to stunner check
+.next
+  LDA $FE         ; status to set (3-4)
+  ORA $F6         ; status to clear (3-4)
+  AND $3330,Y     ; are any vulnerable?
+  BNE .stun       ; if yes, check stamina/stunner next
+  JSL MaybeNull   ; set null miss bit (and get unique bit in A)
+  BRA .miss       ; Z flag is still set
+.stun
+  SEP #$20        ; 8-bit A
+  LDA #$7E
+  CMP $11A9       ; is special effect "stunner"? ($3F)
+  BNE .stam       ; if not, do stamina check
+  JSR $4B5A       ; rand(0..256)
+  CMP $11A8       ; hitrate
+  BRA .fail
+.stam
+  CLC             ; default to no stam evade
+  JSL StamPhase
+  BCC .fail       ; if carry clear, skip stamina check
+  JSR StamEvdChk  ; set carry if stamina evaded
+.fail
+  REP #$22        ; 16-bit A, clear Z flag
+  BCC .exit       ; if carry clear, status hits
+  JSR StatusClear ; else, clear status changes
+.miss
+  JSL StatusHelp
+.exit
+  RTS             ; if Carry set, attack misses
+warnpc $C23C05
 
 ; #########################################################################
 ; Rippler Effect (now freespace)
@@ -2176,6 +2242,11 @@ padbyte $FF
 pad $C23C6E
 
 ; #########################################################################
+; Suplex Effect (now fractional immunity) [informative miss]
+
+org $C23C6E : JSL SetFrac : NOP ; test and set fractional immune miss
+
+; #########################################################################
 ; Air Anchor Routine (now freespace)
 
 org $C23C78
@@ -2219,6 +2290,34 @@ org $C23D43
   JMP NetEffect    ; Jump to function to randomly cast Net
 
 ; #########################################################################
+; Stunner Effect (moved for Informative Miss -- now freespace helpers)
+
+org $C23D85
+SmartToot2:       ; 34 bytes
+.again
+  DEY
+  BMI .finish     ; add Y statuses
+  TXA             ; move status count to A
+  JSR $4B65       ; rand(0..A)
+  CMP $E8         ; clear carry if status is in bytes 1-2 
+  LDA $11AA
+  BCC .pick1
+  LDA $11AC       
+.pick1
+  JSR $522A       ; pick a random bit set in A
+  BCS .set2
+  TSB $FC         ; set in status to set bytes 1-2
+  BRA .cont
+.set2
+  TSB $FE         ; set in status to set bytes 3-4
+.cont
+  BRA .again
+.finish
+  JSL TootHelp3
+  RTS
+warnpc $C23DA9
+
+; #########################################################################
 ; Metamorph Chance (unused in BNW, so now freespace)
 
 org $C23DC5
@@ -2229,11 +2328,18 @@ SetIgnDef:
 
 ; #########################################################################
 ; Special Effect (per-target) Jump Table [C23DCD]
+;
+; Merge Mind Blast and Evil Toot special effect hooks directly
+; into status handling. This allows their status misses/evades
+; to be handled the same as all others.
 
 org $C23DE7 : dw Zantetsuken ; Effect [?] - Zantetsuken [?]
 org $C23DEB : dw Cleave      ; Effect [?] - Cleave [?]
 org $C23E11 : dw NewLife     ; Effect $22 - Life (was Stone)
 org $C23E13 : dw NoCounter   ; Effect [?] - Instant Death
+org $C23E1D : dw $388C       ; no per-target mind blast hook (now inline)
+org $C23E43 : dw $388C       ; no per-target evil toot hook (now inline)
+org $C23E4B : dw $388C       ; no per-target stunner hook (now inline)
 org $C23E79 : dw Chainsaw2   ; Effect $56 (was Debilitator, now Chainsaw)
 
 ; #########################################################################
@@ -2539,6 +2645,126 @@ org $C2432B : dw GroundDmg ; Effect $25 - Quake
 org $C24341 : dw $3E8A     ; Remove random targeting from Suplex effect
 org $C24367 : dw Shock     ; Shock formula
 org $C24383 : dw CoinToss  ; Effect $51 ($C33FB7 now unused)
+
+; #########################################################################
+; Determine Statuses to Set/Clear when Attack Hits (4406)
+
+; -------------------------------------------------------------------------
+; Rewritten for Informative Miss
+
+org $C24416        ; rearranged/replaced
+  BCC .status      ; $4490 will return with C set if full miss
+  INC $3A48        ; flag full miss
+  BRA .finish
+.status
+  SEP #$20         ; else set statuses
+  LDA $B3
+  BMI .undead      ; branch if not Ignore Clear
+  LDA #$10
+  TRB $F4          ; remove Vanish from Status to Clear
+.undead
+  LDA $3C95,Y
+  BPL .setem       ; branch if not undead
+  LDA #$08
+  BIT $11A2
+  BEQ .setem       ; branch if attack doesn't reverse dmg on undead
+  LSR 
+  BIT $11A4
+  BEQ .setem       ; branch if not lift status
+  LDA $11AA
+  BIT #$82
+  BEQ .setem       ; branch if attack doesn't involve Death or Zombie
+  LDA #$80
+  TSB $FC          ; mark Death in Status to set
+.setem
+  REP #$20
+  LDA $FC
+  JSR $0E32        ; update Status to set Bytes 1-2
+  LDA $FE
+  ORA $3DE8,Y
+  STA $3DE8,Y      ; update Status to set Bytes 3-4
+  LDA $F4
+  ORA $3DFC,Y
+  STA $3DFC,Y      ; update Status to clear Bytes 1-2
+  LDA $F6
+  ORA $3E10,Y
+  STA $3E10,Y      ; update Status to clear Bytes 3-4
+.finish
+  PLP
+  RTS
+warnpc $C24466
+
+; -------------------------------------------------------------------------
+; Informative Miss helper
+
+org $C24465
+SmartToot:        ; (from 44D1)
+  PHY             ; save Y (target's index)
+  JSL TootHelp1   ; regular handling jumps back
+  LDA $11AA
+  JSR $520E       ; set X to # of bytes in A
+  STX $E8         ; save for later
+  LDA $11AC
+  JSR $5210       ; X = total # of attack statuses
+  JSR SmartToot2
+.pea
+  PLY             ; restore Y to target's index
+  RTS
+warnpc $C24480
+
+; -------------------------------------------------------------------------
+; Initialize intermediate status-to-set bytes (partly rewritten)
+; [informative miss]
+
+org $C24490
+NewStatusInit:
+  PHX              ; save attacker index
+  REP #$20         ; set 16-bit A
+  LDA $11A4
+  AND #$000C       ; isolate "lift status" and "toggle status" bits
+  LSR              ; shift down
+  TAX              ; use as index for jump table
+  JSR StatusClear  ; zero status-to-set and status-to-clear bytes
+  JSR ($44D1,X)    ; set ^ based on attack data and current status
+  JSR StatusMiss
+  PLX              ; restore X now, making room for CLC before RTS
+  BCS .rts         ; if full miss, skip vanish/freeze clearing
+org $C244CF
+  CLC              ; clear C to indicate no full miss
+.rts
+  RTS
+
+; -------------------------------------------------------------------------
+; Route "Set Status" helper through new handling
+
+org $C244D1
+  dw SmartToot
+
+; -------------------------------------------------------------------------
+; Informative Miss helper
+
+org $C244D7
+MissType:
+  PHX            ; store X
+  LDX #$04       ; loop through miss type bytes
+.loop
+  BIT !miss,X    ; check this miss type (X=2,4)
+  BNE .finish    ; if matched, finish w/ flag
+  DEX
+  DEX            ; get next miss type index
+  BNE .loop      ; continue until 0 (regular miss)
+.finish
+  TXA
+  PLX            ; restore X
+  XBA            ; transfer miss type to B
+  JSR MissType2
+  RTS
+warnpc $C244EB
+
+; -------------------------------------------------------------------------
+; Hook "Toggle Status" helper into new handling
+
+org $C244F9 : JSR SmartToot
 
 ; #########################################################################
 ; Status Setting/Clearing Routine
@@ -3671,6 +3897,47 @@ org $C263A9 : JSR DmgCmdAlias
 org $C263BB : JSR DmgCmdAliasMass
 
 ; #########################################################################
+; Queue Damage Number animations (62EF-63DB)
+; Changes support "Null", "Fail" messages
+
+org $C2634D
+DmgNumberPrep:
+  JSR MissType
+
+org $C26361        ; this code is shifted upward to use the ChooseAnim JSR
+  JSR ChooseAnim   ; if msgs (Y) < 5, use cascading animation, else simultaneous 
+  LDA $F2
+  BEQ .skip        ; branch if no target had both damage and healing
+  LDX #$12
+  LDY $F0          ; start counting at last round count (changed from vanilla)
+.loop
+  LDA $33E4,X      ; healing (or null)
+  STA $33D0,X      ; store in damage bytes
+  INC
+  BEQ .next        ; if healing was null, check next target
+  INY              ; increment total message count
+.next
+  DEX
+  DEX              ; get next target
+  BPL .loop        ; loop until all 10 targets checked
+  STY $F0          ; save total target count so far
+  JSR ChooseAnim   ; if msgs < 5, use cascading dmg numbers; else, simultaneous
+  NOP
+.skip
+  LDX #$12         ; prepare second_miss loop/count
+  LDY $F0          ; start at total message count
+  JSR SecondMiss   ; queue miss messages (if any)
+.vanilla           ; code below this is unchanged, can be removed from patch
+  TDC
+  DEC
+  LDX #$12
+
+org $C26398
+AnimateMiss:
+  BCS .simult         ; branch directly to simultaneous code to save space
+org $C263B6 : .simult ; address of simultaneous dmg messages
+
+; #########################################################################
 ; Freespace (C26469-C26800)
 
 ; -------------------------------------------------------------------------
@@ -4198,35 +4465,43 @@ CheckCantrip:
   RTS
 
 ; -------------------------------------------------------------------------
-; Helper for Stamina Evasion
+; Helper for Stamina Evasion (moved by Informative Miss)
+; Now freespace for various Informative Miss helpers
 
 org $C267C5
-StamEvd:
-  JSR $4B5A       ; random(0..255)
-  AND #$7F        ; random(0..127)
-  STA $EE         ; save ^
-  LDA $3B40,Y     ; target's stamina
-  CMP $EE         ; >= random(0..127)
-  BCC .exit       ; exit if not ^
-  LDA $11A6       ; attack power
-  BEQ .miss       ; miss if no ^ (and Stamina evade)
-  LDA $11A4       ; attack flags
-  AND #$84        ; "Fractional", "Redirection"
-  BNE .miss       ; miss if ^ (and Stamina evade)
-  LDA $11A3       ; attack flags
-  AND #$80        ; "MP Damage"
-  BNE .miss       ; miss if ^ (and Stamina evade)
-  LDX #$03        ; else, strip statuses off the attack (BUG)
+SecondMiss:
 .loop
-  STZ $11AA,X     ; clear status attack byte
-  DEX             ; next status byte index
-  BPL .loop       ; clear all 4 status bytes
-  CLC             ; clear carry to direct through regular hit evasion
+  INY            ; assume status miss
+  LDA $3018,X    ; unique target bit
+  BIT $3A5A      ; missed targets
+  BNE .zero      ; branch if target already missed
+  JSR MissType   ; get miss flags in A
+  BNE .setflags  ; if status miss flags, branch
+.zero
+  DEY            ; no status miss
+  TDC
+  DEC            ; A = #FFFF (null)
+.setflags
+  STA $33D0,X    ; save miss flag(s) or null
+  DEX
+  DEX            ; get next entity index
+  BPL .loop      ; branch if more entities to check
+  STZ !fail      ; zero two status miss bytes
+  STZ !null
+  CPY $F0
+  BEQ MissExit   ; if no new miss messages, exit
+
+ChooseAnim:
+  CPY #$05       ; are total targets < 5?
+  JSR AnimateMiss; if ^, use (faster) cascading animation
+
+MissExit:
   RTS
-.miss
-  SEC             ; C: attack misses completely
-.exit
-  RTS
+
+; TODO: This code preserved for initial integration checksum, but unused
+  db $FA : CLC : RTS : SEC : RTS
+
+warnpc $C267F2+1
 
 ; -------------------------------------------------------------------------
 ; Helper for Blackbelt Counter chance

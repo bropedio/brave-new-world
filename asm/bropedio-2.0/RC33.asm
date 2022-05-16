@@ -7,7 +7,6 @@ hirom
 ; This master file includes all bugfixes and patches for RC33
 ; of Brave New World 2.0.
 
-incsrc inform-miss-3.asm            ; requires "mind-blast"
 incsrc chainsaw-fix.asm             ; requires "inform-miss-3"
 incsrc overcast-ring.asm
 incsrc sos-relics.asm

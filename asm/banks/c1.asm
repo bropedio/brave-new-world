@@ -549,11 +549,116 @@ org $C19544 : JSL MagicFunction2 ; hook for nATB [$C3](after animation)
 
 ; ######################################################################
 ; Damage Numbers Animation Handler(s)
-
+;
 ; Add MP dmg flags based on battle dynamics command ID, for MP Colors
 ; patch
+;
+; For informative miss:
+; Loads in new "miss" message tile data depending on the
+; value passed on the high byte of missed targets' damage
+; Requires no additional bytes, primarily due to an optimization
+; of tile moving to use MVN
+;
+; The high byte for missed targets is "hm---ii-", where
+; the index to the tile offset pointer is stored in ii. In other
+; words, the ii value is the message id x 2.
+
+; ----------------------------------------------------------------------
+; Label for informative miss
+
+org $C1A4B2 : LastRts:
+
+; ----------------------------------------------------------------------
+; Rewritten to save space and support Null/Fail
+
+org $C1A50D      ; 36 bytes replaced
+Cascade:
+  BEQ LastRts    ; use previous RTS (saves one byte)
+  STA $1E        ; save dmg/flag byte for later
+  ASL            ; move miss flag to bit 7
+  BPL CascDmg    ; if no miss, skip to dmg display
+  LDY #$60D3     ; set destination (in $7E) 
+  JSR PrepMove   ; set X to source offset, A to #bytes to move, 16-bit A
+  MVN $7E,$7F    ; move bytes (bank will not change, already 7E)
+  BRA CascFin    ; includes TDC,SEP#20
+
+PrepMove:
+  LDA #$08
+  STA $14        ; set x_pos for miss tiles
+  LDA #$06
+  AND $1E        ; isolate bits 1-2 to get tile index (0, 2, or 4)
+  TAX
+  REP #$20       ; 16-bit A
+  LDA MissOff,X  ; load tile data offset for miss message
+  JMP Prep2
+
+padbyte $FF
+pad $C1A531      ; 1 unused byte
+
+; ----------------------------------------------------------------------
+; Label for informative miss
+
+org $C1A531 : CascDmg:
+
+; ----------------------------------------------------------------------
+; Label for informative miss
+
+org $C1A586 : CascFin: ; this branch is moved earlier for MVN cleanup
+
+; ----------------------------------------------------------------------
+; For MP damage color display
 
 org $C1A5A9 : NOP : JSL SetMPDmgFlag
+
+; ----------------------------------------------------------------------
+; Rewritten to save space and support Null/Fail
+; Note: New tile data compressed at D2E000 (see bank d2.asm)
+
+org $C1A627      ; 46 bytes replaced
+Multiple:
+  ASL            ; move "miss" flag to bit 7
+  BPL MultiDmg   ; if no miss, skip to dmg display
+  PHB            ; save current bank
+  PHY            ; store dmg byte index
+  LDA $20        ; get target's index
+  ASL            ; carry will be clear after this (adc below)
+  TAX            ; make it an index to data word
+  LDA #$20       ; start at offset of 2nd tile (out of 4)
+  REP #$20       ; 16-bit A
+  ADC $C1A749,X  ; add buffer offset for this target
+  TAY            ; put destination offset in Y
+  TDC            ; clear B
+  SEP #$20       ; 8-bit A
+  JSR PrepMove   ; set X to tile source, A to #bytes, 16-bit A
+  MVN $7F,$7F    ; move bytes (and change data bank)
+  BRA MultiEnd   ; finish up (includes TDC,SEP#20,PLY,PLB)
+
+Prep2:
+  TAX            ; move offset to X
+  LDA #$003F     ; will move 64 bytes (two tiles)
+  RTS
+
+MissOff:
+  dw $BC00       ; miss tiles address in $7F
+  dw $C140       ; fail tiles address in $7F
+  dw $C180       ; null tiles address in $7F
+
+padbyte $FF
+pad $C1A655      ; 10 unused bytes
+
+; ----------------------------------------------------------------------
+; Label for informative miss
+
+org $C1A655 : MultiDmg:
+
+; ----------------------------------------------------------------------
+; Label for informative miss
+
+org $C1A6B8 : MultiEnd: ; this branch is moved earlier for MVN cleanup
+
+; ----------------------------------------------------------------------
+; For MP damage color display
+
 org $C1A6E6 : NOP : JSL SetMPDmgFlagMass
 
 ; ######################################################################
