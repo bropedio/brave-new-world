@@ -7,6 +7,9 @@ table vwf.tbl,rtl
 ; Variable definitions for reuse
 
 !_ellipsis = #$C7
+!w = $E8 ; white magic dot
+!b = $E9 ; black magic dot
+!g = $EA ; gray magic dot
 
 ; #########################################################################
 ; Draw Character HP/MP/LV Values
@@ -91,6 +94,16 @@ org $C32341
 ; Sustain Magic Menu
 
 org $c32806 : NOP #3 ; skip drawing MP cost
+
+; #########################################################################
+; Sustain Dance Menu
+
+org $C328AA : JSR DancesHook ; insert dance descriptions
+
+; #########################################################################
+; Sustain Rage Menu
+
+org $C328BE : JSR RageDescHelp ; insert rage descriptions
 
 ; #########################################################################
 ; Draw Esper
@@ -2600,6 +2613,70 @@ GearWindow:  : dw $718B : db $1C,$06
 GearActors:  : dw $750B : db $1C,$06
 GearNameBox: : dw $708B : db $1C,$02
 GearDesc:    : dw $738B : db $1C,$04
+
+; ------------------------------------------------------------------------
+; Rage and Dance description helpers
+
+org $C3FCA0
+PrepDescs:
+  STX $E7          ; store pointer offset
+  LDX #$0000       ; use base offset for text
+  STX $EB          ; ^ will be added to Y index
+  LDA #$C4         ; bank
+  STA $ED          ; text bank
+  STA $E9          ; pointer bank
+  JSR $0EFD        ; queue list upload (vanilla)
+  LDA #$10         ; "Descriptions on"
+  TRB $45          ; set ^ in menu flags
+  RTS
+
+DancesHook:
+  LDX #DanceDescs  ; pointer offsets
+  JSR PrepDescs
+  JMP $572A
+
+RageDescHelp:
+  LDX #RageDescs   ; pointer offsets
+  JSR PrepDescs
+  LDX #$9EC9       ; 7E/9EC9
+  STX $2181        ; Set WRAM LBs
+  TDC              ; clear A
+  LDA $4B          ; list slot
+  TAX              ; index it
+  LDA $7E9D89,X    ; entry id
+  CMP #$FF         ; null slot?
+  BNE .continue    ; branch if not ^
+  JMP $576D        ; blank description
+.continue
+  REP #$20         ; 16-bit A
+  ASL A            ; double id
+  TAY              ; index it
+  LDA [$E7],Y      ; Relative ptr
+  PHA              ; store for later
+  SEP #$20         ; 8-bit A
+  LDY #PrefixA
+  JSR WriteLine
+  PLY              ; get description pointer
+  JSR WriteLine
+  PHY              ; save next line offset
+  LDY #PrefixB
+  JSR WriteLine
+  PLY              ; get next line offset 
+  JSR WriteLine
+  STZ $2180
+  RTS
+
+WriteChar:
+  INY
+  STA $2180       ; add to string
+  CMP #$01
+  BEQ WriteExit
+WriteLine:
+  LDA [$EB],Y     ; text character
+  BNE WriteChar   ; loop if not 00
+WriteExit:
+  RTS
+warnpc $C40000
 
 ; ------------------------------------------------------------------------
 ; More EL/EP/SpellBank Helpers
