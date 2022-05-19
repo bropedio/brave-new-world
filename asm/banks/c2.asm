@@ -1810,7 +1810,10 @@ org $C2320D : BRA SkipImpMute
 org $C23225 : SkipImpMute:
 
 ; #########################################################################
-; Combat Routine
+; Combat Routine (C23293)
+
+org $C23292
+CombatRoutine:
 
 org $C2334B : JSR SpecialAttStam    ; handle enemy special attacks stamina flag
 org $C2336B : NOP #2                ; remove second INC $BC from morph (+50%)
@@ -1820,8 +1823,13 @@ org $C23392
   AND #$20                          ; if respect row, A = #20, else, A = #00
 org $C233A3 : JSR ImpNerf           ; add hook for new Imp damage nerf routine
 org $C233BA : JSR SetTarget         ; Enable target's counterattack, even if we miss
-org $C233EA : BRA NoImpCrit         ; skip Imp critical handling
-org $C233F2 : NoImpCrit:            ; label for BRA above
+org $C233E5                         ; overwrites unused Imp Critical code
+  LDA $11A7                         ; special flags 4
+  BIT #$20                          ; "never critical"
+  BNE .none                         ; if ^, skip critical handling
+padbyte $EA : pad $C233F2
+
+org $C23414 : .none
 org $C2343C : JSR CounterMiss : NOP ; Set counter variables early TODO [overwritten]
 org $C23447 : NOP #7                ; remove back-attack damage increment
 
@@ -1866,21 +1874,23 @@ org $C236D2 : dw $3687 ; JokerDoom hook (was $36A6 - now freespace)
 
 ; #########################################################################
 ; Increment Damage Function ($BC)
-; Rewritten to allow damage increments with defense-ignoring attacks
+; Rewritten to respect the "fixed dmg" flag $3414
+; and make IncByY function reusable
 
 org $C2370B
 IncDmgFunc:
   PHY             ; store Y
+  LDY $3414       ; allow dmg modification
+  BEQ .end        ; exit if not allowed
   LDY $BC         ; increment count
-  BEQ .exit       ; exit if zero ^
-  PHA             ; store damage
-  SEP #$20        ; 8-bit A
-  LDA $11A7       ; attack flags 4 ($20="No Increments")
-  AND $11A2       ; and attack flags 1 ($20="Ignore Def")
-  ASL #3          ; C: Ignore Def and No Increments on Ignor Def
-  REP #$20        ; 16-bit A
-  PLA             ; restore damage
-  BCS .exit       ; exit if ignore increments
+  JSR IncByY      ; do increment
+  STY $BC         ; zero increment count
+.end
+  PLY             ; restore Y
+  RTS
+
+IncByY:           ; [reused by exploder helper]
+  BEQ .exit       ; exit if no increments
   STA $EE         ; else, store damage in scratch
   LSR $EE         ; damage / 2
 .loop
@@ -1891,10 +1901,11 @@ IncDmgFunc:
 .no_cap
   DEY             ; decrement increment count
   BNE .loop       ; loop till all increments done
-  STY $BC         ; zero increment count
 .exit
-  PLY             ; restore Y
   RTS
+
+padbyte $FF
+pad $C23733
 
 ; #########################################################################
 ; Pick Random Esper
@@ -2530,8 +2541,31 @@ warnpc $C23FFC+1
 ; Exploder Effect
 ; Add a multiplier for Exploder when used by a player character
 ; 1 Spell Power = +50% damage
+; The entire hook is shifted to remove the now-unnecessary STZ $BC
+; This creates just enough space to fix the current patch in line
 
-org $C23FFC : JSR ExploderHelp ; hook for exploder multiplier
+org $C23FFC
+  TYX              ; copy attacker index (vanilla code)
+  LDA #$10
+  TSB $B0          ; use step-forward animation
+  STZ $3414        ; fixed dmg
+  REP #$20         ; 16-bit A
+  LDA $A4          ; targets
+  PHA              ; store
+  LDA $3018,X      ; attacker bit
+  STA $B8          ; set as temp target
+  JSR $57C2        ; process animation
+  JSR $63DB        ; process animation
+  LDA $01,S        ; original targets
+  STA $B8          ; set as temp targets
+  JSR $57C2        ; process animation
+  PLA              ; original targets
+  ORA $3018,X      ; add caster
+  STA $A4          ; update targets
+  LDA $3BF4,X      ; caster's current HP
+  CPX #$08         ; if monster attacker, carry set
+  JSR HelpExplode  ; increment dmg before saving
+  JMP $35AD
 
 ; #########################################################################
 ; Blowfish Effect
@@ -4938,14 +4972,12 @@ dw !slot_bar
 ; moved to actual freespace ASAP
 
 org $C2A8D2
-ExploderHelp:
-  TDC                ; zero A/B
-  CPY #$08           ; Check if monster
-  BCS .exit          ; branch if ^
-  LDA $11A6          ; else, use Spell Power as multiplier
-.exit
-  STA $BC            ; store multiplier (incrementer)
-  TYX                ; attacker index
+HelpExplode:
+  BCS .reg         ; skip increment if monster attacker
+  LDY $11A6        ; use battle power as increment
+  JSR IncByY       ; A = A + (A/2 * Y)
+.reg
+  STA $11B0        ; save [modified] HP-based dmg
   RTS
 
 ; #########################################################################
