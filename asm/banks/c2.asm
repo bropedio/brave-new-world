@@ -89,6 +89,11 @@ BossDeath:
 
 org $C203EE : JSR Charm_Chk
 
+; -------------------------------------------------------------------------
+; Flip Brush Targeting when Muddled, etc
+
+org $C2040B : JSR MuddleBrush
+
 ; #########################################################################
 ; Select actions/commands for uncontrollable characters
 ; 
@@ -1538,13 +1543,51 @@ LoadWeaponProperties:
   PLX               ; restore attacker index (no more hand-based inc)
   LDA $3C45,X       ; relic effects
   BIT #$10          ; "Cannot Miss"
-  BEQ .exit         ; branch if no ^
+  BEQ .finish       ; branch if no ^
   LDA #$FF          ; max
   STA $11A8         ; set hit rate to max (can be affected by blind now)
+.finish
+
+FlipTargeting:
+  CPX #$08           ; is attack a monster
+  BCS .exit          ; exit if so (0 weapon index for monsters looks like shiv)
+  PHY                ; store Y for later
+  TXY                ; put character index in Y
+  JSR GetTargeting   ; get weapon targeting 
+  STA $BB            ; update targeting byte
+  PLY                ; restore Y
 .exit
   RTS
-padbyte $FF         ; old offering and imp critical handling are
-pad $C22A37         ; unused, so this space (56 bytes) is free.
+
+; -------------------------------------------------------------------------
+; Helpers for determining Fight targeting (for Brushes)
+
+HandTargeting:
+  LDA $3B68,Y        ; get hand's power
+  BEQ .exit          ; exit if no power (not used by Fight/Capture)
+  LDA $3CA8,Y        ; get weapon ID
+  JSR $2B63          ; A * 30
+  TAX
+  LDA $D8500E,X      ; load targeting byte
+.exit
+  RTS
+
+MuddleBrush:
+  JSR $26D3          ; load command data (vanilla)
+  LDA $3A7A          ; load temp command id
+  BEQ .valid         ; continue if "Fight"
+  CMP #$06           ; "Mug"
+  BNE .nope          ; exit if not "Mug" or "Fight"
+.valid
+  LDA $3EE5,X        ; attacker status 2
+  BIT #$10           ; "berserk"
+  BNE .nope          ; exit if "berserk"
+  JSR FlipTargeting  ; reset targeting based on equipment
+.nope
+  RTS
+
+padbyte $FF
+pad $C22A37
 
 ; #########################################################################
 ; Load Item Properties
@@ -3087,22 +3130,29 @@ Row_Dmg:
   PLP             ; restore flags
   RTS
 
-org $C25105       ; freespace [?]
-Get_Tgt_Byte:
-  JSR $2B63       ; multiply weapon ID by 30
-  REP #$10        ; 16-bit X/Y
-  TAX             ; index weapon data offset
-  LDA $D8500E,X   ; weapon targeting byte
-  CMP #$01        ; "target one ally"
-  BNE .exit       ; exit if not ^
-  REP #$21        ; 16-bit A
-  LDA $06,S       ; attacker index
-  TAX             ; index it
-  SEP #$20        ; 8-bit Accumulator
-  LDA #$01        ; "target one ally"
-  STA $0002,X     ; set ^ aiming byte
+org $C25105
+GetTargeting:
+  PHX
+  PHP
+  REP #$10           ; 16-bit X,Y
+  JSR HandTargeting  ; get right-hand targeting
+  BNE .finish        ; finish if targeting found
+  INY                ; point to left-hand
+  JSR HandTargeting  ; get left-hand targeting
+  DEY                ; revert to true character index
+.finish
+  CMP #$01           ; "healing" weapon targeting
+  BEQ .exit          ; exit if ^
+  LDA #$41           ; use default fight targeting
 .exit
+  PLP
+  PLX
   RTS
+
+; TODO: Ops below are leftover from old code. Remove them
+  STA $0002,X
+  RTS
+warnpc $C25121
 
 ; -------------------------------------------------------------------------
 ; Modified by dn's "Scan Status" patch to add support for Status messages.
@@ -3219,32 +3269,38 @@ ModifyCmds:
   db $11       ; Leap
 
 CmdModify:
-  dw $5322     ; Shock (used to be Morph)
-  dw SketchDis ; Sketch
-  dw $5322     ; Runic
-  dw $531D     ; SwdTech
-  dw $5314     ; Lore
-  dw $5314     ; X-Magic
-  dw $5314     ; Magic
-  dw $5301     ; Capture
-  dw $5301     ; Fight
-  dw LeapDis   ; Leap
+  dw $5322             ; Shock (used to be Morph)
+  dw SketchDis         ; Sketch
+  dw $5322             ; Runic
+  dw $531D             ; SwdTech
+  dw $5314             ; Lore
+  dw $5314             ; X-Magic
+  dw $5314             ; Magic
+  dw UpdateFightCursor ; Capture
+  dw UpdateFightCursor ; Fight
+  dw LeapDis           ; Leap
   NOP
 warnpc $C25301+1
 
 ; #########################################################################
 ; Fight and Mug Command Targeting Setup
 ;
-; Now adjusts targeting for Heal Rod, and no longer changes targeting
-; for the Offering (X-Fight)
+; Now adjusts targeting for Heal Rod, no longer changes targeting
+; for the Offering (X-Fight), and handles Brushes better
 
 org $C25301
-  PHP               ; store flags
-  LDA $3CA8,Y       ; righthand weapon ID
-  JSR Get_Tgt_Byte  ; update targeting byte if heal rod
-  LDA $3CA9,Y       ; lefthand weapon ID
-  JSR Get_Tgt_Byte  ; update targeting byte if heal rod
-  PLP               ; restore flags
+UpdateFightCursor:
+  JSR GetTargeting   ; get weapon targeting
+  PHA                ; save targeting byte
+  TDC                ; clear high byte of A
+  LDA $04,S          ; A = address of menu slot (low byte only, high is $20)
+  TAX                ; index to menu slot data
+  PLA                ; get targeting byte again
+  STA $2002,X        ; store targeting byte (fixed index high byte $20)
+  RTS
+
+; TODO: Below ops leftover from old code. Can be removed
+  PLP
   RTS
 
 ; #########################################################################
