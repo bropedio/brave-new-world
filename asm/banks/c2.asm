@@ -49,7 +49,7 @@ warnpc $C202B8+1
 ; Undead killer weapon effect enters here due to 50% proc rate
 
 org $C202BC
-  LDA #$EE          ; "XKill" animation ID [TODO: No longer used]
+  LDA #$EE          ; "Cleave" animation ID [TODO: No longer used]
 KillZombie:
   XBA               ; store in B
   JSR $4B5A         ; random(0..256)
@@ -1708,13 +1708,13 @@ org $C22C09
 Chainsaw2:
   JSR $4B5A
   CMP #$40
-  BCS .rts          ; exit 75% of the time
-  JSL SetKill       ; requires label defined in informative-miss
-  BNE .rts          ; exit if target immune to instant-death
+  BCS .rts           ; exit 75% of the time
+  JSL SetKill        ; requires label defined in informative-miss
+  BNE .rts           ; exit if target immune to instant-death
   LDA #$08
-  STA $B6           ; set Hockey Mask animation
-  STZ $11A6         ; zero battle power
-  JMP ChainEffect2  ; add "death" to statuses to set
+  STA $B6            ; set Hockey Mask animation
+  JSR DisableCounter ; disable counters for Chainsaw kill
+  JMP ChainEffect2   ; add "death" to statuses to set
 .rts
   RTS
 warnpc $C22C21+1
@@ -1904,6 +1904,14 @@ IncByY:           ; [reused by exploder helper]
 .exit
   RTS
 
+; -------------------------------------------------------------------------
+; Cleave animation chainsaw helper in freespace
+
+DisableCounter:
+  STZ $11A6           ; vanilla code
+  STZ $341A           ; disable counterattacks
+  RTS
+
 padbyte $FF
 pad $C23733
 
@@ -1934,7 +1942,8 @@ org $C2382D : .cannot_miss
 ; #########################################################################
 ; X-Kill Effect
 
-org $C23891 : JSL SetKill : NOP ; test and set death immune miss (informative miss)
+org $C23891 : JSL SetKill : NOP  ; test and set death immune miss (informative miss)
+org $C238D2 : JSR DisableCounter ; disable counters for X-Kill/Cleave
 
 ; #########################################################################
 ; Maneater Effect (now on Butterfly)
@@ -2526,7 +2535,7 @@ org $C23FAE
 Cleave:
   LDA $3C95,Y     ; special byte 3
   BPL .exit       ; branch if not "Undead"
-  LDA #$7E        ; "Cleave" animation ID
+  LDA #$7E        ; "X-Kill" animation ID
   JMP KillZombie ; branch to Zantetsuken code for cleave-kill/boss-crit
 .exit
   RTS
@@ -4365,7 +4374,7 @@ LevelChk:
 
 org $C266A3
 Zantetsuken:
-  LDA #$EE      ; "XKill" animation ID
+  LDA #$EE      ; "Cleave" animation ID
   XBA           ; store in B [TODO: overwritten below, remove this]
   JSR $4B5A     ; random(0..256)
   CMP #$40      ; C: 75% chance
@@ -4375,8 +4384,7 @@ Undead_Killer:
   LDA $3AA1,Y   ; target special state flags
   BIT #$04      ; "Immune to Instant Death"
   BNE .crit     ; do critical damage if ^
-  LDA #$7E      ; "Cleave" animation ID
-  XBA           ; store in B
+  NOP #3        ; TODO: Remove this padding
   JMP $38A6     ; execute cleave-kill.
 .crit
   LDA $BC       ; attack incremented damage (Critical Hit?) [TODO: confirm]
