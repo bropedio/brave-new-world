@@ -117,24 +117,23 @@ org $d863a6 : db $0a        ;Defibrillator
 
 ;;-----------------------------------------------------
 ;;
-;;Fix Scroll bug
+;;Fix Scroll bug and set Shadow&Gogo animated sprite
 ;;
 ;;-----------------------------------------------------
 
-;Fix print routine
-org $c3f9c4 : beq $31	     ;Branch if is a throwing item(fixed, original code excludes print routine)
-
 ;Set Attack print value
+
 org $d8579e : db $11,$08,$10	;Shuriken
+org $d857da : db $11,$08,$10	;Ninja Star
 org $d86428 : db $16,$08,$10	;Ninja scroll water
 org $d8640a : db $16,$08,$10	;Ninja scroll fire
 org $d86446 : db $16,$08,$10	;Ninja scroll bolt
 org $d86482 : db $16,$08,$10	;Ninja scroll smoke
 
 ;Set value number
-org $d86428+20 : db $64		;Ninja scroll water
-org $d8640a+20 : db $64		;Ninja scroll fire
-org $d86446+20 : db $64		;Ninja scroll bolt
+org $d86428+20 : db $00		;Ninja scroll water
+org $d8640a+20 : db $00		;Ninja scroll fire
+org $d86446+20 : db $00		;Ninja scroll bolt
 org $d86482+20 : db $00		;Ninja scroll smoke
 
 ;------------------------------------------------------------------
