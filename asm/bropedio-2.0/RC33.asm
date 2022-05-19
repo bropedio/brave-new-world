@@ -7,7 +7,6 @@ hirom
 ; This master file includes all bugfixes and patches for RC33
 ; of Brave New World 2.0.
 
-incsrc quartrstaff-boss-fix.asm
 incsrc rod-break-clear.asm
 incsrc equipdesc-bnw.asm
 incsrc status-screen.asm            ; requires "equipdesc-bnw" (I think)

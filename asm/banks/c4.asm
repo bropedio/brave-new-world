@@ -609,30 +609,39 @@ warnpc $C4B9D1
 ; #########################################################################
 ; Freespace
 
-org $C4B9D0
-AutoCritProcs:
-  LDA #$02          ; "Auto Critical"
-  BIT $B3           ; check attack flags for ^
-  BNE .exit         ; branch if not ^
-  LDA $B6           ; spell #
-  CMP #$17          ; is it quartr?
-  BEQ .quartr       ; branch if so
-  CMP #$0D          ; is it doom?
-  BEQ .doom         ; branch if so
-.exit
-  LDA #$40          ; [moved] single enemy targeting
-  STA $BB           ; [moved] update targeting type ^
+org $C4B9CF
+SpellCastId:
+  AND #$3F         ; isolate spell id (vanilla code)
+  CMP #$0D         ; "Doom" ID
+  BNE .set_spell   ; if not "Doom", no conversion needed
+  LDA $B3
+  LSR
+  LSR              ; "Autocrit" in carry
+  LDA #$0D         ; default to using "Doom" id
+  BCS .set_spell   ; if no "Autocrit", keep id
+  LDA #$12         ; else replace with "X-Zone"
+.set_spell
+  STA $3400        ; save spellcast ID
   RTL
-.doom
-  LDA #$12          ; "X-Zone"
-  STA $B6           ; set ^ spell
-.quartr
-  LDA #$6E          ; all foes targeting
-  STA $BB           ; update targeting type ^
-  LDA #$40          ; "Randomize Targets" [TODO why?]
-  TSB $BA           ; set ^ flag
-  STZ $11A9         ; clear special effect
-  STZ $341A         ; set "Cannot be Countered"
+
+CastTarget:
+  LDA $B3
+  LSR
+  LSR              ; "Autocrit" in carry
+  BCS .regular     ; branch if no ^
+  LDA $B6          ; spell ID
+  CMP #$17         ; "Quartr"
+  BEQ .multi       ; branch if matched
+  CMP #$12         ; "X-Zone"
+  BEQ .multi       ; branch if matched
+.regular
+  LDA #$0C         ; "Hit dead targets"/"No retarget if invalid"
+  TSB $BA          ; set flags
+  LDA #$40         ; regular single enemy targeting
+  RTL
+.multi
+  STZ $3415        ; randomize targets, and don't back them up
+  LDA #$6E         ; all enemies targeting
   RTL
 
 ; #########################################################################

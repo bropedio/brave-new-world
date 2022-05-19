@@ -1916,6 +1916,7 @@ org $C235E9 : JSL InitAttackVars ; hook to track more counterattack vars
 
 org $C23649 : JSL ProcFix : NOP ; hook to handle case of no valid targets
 org $C23651 : JSR RandomCast : NOP #2 ; add hook for better procrate
+org $C23659 : JSL SpellCastId : NOP ; Convert Doom to X-Zone for autocrit
 
 ; #########################################################################
 ; Prepare Attack Name to Display
@@ -1986,7 +1987,8 @@ SpellProc:
   BRA .cannot_miss      ; improve silly branching logic from vanilla
 .normal
 
-org $C2381D :  JSL AutoCritProcs ; power-up crit doom to x-zone, multitarget quartr
+org $C2381B : JSL CastTarget ; power-up crit doom to x-zone, multitarget quartr
+org $C23828 : NOP #3         ; always show missed spellcast animations
 org $C2382D : .cannot_miss
 
 ; #########################################################################
