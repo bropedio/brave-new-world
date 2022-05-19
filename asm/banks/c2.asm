@@ -366,6 +366,13 @@ ATBMultipliers:
   NOP #2          ; 2 bytes padding
   RTS
 
+
+; ########################################################################
+; Remove Entity from Wait Queue
+; TODO: Note that the JMP below is a bug that is corrected in 2.1
+
+org $C20A2B : JMP ReturnReserve ; return items to inventory on queue wipe
+
 ; ########################################################################
 ; SOS Equipment Activations
 
@@ -2076,9 +2083,10 @@ StealFunction:
   CMP #$FF        ; null?
   BEQ failSteal   ; branch if ^ (fail)
   STA $2F35       ; save stolen item ID for message template
-  STA $32F4,X     ; store in "Acquired Item"
+  XBA             ; store acquired item in B
   JSR SetCantrip  ; hook to set "ATB Autofill" flag
-  TSB $3A8C       ; flag ^ to process reserve item at end of turn
+  JSR SaveItem    ; save new item to buffer
+  NOP #2          ; [padding] TODO remove
   LDA #$FF        ; "null"
   STA $3308,Y     ; remove stealable item
   STA $3309,Y     ; in both slots
@@ -2134,6 +2142,18 @@ Wpn_Chk:
   SEP #$20        ; [displaced] 8-bit A
 .exit
   RTS
+
+; -------------------------------------------------------------------------
+; Immediately add Stolen items to inventory, preserving
+; any existing reserve item.
+; NOTE: Metamorph is unused in BNW, so this should be removed
+
+org $C23A7C
+Metamorph:
+  XBA               ; store acquired item in B
+  LDA $3018,X       ; character's unique bit
+  JSR SaveItem      ; save new item to buffer
+  NOP #2
 
 ; #########################################################################
 ; Debilitator Special Effect (now freespace)
@@ -4227,6 +4247,40 @@ LeapDis:
 
 padbyte $FF       ; TODO: Remove this padding
 pad $C2653A
+
+; -------------------------------------------------------------------------
+; Save Item helper(s)
+;
+; Stealing an item while the Item or Weapon Swap commands
+; are pending will overwrite the pending item or swap-in
+; weapon. Similarly, if a character steals more than one
+; item in a turn, only the last item stolen will be added
+; to inventory.
+;
+; If a character dies before executing a queued Item or
+; Weapon Swap command, the pending item will be lost if
+; the character queues another Item, Weapon Swap, or Steal
+; command executes prior to the end of battle.
+
+org $C2654B
+SaveItem:           ; 21 bytes
+  TSB $3A8C         ; set character's reserve item to be added
+  LDA $32F4,X       ; load current reserve item
+  PHA               ; save reserve item on stack
+  XBA               ; get new item in A
+  STA $32F4,X       ; store new item in reserve byte
+  PHX               ; save X
+  JSR $62C7         ; add reserve to obtained-items buffer
+  PLX               ; restore X
+  PLA               ; restore previous reserve item
+  STA $32F4,X       ; store in reserve item byte again
+  RTS
+
+ReturnReserve:      ; 10 bytes
+  LDA $3018,X       ; character's unique bit
+  TSB $3A8C         ; return reserve to inventory at turn end
+  LDA $3219,X       ; ATB top byte (vanilla code)
+  RTS
 
 ; -------------------------------------------------------------------------
 ; Rage on-clear status removal helper
