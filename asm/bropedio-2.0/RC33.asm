@@ -7,19 +7,6 @@ hirom
 ; This master file includes all bugfixes and patches for RC33
 ; of Brave New World 2.0.
 
-incsrc sos-relics.asm
-incsrc inventory-count.asm
-incsrc x-fight-retarget.asm
-incsrc proc-bug.asm
-incsrc gau-targeting.asm
-incsrc review-screen-esper.asm
-incsrc drain-swirly.asm
-incsrc rage-dance-descriptions.asm
-incsrc skip-criticals-flag.asm
-incsrc xkill-anim.asm               ; requires "chainsaw-fix", uses freespace from "skip-criticals-flag"
-incsrc brush-retarget-4.asm         ; uses freespace from "x-fight-crits"
-incsrc item-save.asm
-incsrc quartrstaff-boss-fix.asm
 incsrc rod-break-clear.asm
 incsrc equipdesc-bnw.asm
 incsrc status-screen.asm            ; requires "equipdesc-bnw" (I think)

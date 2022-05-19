@@ -662,6 +662,16 @@ org $C1A6B8 : MultiEnd: ; this branch is moved earlier for MVN cleanup
 org $C1A6E6 : NOP : JSL SetMPDmgFlagMass
 
 ; ######################################################################
+; Fix Drain Swirly
+;
+; When a new black magic spell (Dark) was added, the
+; range of black magic spells got slightly larger.
+; This range is hard-coded in the animation bank to
+; indicate which pre-magic swirly animation is played.
+
+org $C1ABA6 : CMP #$19 ; increase black magic range by 1
+
+; ######################################################################
 ; Odin Animation
 ; Skip "Cleave" effect in Odin animation
 

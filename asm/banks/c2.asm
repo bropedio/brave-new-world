@@ -49,7 +49,7 @@ warnpc $C202B8+1
 ; Undead killer weapon effect enters here due to 50% proc rate
 
 org $C202BC
-  LDA #$EE          ; "XKill" animation ID [TODO: No longer used]
+  LDA #$EE          ; "Cleave" animation ID [TODO: No longer used]
 KillZombie:
   XBA               ; store in B
   JSR $4B5A         ; random(0..256)
@@ -88,6 +88,11 @@ BossDeath:
 ; Hook for Moogle Charm "falls like a stone" effect
 
 org $C203EE : JSR Charm_Chk
+
+; -------------------------------------------------------------------------
+; Flip Brush Targeting when Muddled, etc
+
+org $C2040B : JSR MuddleBrush
 
 ; #########################################################################
 ; Select actions/commands for uncontrollable characters
@@ -360,6 +365,13 @@ ATBMultipliers:
   PLP             ; restore flags
   NOP #2          ; 2 bytes padding
   RTS
+
+
+; ########################################################################
+; Remove Entity from Wait Queue
+; TODO: Note that the JMP below is a bug that is corrected in 2.1
+
+org $C20A2B : JMP ReturnReserve ; return items to inventory on queue wipe
 
 ; ########################################################################
 ; SOS Equipment Activations
@@ -1538,13 +1550,51 @@ LoadWeaponProperties:
   PLX               ; restore attacker index (no more hand-based inc)
   LDA $3C45,X       ; relic effects
   BIT #$10          ; "Cannot Miss"
-  BEQ .exit         ; branch if no ^
+  BEQ .finish       ; branch if no ^
   LDA #$FF          ; max
   STA $11A8         ; set hit rate to max (can be affected by blind now)
+.finish
+
+FlipTargeting:
+  CPX #$08           ; is attack a monster
+  BCS .exit          ; exit if so (0 weapon index for monsters looks like shiv)
+  PHY                ; store Y for later
+  TXY                ; put character index in Y
+  JSR GetTargeting   ; get weapon targeting 
+  STA $BB            ; update targeting byte
+  PLY                ; restore Y
 .exit
   RTS
-padbyte $FF         ; old offering and imp critical handling are
-pad $C22A37         ; unused, so this space (56 bytes) is free.
+
+; -------------------------------------------------------------------------
+; Helpers for determining Fight targeting (for Brushes)
+
+HandTargeting:
+  LDA $3B68,Y        ; get hand's power
+  BEQ .exit          ; exit if no power (not used by Fight/Capture)
+  LDA $3CA8,Y        ; get weapon ID
+  JSR $2B63          ; A * 30
+  TAX
+  LDA $D8500E,X      ; load targeting byte
+.exit
+  RTS
+
+MuddleBrush:
+  JSR $26D3          ; load command data (vanilla)
+  LDA $3A7A          ; load temp command id
+  BEQ .valid         ; continue if "Fight"
+  CMP #$06           ; "Mug"
+  BNE .nope          ; exit if not "Mug" or "Fight"
+.valid
+  LDA $3EE5,X        ; attacker status 2
+  BIT #$10           ; "berserk"
+  BNE .nope          ; exit if "berserk"
+  JSR FlipTargeting  ; reset targeting based on equipment
+.nope
+  RTS
+
+padbyte $FF
+pad $C22A37
 
 ; #########################################################################
 ; Load Item Properties
@@ -1708,13 +1758,13 @@ org $C22C09
 Chainsaw2:
   JSR $4B5A
   CMP #$40
-  BCS .rts          ; exit 75% of the time
-  JSL SetKill       ; requires label defined in informative-miss
-  BNE .rts          ; exit if target immune to instant-death
+  BCS .rts           ; exit 75% of the time
+  JSL SetKill        ; requires label defined in informative-miss
+  BNE .rts           ; exit if target immune to instant-death
   LDA #$08
-  STA $B6           ; set Hockey Mask animation
-  STZ $11A6         ; zero battle power
-  JMP ChainEffect2  ; add "death" to statuses to set
+  STA $B6            ; set Hockey Mask animation
+  JSR DisableCounter ; disable counters for Chainsaw kill
+  JMP ChainEffect2   ; add "death" to statuses to set
 .rts
   RTS
 warnpc $C22C21+1
@@ -1794,13 +1844,26 @@ warnpc $C230BC+1
 ; Entity Executes One Hit
 
 ; -------------------------------------------------------------------------
+; In vanilla, the offering causes the Fight command to strike
+; 4 times, randomized after the first. In BNW, X-Fight no longer
+; randomizes, but the "don't retarget if targets are dead/invalid"
+; flag is still set by default for every strike after the first.
+;
+; This patch resets that flag for X-Fight strikes.
+
+org $C231B6 : JSL HandleXFight ; hook to fix X fight randomization
+
+; -------------------------------------------------------------------------
 ; Skip muting all magic except the Imp spell for Imps
 
 org $C2320D : BRA SkipImpMute
 org $C23225 : SkipImpMute:
 
 ; #########################################################################
-; Combat Routine
+; Combat Routine (C23293)
+
+org $C23292
+CombatRoutine:
 
 org $C2334B : JSR SpecialAttStam    ; handle enemy special attacks stamina flag
 org $C2336B : NOP #2                ; remove second INC $BC from morph (+50%)
@@ -1810,8 +1873,13 @@ org $C23392
   AND #$20                          ; if respect row, A = #20, else, A = #00
 org $C233A3 : JSR ImpNerf           ; add hook for new Imp damage nerf routine
 org $C233BA : JSR SetTarget         ; Enable target's counterattack, even if we miss
-org $C233EA : BRA NoImpCrit         ; skip Imp critical handling
-org $C233F2 : NoImpCrit:            ; label for BRA above
+org $C233E5                         ; overwrites unused Imp Critical code
+  LDA $11A7                         ; special flags 4
+  BIT #$20                          ; "never critical"
+  BNE .none                         ; if ^, skip critical handling
+padbyte $EA : pad $C233F2
+
+org $C23414 : .none
 org $C2343C : JSR CounterMiss : NOP ; Set counter variables early TODO [overwritten]
 org $C23447 : NOP #7                ; remove back-attack damage increment
 
@@ -1846,7 +1914,9 @@ org $C235E9 : JSL InitAttackVars ; hook to track more counterattack vars
 ; #########################################################################
 ; Weapon "Addition" Magic
 
+org $C23649 : JSL ProcFix : NOP ; hook to handle case of no valid targets
 org $C23651 : JSR RandomCast : NOP #2 ; add hook for better procrate
+org $C23659 : JSL SpellCastId : NOP ; Convert Doom to X-Zone for autocrit
 
 ; #########################################################################
 ; Prepare Attack Name to Display
@@ -1855,21 +1925,23 @@ org $C236D2 : dw $3687 ; JokerDoom hook (was $36A6 - now freespace)
 
 ; #########################################################################
 ; Increment Damage Function ($BC)
-; Rewritten to allow damage increments with defense-ignoring attacks
+; Rewritten to respect the "fixed dmg" flag $3414
+; and make IncByY function reusable
 
 org $C2370B
 IncDmgFunc:
   PHY             ; store Y
+  LDY $3414       ; allow dmg modification
+  BEQ .end        ; exit if not allowed
   LDY $BC         ; increment count
-  BEQ .exit       ; exit if zero ^
-  PHA             ; store damage
-  SEP #$20        ; 8-bit A
-  LDA $11A7       ; attack flags 4 ($20="No Increments")
-  AND $11A2       ; and attack flags 1 ($20="Ignore Def")
-  ASL #3          ; C: Ignore Def and No Increments on Ignor Def
-  REP #$20        ; 16-bit A
-  PLA             ; restore damage
-  BCS .exit       ; exit if ignore increments
+  JSR IncByY      ; do increment
+  STY $BC         ; zero increment count
+.end
+  PLY             ; restore Y
+  RTS
+
+IncByY:           ; [reused by exploder helper]
+  BEQ .exit       ; exit if no increments
   STA $EE         ; else, store damage in scratch
   LSR $EE         ; damage / 2
 .loop
@@ -1880,10 +1952,19 @@ IncDmgFunc:
 .no_cap
   DEY             ; decrement increment count
   BNE .loop       ; loop till all increments done
-  STY $BC         ; zero increment count
 .exit
-  PLY             ; restore Y
   RTS
+
+; -------------------------------------------------------------------------
+; Cleave animation chainsaw helper in freespace
+
+DisableCounter:
+  STZ $11A6           ; vanilla code
+  STZ $341A           ; disable counterattacks
+  RTS
+
+padbyte $FF
+pad $C23733
 
 ; #########################################################################
 ; Pick Random Esper
@@ -1906,13 +1987,15 @@ SpellProc:
   BRA .cannot_miss      ; improve silly branching logic from vanilla
 .normal
 
-org $C2381D :  JSL AutoCritProcs ; power-up crit doom to x-zone, multitarget quartr
+org $C2381B : JSL CastTarget ; power-up crit doom to x-zone, multitarget quartr
+org $C23828 : NOP #3         ; always show missed spellcast animations
 org $C2382D : .cannot_miss
 
 ; #########################################################################
 ; X-Kill Effect
 
-org $C23891 : JSL SetKill : NOP ; test and set death immune miss (informative miss)
+org $C23891 : JSL SetKill : NOP  ; test and set death immune miss (informative miss)
+org $C238D2 : JSR DisableCounter ; disable counters for X-Kill/Cleave
 
 ; #########################################################################
 ; Maneater Effect (now on Butterfly)
@@ -2002,9 +2085,10 @@ StealFunction:
   CMP #$FF        ; null?
   BEQ failSteal   ; branch if ^ (fail)
   STA $2F35       ; save stolen item ID for message template
-  STA $32F4,X     ; store in "Acquired Item"
+  XBA             ; store acquired item in B
   JSR SetCantrip  ; hook to set "ATB Autofill" flag
-  TSB $3A8C       ; flag ^ to process reserve item at end of turn
+  JSR SaveItem    ; save new item to buffer
+  NOP #2          ; [padding] TODO remove
   LDA #$FF        ; "null"
   STA $3308,Y     ; remove stealable item
   STA $3309,Y     ; in both slots
@@ -2060,6 +2144,18 @@ Wpn_Chk:
   SEP #$20        ; [displaced] 8-bit A
 .exit
   RTS
+
+; -------------------------------------------------------------------------
+; Immediately add Stolen items to inventory, preserving
+; any existing reserve item.
+; NOTE: Metamorph is unused in BNW, so this should be removed
+
+org $C23A7C
+Metamorph:
+  XBA               ; store acquired item in B
+  LDA $3018,X       ; character's unique bit
+  JSR SaveItem      ; save new item to buffer
+  NOP #2
 
 ; #########################################################################
 ; Debilitator Special Effect (now freespace)
@@ -2381,9 +2477,10 @@ Aero:
   STZ $11A6     ; zero battle power (attack itself does no damage)
   LDA #$99      ; "Aero v.2" spell ID
 .proc
-  STA $3400     ; set spellcast proc
-  INC $3A70     ; increment remaining hits for spellcast
-.exit
+  XBA           ; save spell #
+  JSL ProcFix2  ; set spellcast proc, increment hits, handle no targets
+  RTS
+.exit           ; TODO: Remove duplicate RTS
   RTS
 
 ; -------------------------------------------------------------------------
@@ -2503,7 +2600,7 @@ org $C23FAE
 Cleave:
   LDA $3C95,Y     ; special byte 3
   BPL .exit       ; branch if not "Undead"
-  LDA #$7E        ; "Cleave" animation ID
+  LDA #$7E        ; "X-Kill" animation ID
   JMP KillZombie ; branch to Zantetsuken code for cleave-kill/boss-crit
 .exit
   RTS
@@ -2518,8 +2615,31 @@ warnpc $C23FFC+1
 ; Exploder Effect
 ; Add a multiplier for Exploder when used by a player character
 ; 1 Spell Power = +50% damage
+; The entire hook is shifted to remove the now-unnecessary STZ $BC
+; This creates just enough space to fix the current patch in line
 
-org $C23FFC : JSR ExploderHelp ; hook for exploder multiplier
+org $C23FFC
+  TYX              ; copy attacker index (vanilla code)
+  LDA #$10
+  TSB $B0          ; use step-forward animation
+  STZ $3414        ; fixed dmg
+  REP #$20         ; 16-bit A
+  LDA $A4          ; targets
+  PHA              ; store
+  LDA $3018,X      ; attacker bit
+  STA $B8          ; set as temp target
+  JSR $57C2        ; process animation
+  JSR $63DB        ; process animation
+  LDA $01,S        ; original targets
+  STA $B8          ; set as temp targets
+  JSR $57C2        ; process animation
+  PLA              ; original targets
+  ORA $3018,X      ; add caster
+  STA $A4          ; update targets
+  LDA $3BF4,X      ; caster's current HP
+  CPX #$08         ; if monster attacker, carry set
+  JSR HelpExplode  ; increment dmg before saving
+  JMP $35AD
 
 ; #########################################################################
 ; Blowfish Effect
@@ -2868,6 +2988,8 @@ RageClear2:
 ; New behavior so some statuses that can affect counterattacks will persist
 ; until any potential counterattacks are processed.
 
+org $C24603 : JSR SOSReset ; hook to reset SOS relics
+
 org $C2460E
   JSL StatusRemove     ; handle bytes 3-4, death flag
   LDA #$FE15           ; statuses removed by death
@@ -3030,22 +3152,29 @@ Row_Dmg:
   PLP             ; restore flags
   RTS
 
-org $C25105       ; freespace [?]
-Get_Tgt_Byte:
-  JSR $2B63       ; multiply weapon ID by 30
-  REP #$10        ; 16-bit X/Y
-  TAX             ; index weapon data offset
-  LDA $D8500E,X   ; weapon targeting byte
-  CMP #$01        ; "target one ally"
-  BNE .exit       ; exit if not ^
-  REP #$21        ; 16-bit A
-  LDA $06,S       ; attacker index
-  TAX             ; index it
-  SEP #$20        ; 8-bit Accumulator
-  LDA #$01        ; "target one ally"
-  STA $0002,X     ; set ^ aiming byte
+org $C25105
+GetTargeting:
+  PHX
+  PHP
+  REP #$10           ; 16-bit X,Y
+  JSR HandTargeting  ; get right-hand targeting
+  BNE .finish        ; finish if targeting found
+  INY                ; point to left-hand
+  JSR HandTargeting  ; get left-hand targeting
+  DEY                ; revert to true character index
+.finish
+  CMP #$01           ; "healing" weapon targeting
+  BEQ .exit          ; exit if ^
+  LDA #$41           ; use default fight targeting
 .exit
+  PLP
+  PLX
   RTS
+
+; TODO: Ops below are leftover from old code. Remove them
+  STA $0002,X
+  RTS
+warnpc $C25121
 
 ; -------------------------------------------------------------------------
 ; Modified by dn's "Scan Status" patch to add support for Status messages.
@@ -3162,32 +3291,38 @@ ModifyCmds:
   db $11       ; Leap
 
 CmdModify:
-  dw $5322     ; Shock (used to be Morph)
-  dw SketchDis ; Sketch
-  dw $5322     ; Runic
-  dw $531D     ; SwdTech
-  dw $5314     ; Lore
-  dw $5314     ; X-Magic
-  dw $5314     ; Magic
-  dw $5301     ; Capture
-  dw $5301     ; Fight
-  dw LeapDis   ; Leap
+  dw $5322             ; Shock (used to be Morph)
+  dw SketchDis         ; Sketch
+  dw $5322             ; Runic
+  dw $531D             ; SwdTech
+  dw $5314             ; Lore
+  dw $5314             ; X-Magic
+  dw $5314             ; Magic
+  dw UpdateFightCursor ; Capture
+  dw UpdateFightCursor ; Fight
+  dw LeapDis           ; Leap
   NOP
 warnpc $C25301+1
 
 ; #########################################################################
 ; Fight and Mug Command Targeting Setup
 ;
-; Now adjusts targeting for Heal Rod, and no longer changes targeting
-; for the Offering (X-Fight)
+; Now adjusts targeting for Heal Rod, no longer changes targeting
+; for the Offering (X-Fight), and handles Brushes better
 
 org $C25301
-  PHP               ; store flags
-  LDA $3CA8,Y       ; righthand weapon ID
-  JSR Get_Tgt_Byte  ; update targeting byte if heal rod
-  LDA $3CA9,Y       ; lefthand weapon ID
-  JSR Get_Tgt_Byte  ; update targeting byte if heal rod
-  PLP               ; restore flags
+UpdateFightCursor:
+  JSR GetTargeting   ; get weapon targeting
+  PHA                ; save targeting byte
+  TDC                ; clear high byte of A
+  LDA $04,S          ; A = address of menu slot (low byte only, high is $20)
+  TAX                ; index to menu slot data
+  PLA                ; get targeting byte again
+  STA $2002,X        ; store targeting byte (fixed index high byte $20)
+  RTS
+
+; TODO: Below ops leftover from old code. Can be removed
+  PLP
   RTS
 
 ; #########################################################################
@@ -3521,11 +3656,32 @@ org $C2580C
 
 ; #########################################################################
 ; Big Ass Targeting Function (and friends)
-;
+
+; -------------------------------------------------------------------------
+; Small branch change to accommodate "Gau Targeting" hack
+
+org $C258E4 : BRA $07 ; skip redundant spread code
+
+; -------------------------------------------------------------------------
 ; Interrupt routine near "Abort on Characters" check to implement
 ; new "Abort on Enemies" helper routine. (Synchysi)
 
 org $C25902 : JSR EnemyAbort ; Add "abort-on-enemies" support
+
+; -------------------------------------------------------------------------
+; Update Randomize Targets subroutine
+; Allows Gau to single-target allies across the field during a Side Attack.
+;
+; Trick is, the side removal happens before the single-target coin flip.
+; The coin flip needs to be moved before this code, so if "single-target"
+; is selected, the side removal can be skipped.
+
+org $C259DA
+  JSL SpreadRandom   ; if manual target (and not multi), flip coin
+  PHA                ; store $0C mask on stack (vanilla code)
+  CMP #$08           ; "one party" and not "both parties"
+                     ; vanilla BNE will skip side/pincer filter
+                     ; for single-target or "both sides"
 
 ; #########################################################################
 ; Time Based Events for Entities
@@ -4095,6 +4251,40 @@ padbyte $FF       ; TODO: Remove this padding
 pad $C2653A
 
 ; -------------------------------------------------------------------------
+; Save Item helper(s)
+;
+; Stealing an item while the Item or Weapon Swap commands
+; are pending will overwrite the pending item or swap-in
+; weapon. Similarly, if a character steals more than one
+; item in a turn, only the last item stolen will be added
+; to inventory.
+;
+; If a character dies before executing a queued Item or
+; Weapon Swap command, the pending item will be lost if
+; the character queues another Item, Weapon Swap, or Steal
+; command executes prior to the end of battle.
+
+org $C2654B
+SaveItem:           ; 21 bytes
+  TSB $3A8C         ; set character's reserve item to be added
+  LDA $32F4,X       ; load current reserve item
+  PHA               ; save reserve item on stack
+  XBA               ; get new item in A
+  STA $32F4,X       ; store new item in reserve byte
+  PHX               ; save X
+  JSR $62C7         ; add reserve to obtained-items buffer
+  PLX               ; restore X
+  PLA               ; restore previous reserve item
+  STA $32F4,X       ; store in reserve item byte again
+  RTS
+
+ReturnReserve:      ; 10 bytes
+  LDA $3018,X       ; character's unique bit
+  TSB $3A8C         ; return reserve to inventory at turn end
+  LDA $3219,X       ; ATB top byte (vanilla code)
+  RTS
+
+; -------------------------------------------------------------------------
 ; Rage on-clear status removal helper
 
 org $C2659D
@@ -4296,7 +4486,7 @@ LevelChk:
 
 org $C266A3
 Zantetsuken:
-  LDA #$EE      ; "XKill" animation ID
+  LDA #$EE      ; "Cleave" animation ID
   XBA           ; store in B [TODO: overwritten below, remove this]
   JSR $4B5A     ; random(0..256)
   CMP #$40      ; C: 75% chance
@@ -4306,8 +4496,7 @@ Undead_Killer:
   LDA $3AA1,Y   ; target special state flags
   BIT #$04      ; "Immune to Instant Death"
   BNE .crit     ; do critical damage if ^
-  LDA #$7E      ; "Cleave" animation ID
-  XBA           ; store in B
+  NOP #3        ; TODO: Remove this padding
   JMP $38A6     ; execute cleave-kill.
 .crit
   LDA $BC       ; attack incremented damage (Critical Hit?) [TODO: confirm]
@@ -4903,14 +5092,12 @@ dw !slot_bar
 ; moved to actual freespace ASAP
 
 org $C2A8D2
-ExploderHelp:
-  TDC                ; zero A/B
-  CPY #$08           ; Check if monster
-  BCS .exit          ; branch if ^
-  LDA $11A6          ; else, use Spell Power as multiplier
-.exit
-  STA $BC            ; store multiplier (incrementer)
-  TYX                ; attacker index
+HelpExplode:
+  BCS .reg         ; skip increment if monster attacker
+  LDY $11A6        ; use battle power as increment
+  JSR IncByY       ; A = A + (A/2 * Y)
+.reg
+  STA $11B0        ; save [modified] HP-based dmg
   RTS
 
 ; #########################################################################
@@ -5002,6 +5189,21 @@ SketchFix:
 ; Freespace used for various helper functions
 
 org $C2FAA4
+
+; -------------------------------------------------------------------------
+; Helper for SOS Relic Reset on death
+; On death, SOS Relics are recharged, so their effect can be
+; reapplied when the character next enters "Near Fatal" status.
+
+SOSReset:           ; 13 bytes
+  JSR $4598         ; relocate vanilla code (clear some statuses)
+  LDA #$0002        ; "SOS status can activate" flag
+  ORA $3205,Y       ; set it again
+  STA $3205,Y       ; save updated flags
+  RTS
+
+; -------------------------------------------------------------------------
+
 padbyte $FF       ; TODO: Remove this padbyte usage
 pad $C2FAB4
 

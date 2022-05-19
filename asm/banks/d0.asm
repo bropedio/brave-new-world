@@ -10,6 +10,16 @@ org $D015FC : db $89,$60
 org $D01611 : db $89,$03
 
 ; -------------------------------------------------------------------------
+; Add X-Kill animation data back (changed in base BTB ips [?])
+
+org $D08696 : db $FF,$FF,$7F,$02,$FF,$FF,$35,$35,$00,$CC,$1B,$FF,$FF,$10
+
+; -------------------------------------------------------------------------
+; Add Cleave death animation to Chainsaw
+
+org $D0921C : db $0B  ; not sure how, but this byte sets cleave anim
+
+; -------------------------------------------------------------------------
 ; Wrexsoul Event 1/2
 ; Battle script command: F7 08
 

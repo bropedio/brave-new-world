@@ -572,6 +572,52 @@ StatusFinHelp:         ; 33 bytes
   BPL .loop            ; loop through all entities
   RTL
 
+; -------------------------------------------------------------------------
+; Helper for X Fight Retargeting Fix (in C2)
+
+org $C0D9D0
+HandleXFight:            ; 27 bytes
+  LDA #$20               ; "First strike of turn"
+  TRB $B2                ; test and clear
+  BNE .retarget          ; if set, exit without setting "no retarget"
+  LDA $B5                ; command ID
+  BNE .no_retarget       ; if not "Fight", set "no retarget"
+  LDA #$01               ; odd bit set for right-hand swings
+  BIT $3A70              ; # of hits remaining (after this one)
+  BNE .retarget          ; if right-hand, skip setting "no retarget"
+  LDA $3B68,X            ; right-hand battle power
+  BNE .no_retarget       ; if nonzero, lefthand is dualwield, so no retarget
+.retarget
+  LDA #$20               ; prepare BIT check (and clear zero flag)
+  RTL
+.no_retarget
+  TDC                    ; set zero flag
+  RTL
+
+; -------------------------------------------------------------------------
+; Helpers for Invalid Targets Spellproc fix (C2)
+; Fix vanilla bug that allows procs to fire even if
+; the accompanying weapon strike had no targets to
+; strike.
+
+org $C0D9F0
+ProcFix:               ; 12 bytes
+  LDA $B8              ; character targets
+  ORA $B9              ; enemy targets
+  BEQ .exit            ; if none, abort spellcast
+  LDA $3A89            ; spellcast byte (vanilla code)
+  BIT #$40             ; "cast randomly" flag
+.exit
+  RTL                  ; on return, abort spellcast if Z flag set
+ProcFix2:              ; 14 bytes
+  LDA $B8              ; character targets
+  ORA $B9              ; enemy targets
+  BEQ .exit            ; if none, abort spellcast
+  XBA                  ; get spell #
+  STA $3400            ; [displaced] set addition magic
+  INC $3A70            ; [displaced] increment number of remaining strikes
+.exit
+  RTL
 
 ; -------------------------------------------------------------------------
 
@@ -626,6 +672,27 @@ PaletteMP:
   STA $0307,Y        ; store palette [?]
   RTL
 warnpc $C0DEA0+1
+
+; -------------------------------------------------------------------------
+; Helper for Gau Targeting (single target across field) support
+
+org $C0DEA0
+SpreadRandom:        ; 24 bytes
+  LDA $BB            ; targeting byte (vanilla code)
+  AND #$2C           ; "multi" flags or "manual" flag
+  CMP #$20           ; "manual party select"
+  BEQ .chance        ; if only "manual" set, flip coin
+  AND #$0C           ; "both parties"/"one party" (vanilla code)
+  RTL
+.chance
+  JSL Random         ; random number
+  LSR                ; 50% chance of carry set
+  TDC                ; neither "multi" flags set
+  BCC .done          ; finish 50% of time (single target)
+  LDA #$08           ; "autoselect one party"
+  TSB $BB            ; spread targeting
+.done
+  RTL
 
 ; #########################################################################
 ; XOR Shift RNG Algorithm (replaces RNG Table)
