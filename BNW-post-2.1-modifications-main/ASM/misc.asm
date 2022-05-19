@@ -87,7 +87,68 @@ org $c3837f
     
 org $c38e4a
     db $c5,$7a,$ff,$ff,$ff,$00    ;Set blank tile over the numbers
+    
+;;-------------------------------------------------------
+;;-------------------------------------------------------
+;;
+;;Setting animated sprite on tool and throwing item
+;;
+;;-------------------------------------------------------
+;;-------------------------------------------------------
+
+;Setting new routine that can avoid equip unequippable item
+org $c2552c							;Start btl routine and set equippable item 
+	jml avoid_btl_equip_routine				;Jump to routine that unequip throwing item
 	
+org $c39b91							;Start equip menu routine 
+	jml avoid_menu_equip_routine				;Jump to routine that unequip throwing item
+	nop							;Erasing old data
+	nop							;Erasing old data
+	
+org $d86f30							;New routines
+avoid_menu_equip_routine:
+	rep #$20						;16-bit A
+	cpx #$079e						;Is Shuriken in stock?	
+	beq 13							;Skip to $C39ba3 if is it
+	cpx #$07da						;Is Ninja Star in stock?	
+	beq 08                          			;Skip to $C39ba3 if is it
+	lda $d85001,x						;Load Compatibility item
+	jml $c39b97						;Go on Check
+	jml $c39ba3						;Go on to next item
+
+avoid_btl_equip_routine:
+	lda #$0000						;Set no equippable character item in Accumulator
+	cpx #$079e						;Is Shuriken in stock?
+	beq 29							;Skip to $c25530
+	cpx #$07da						;Is Ninja star in stock?
+	beq 24							;Skip to $c25530
+	cpx #$1428						;Is Ninja scroll water in stock?
+	beq 19							;Skip to $c25530
+	cpx #$140a						;Is Ninja scroll fire in stock?
+	beq 14							;Skip to $c25530
+	cpx #$1446						;Is Ninja scroll bolt in stock?
+	beq 09							;Skip to $c25530
+	cpx #$1482						;Is Ninja scroll smoke in stock?
+	beq 04							;Skip to $c25530
+	lda $d85001,x 						;Set Item's equippable characters
+	jml $c25530						;Go on check if onscreen character can equip item
+
+org $c3fa9a	
+	jmp set_100_scroll					;Jump to new code instead of Shop 0 Attack value
+
+org $c3fe50
+set_100_scroll:
+	ldy #shop100attack		;Load "100" attack value in Shop Menu
+	cpx #$1428			;Are you on Ninja scroll water?
+	beq	13			;Branch to 100 if is it
+	cpx #$140a              	;Are you on Ninja scroll fire?
+	beq	8                   	;Branch to 100 if is it       
+	cpx #$1446			;Are you on Ninja scroll bolt?
+	beq	3			;Branch to 100 if is it
+	ldy	#shop0attack		;Load "0" attack value in Shop Menu
+	jmp $fa9d			;Go back to original routine and start print
+
+
 ;;-----------------------------------------------------
 ;;
 ;;Fix Tools bug
@@ -141,7 +202,7 @@ org $d86482+20 : db $00		;Ninja scroll smoke
 ;------------------------------------------------------------------
 check bankcross off
 org $C2686C
-	incbin "../asm/C2686C_Cinematic_Progam.bin"	;Cinematic Program
+	incbin "../asm/C2686C_Cinematic_Progam.bin"		;Cinematic Program
 	
 org $D8f000
 	incbin "../asm/D8F000_Cinematich_Title_Isle_GFX.bin"	;Cinematic, Title, Isle GFX & Tilemap Properties
