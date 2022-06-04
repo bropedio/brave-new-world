@@ -734,3 +734,26 @@ org $C30929
 ;Spell right side cursor position
 org $C18281
     db $58
+
+;Shortening esper magic number values
+
+org $c35538
+
+	pha			;Save A value (Esper value)
+	ldx #$9e93  ;Load Ram Position screen
+	stx $2181   ;Save
+	nop         ;
+	nop         ;
+	nop         ;3 NOP instead of Loading&Saving "..." value
+	pla         ;Load A Value
+	jsr $04e0   ;Jump to Routine that convert Hex Value into Dec Value
+	lda #$C7    ;Load "..." value instead of "FF" Value
+	sta $2180   ;Save
+	lda $f8     ;Load first number value
+	sta $2180   ;Save
+	lda $f9     ;Load second number value
+	sta $2180   ;Save
+	stz $2180   ;Clear $2180
+	jmp $7fd9   ;Jump
+
+warnpc $c3555b
