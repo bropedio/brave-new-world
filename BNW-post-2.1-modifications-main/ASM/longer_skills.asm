@@ -757,3 +757,14 @@ org $c35538
 	jmp $7fd9   ;Jump
 
 warnpc $c3555b
+
+
+;-----------------------------------------------------
+;Fix Finger cursor position in esper menu
+;-----------------------------------------------------
+
+Org $c32ef5
+	lda #$0038 		;Y Position 
+	sta $7e33ca,x
+	lda #$0036		;X Position
+	sta $7e344a,x
