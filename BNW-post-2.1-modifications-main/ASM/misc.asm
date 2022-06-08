@@ -103,3 +103,10 @@ check bankcross on
 ;Brave New World data
 org $C33BB8
 	db $d1,$78,"Brave New World 2.1.1 b2",$00
+
+;------------------------------------------------------------------
+;Fixing Magitek Finger cursor position
+;------------------------------------------------------------------
+
+org $C1828A
+	db $7F
