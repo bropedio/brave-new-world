@@ -119,8 +119,8 @@ org $c354FA
 	sty $ef	
 	lda #$ef			;Esper name bank
 	
-org $c35539 	
-	ldx #$9e94			;Esper choice wide +1
+;org $c35539 	
+;	ldx #$9e94			;Esper choice wide +1 (Switched off because the same address have been used after)
 
 org $C359BD
 	jsr multiplierby9	;Jump to subroutine that multiply by 9
@@ -740,7 +740,7 @@ org $C18281
 org $c35538
 
 	pha			;Save A value (Esper value)
-	ldx #$9e93  ;Load Ram Position screen
+	ldx #$9e94  ;Load Ram Position screen
 	stx $2181   ;Save
 	nop         ;
 	nop         ;
@@ -764,7 +764,7 @@ warnpc $c3555b
 ;-----------------------------------------------------
 
 Org $c32ef5
-	lda #$0038 		;Y Position 
+	lda #$003f 		;Y Position 
 	sta $7e33ca,x
 	lda #$0036		;X Position
 	sta $7e344a,x
