@@ -129,10 +129,15 @@ org $C359BD
 	lda esper,x			;Esper choice menu pointer
 	
 	
-org $c3f650				;New subroutine that multiply A by 9
+org $c3f612				;New subroutine that multiply A
 multiplierby9:			;Necessary to load every 9 bytes
 	sta $4202
 	lda #$09
+	bra multiplier
+multiplierby0b:  		;Necessary to load every 11 bytes
+	sta $4202			;store
+	lda #$0b			;Set 0b
+multiplier:
 	sta $4203
 	nop
 	nop
@@ -140,7 +145,6 @@ multiplierby9:			;Necessary to load every 9 bytes
 	nop
 	lda $4216
 	rts
-
 
 ;Data
 
@@ -289,23 +293,12 @@ org $C3f503			;Jujitsu skill menu
 ;Jujitsu pointer routine
 
 org $c3f4f0
-	pha					;Push A to Stack
-	phy					;Push Y to Stack
-	jmp multiplierby0a	;Go to subroutine that multiply by 0a
-
-
-org $c3f660
-multiplierby0a: 
-	sta $4202			;Store A
-	lda #$0b			;Set 0b
-	sta $4203			;Store & make multiply
-	nop
-	nop
-	nop
-	nop
-	lda $4216
 	pha
-	jmp $f4f8			;Jump back to original subroutine
+	phy					;Push Y to Stack
+	jsr multiplierby0b	;Go to subroutine that multiply by 0b
+	pha 
+	nop
+	nop
 
 ;Summon
 org $C2BB4D
