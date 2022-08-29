@@ -317,11 +317,11 @@ Itemowned:
  
 org $C38A3B
 	db $9d,$58,$13,$18	;Stats window
-	db $8b,$58,$0c,$01	;Item window
+	db $8b,$58,$0e,$01	;Item window
 	db $4b,$59,$07,$03	;Owned window
 
 org $C38A54
-	db $cb,$78			;Move Item name 1 line up 
+	db $cd,$78			;Move Item name 1 line up 
 org $C38a7c
 	db $13,$7a			;Move quantity 1 line up
 
@@ -357,3 +357,10 @@ org $C33BB8
 
 org $C1828A
 	db $7F
+
+;------------------------------------------------------------------
+;New consumables icon
+;------------------------------------------------------------------	
+
+org $C326F5
+  db $c9
