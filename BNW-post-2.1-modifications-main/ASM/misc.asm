@@ -371,3 +371,45 @@ org $C326F5
 
 org $c16534
   cmp #$18
+  
+;------------------------------------------------------------------
+;Fix equip menu gfx bug
+;------------------------------------------------------------------	
+
+org $C3906c
+	LDY #draw_equip_box1
+org $C39072
+	LDY #draw_equip_box2
+org $C39078
+	LDY #draw_equip_box3
+org $C3907E
+	LDY #draw_equip_box4
+
+; Moving 1 tile down all the bg2 tilemaps box & up by 6 pixel
+; Set text position and load actor data address
+
+org $C3946D  
+	REP #$20        ; 16-bit A
+	TXA             ; Tilemap ptr
+	STA $7E9E89     ; Set position
+	SEP #$20        ; 8-bit A
+	JMP $93F2      ; Load address
+; Moving 6 pixels up bg2
+	PHA
+	LDA #$06
+	STA $3B
+	PLA
+; Load and draw equipped item's name 
+	JSR $8FE1      ; Load item name
+	JMP $7FD9      ; Draw item name
+; Boxes Data
+draw_equip_box1:
+	db $8b,$5b,$1c,$0d
+draw_equip_box2:
+	db $8b,$58,$1c,$0a
+draw_equip_box3:
+	db $8b,$58,$1c,$01
+draw_equip_box4:
+	db $8b,$58,$06,$01
+
+warnpc $c39496
