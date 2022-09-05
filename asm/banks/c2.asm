@@ -5130,6 +5130,13 @@ org $C2BBEC : JSL Random
 org $C2BC9B : JSL Random
 
 ; #########################################################################
+; Song index table
+
+; Adds FFIV "Four Fiends" theme song to table
+; Track located at track index $25
+org $C2BF41 : db $25
+
+; #########################################################################
 ; Palette Data for Various Animations
 ;
 ; Modify palette for MP damage, part of "MP Colors" patch
