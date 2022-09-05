@@ -259,12 +259,8 @@ warnpc $C204F6+1
 ; Morph random behavior (now freespace)
 
 org $C20557
-ItemMod:
-  BCS .done ; branch if not an actual item
-  STZ $3414 ; ignore damage modification
-.done
-  LDA $3411 ; [displaced]
-  RTS
+padbyte $FF
+pad $C20560
 
 ; ------------------------------------------------------------------------
 ; Changes the odds each dance step shows up.
@@ -947,14 +943,16 @@ org $C2187D
 .end
 
 ; #########################################################################
-; Item (command)
+; Items, Tools, Scrolls
 
-org $C21897 : NOP #3 ; remove instruction that ignores damage modification
+; -------------------------------------------------------------------------
+; Set unblockable, unreflectable and allow vanish removal for broken rods
 
-; #########################################################################
-; Item and Throw (commands)
-
-org $C218C1 : JSR ItemMod ; hook to disable dmg mod for actual items
+org $C218F3
+  JSR UnblockCast   ; end of spellcast proc routine – set unblockable, unreflectable
+  LDA #$80
+  TSB $B3           ; allow clear/vanish removal
+  DEC $3414         ; allow dmg modification
 
 ; -------------------------------------------------------------------------
 ; Don't clear "can target dead/hidden targets" from all magic-based tools
@@ -1984,12 +1982,12 @@ org $C2380F
 SpellProc:
   BEQ .normal           ; improve silly branching logic from vanilla
   JSR Net_Target        ; hook to bypass "Randomize Targets" for "Net"
-  BRA .cannot_miss      ; improve silly branching logic from vanilla
+  BRA UnblockCast       ; improve silly branching logic from vanilla
 .normal
 
 org $C2381B : JSL CastTarget ; power-up crit doom to x-zone, multitarget quartr
 org $C23828 : NOP #3         ; always show missed spellcast animations
-org $C2382D : .cannot_miss
+org $C2382D : UnblockCast:
 
 ; #########################################################################
 ; X-Kill Effect
