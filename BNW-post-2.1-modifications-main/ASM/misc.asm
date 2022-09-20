@@ -393,12 +393,12 @@ org $C3946D
 	TXA             ; Tilemap ptr
 	STA $7E9E89     ; Set position
 	SEP #$20        ; 8-bit A
-	JMP $93F2      ; Load address
 ; Moving 6 pixels up bg2
 	PHA
 	LDA #$06
 	STA $3B
 	PLA
+	JMP $93F2      ; Load address
 ; Load and draw equipped item's name 
 	JSR $8FE1      ; Load item name
 	JMP $7FD9      ; Draw item name
@@ -413,3 +413,17 @@ draw_equip_box4:
 	db $8b,$58,$06,$01
 
 warnpc $c39496
+
+org $c39edc
+	jmp $947f
+org $c39efa
+	jmp $947f
+org $c3940d
+	jmp $947f
+org $c3916e
+	jmp $947f
+org $c3918c
+	jmp $947f
+org $c391a9
+	jmp $947f
+
