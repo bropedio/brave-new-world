@@ -141,8 +141,7 @@ multiplier:
 	sta $4203
 	nop
 	nop
-	nop
-	nop
+	REP #$01
 	lda $4216
 	rts
 
