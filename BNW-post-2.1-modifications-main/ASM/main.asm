@@ -6,6 +6,7 @@
 
 ;uncomment to activate patches ;activate just one speed patch
 
+incsrc "c3bis.asm"
 incsrc "new_intro.asm"
 incsrc "misc.asm"
 incsrc "veldt-freebies.asm"
