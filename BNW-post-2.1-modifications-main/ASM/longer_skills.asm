@@ -141,7 +141,7 @@ multiplier:
 	sta $4203
 	nop
 	nop
-	REP #$01
+	CLC
 	lda $4216
 	rts
 
