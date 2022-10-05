@@ -752,7 +752,7 @@ warnpc $c3555b
 
 
 ;-----------------------------------------------------
-;Fix Finger cursor position in esper menu
+; Fix Finger cursor position in esper menu
 ;-----------------------------------------------------
 
 Org $c32ef5
@@ -760,3 +760,22 @@ Org $c32ef5
 	sta $7e33ca,x
 	lda #$0036		;X Position
 	sta $7e344a,x
+	
+;-----------------------------------------------------
+; Fix description position
+;-----------------------------------------------------
+
+org $C34E27
+	db $05		; move description, esper, magic and bushido 3 pixel up
+org $C34E2A
+	db $05		; move Blitz, Lore, Rage and Dance 3 pixel up
+	
+; Cursor positions for Skills menu
+org $C34B74
+	dw $1100	; Espers
+	dw $2100	; Magic
+	dw $4100	; Bushido
+	dw $5100	; Blitz
+	dw $6100	; Lore
+	dw $7100	; Rage
+	dw $8100	; Dance
