@@ -779,3 +779,7 @@ org $C34B74
 	dw $6100	; Lore
 	dw $7100	; Rage
 	dw $8100	; Dance
+	
+; fix finger rage menu position
+org C1828A
+	db $78
