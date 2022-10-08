@@ -129,7 +129,7 @@ org $C359BD
 	lda esper,x			;Esper choice menu pointer
 	
 	
-org $c3f612				;New subroutine that multiply A
+org $c3f6e0				;New subroutine that multiply A
 multiplierby9:			;Necessary to load every 9 bytes
 	sta $4202
 	lda #$09
