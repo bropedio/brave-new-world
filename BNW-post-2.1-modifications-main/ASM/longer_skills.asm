@@ -779,7 +779,13 @@ org $C34B74
 	dw $6100	; Lore
 	dw $7100	; Rage
 	dw $8100	; Dance
+
+;-----------------------------------------------------
+; Magic/Esper - MP separator
+;-----------------------------------------------------
 	
-; fix finger rage menu position
-org C1828A
-	db $78
+org $c35005 
+lda #$D3		;"..." magic mp separator 
+
+org $c35546 
+lda #$D3		;"..." esper mp separator 
