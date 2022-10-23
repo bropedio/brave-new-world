@@ -1,7 +1,7 @@
 @echo off
 rem ----------------------------------------------------------------------------
-set ORIGINAL_ROM="rom\bnw.sfc"
-set EDITED_ROM="bnw.sfc"
+set ORIGINAL_ROM="rom\bnw2.1.sfc"
+set EDITED_ROM="bnw2.2.sfc"
 set PATCHES="asm"
 
 rem ----------------------------------------------------------------------------
@@ -19,8 +19,10 @@ echo Applying hacks...
 %ASAR% --pause-mode=on-error %PATCHES%\main.asm %EDITED_ROM%
 
 echo Applying ips...
-%flips% --apply "graphic_fixes.ips" %EDITED_ROM%
-%flips% --apply "minimap[n].ips" %EDITED_ROM%
+%flips% --apply "misc.ips" %EDITED_ROM%
+%flips% --apply "minimap.ips" %EDITED_ROM%
+%flips% --apply "docileNPCs.ips" %EDITED_ROM%
+rem %flips% --apply "msu-1.ips" %EDITED_ROM%
 
 echo Compressing GFX
 rem %FFVIDECOMP% -m c -s 0x02686C %EDITED_ROM% < %GFX%\modified\02686C_Title_Program.bin
@@ -30,3 +32,4 @@ rem %FFVIDECOMP% -m c -s 0x199d4b %EDITED_ROM% < %GFX%\modified\199d4b_Ending_Ci
 rem %FFVIDECOMP% -m c -s 0x19a4e5 %EDITED_ROM% < %GFX%\modified\19a4e5_Ending_Cinematic_GFX_3.bin
 rem %FFVIDECOMP% -m c -s 0x19a800 %EDITED_ROM% < %GFX%\modified\19a800_Map_Tile_Properties.bin
 rem %FFVIDECOMP% -m c -s 0x19cd10 %EDITED_ROM% < %GFX%\modified\19cd10_Map_Tile_Properties_Pointers.bin
+
