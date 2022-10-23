@@ -3,29 +3,6 @@ hirom
 
 table "menu.tbl", ltr ; Tabella per le stringhe di testo
 
-;;-----------------------------------------------
-;;Changing item list position
-;;-----------------------------------------------
-org $C38D69		;pointers
-	dw #itemresist
-	dw #itemabsorb
-	dw #itemnullify
-	dw #itemweakness
-	
-org $c38df0
-itemresist:
-	db $8d,$7b,"Resist",$00
-
-itemabsorb:
-	db $0d,$7c,"Absorb",$00
-
-itemnullify:
-	db $8d,$7c,"Nullify",$00
-
-itemweakness:
-	db $0d,$7d,"Weakness",$00
-
-
 ;;--------------------------------------------------
 ;;Item box dimension
 ;;	First value: Start print position X assis
@@ -39,24 +16,6 @@ org $C37E13
 	db $97,$58,$16,$01	;Use_Arrange_Rare window
 	db $4b,$59,$1c,$02	;Description window
 	db $4b,$5a,$1c,$11	;Item List window
-	
-org $C38D10
-	dw #USE
-	dw #ARRANGE
-	dw #RARE
-
-;Data	
-;org $C38D16
-	db $cd,$78,"Item",$00
-	
-USE:
-	db $dd,$78,"USE",$00
-	
-ARRANGE:
-	db $e7,$78,"ARRANGE",$00
-
-RARE:
-	db $f9,$78,"RARE",$00
 	
 ;;--------------------------------------------------
 ;;Cursor position
@@ -74,11 +33,6 @@ dw $0f68
 
 ;Rare
 dw $0fb0
-
-;Move up description text by 1
-org $c3a73d
-	ldx #$77c9
-
 
 ; Load navigation data & Handle D-Pad for Item, Colosseum, or Sell menu
 
@@ -237,7 +191,6 @@ org $c309b1
 	adc #$0085				; ADD to complete below half cursor scroll
 
 
-
 ;;-----------------------------------------------------
 ;;
 ;;Colosseum
@@ -301,14 +254,6 @@ org $C333B6
 org $c33402
 	ldy #$3d9b		;4 Name position
 
-
-org $C38A4C
-	dw #Itemowned
-	
-org $C38E41
-Itemowned:
-	db $8d,$79,"Owned:",$00
-
 ;Windows sizes
 ;	first value x start assis print
 ;	second value y start assis print
@@ -322,15 +267,13 @@ org $C38A3B
 
 org $C38A54
 	db $cd,$78			;Move Item name 1 line up 
-org $C38a7c
-	db $13,$7a			;Move quantity 1 line up
 
 ;------------------------------------------------------
 ;Hide rare counter item and expand description box
 ;------------------------------------------------------
 
 org $c3837f 
-    ldx #$7ac5        ;Set rare item conunter out of bounds and hide it
+    ldx #$7ac5        ;Set rare item counter out of bounds and hide it
     
 org $c38e4a
     db $c5,$7a,$ff,$ff,$ff,$00    ;Set blank tile over the numbers
@@ -341,36 +284,29 @@ org $c38e4a
 ;------------------------------------------------------------------
 check bankcross off
 org $C2686C
-	incbin "../asm/C2686C_Cinematic_Progam.bin"		;Cinematic Program
+	incbin "../asm/C2686C_Cinematic_Program.bin"		;Cinematic Program
 	
 org $D8f000
-	incbin "../asm/D8F000_Cinematich_Title_Isle_GFX.bin"	;Cinematic, Title, Isle GFX & Tilemap Properties
+	incbin "../asm/D8F000_Cinematic_Title_Isle_GFX.bin"	;Cinematic, Title, Isle GFX & Tilemap Properties
 check bankcross on
 
 ;Brave New World data
 org $C33BB8
-	db $d1,$78,"Brave New World 2.1.1 b2",$00
-
-;------------------------------------------------------------------
-;Fixing Magitek Finger cursor position
-;------------------------------------------------------------------
-
-org $C1828A
-	db $7F
+	db $d1,$78,"Brave New World 2.2 b7",$00
 
 ;------------------------------------------------------------------
 ;New consumables icon
 ;------------------------------------------------------------------	
 
 org $C326F5
-  db $18
+  db $EB
 
 ;------------------------------------------------------------------
 ;Load empty tiles on category item in battle inventory
 ;------------------------------------------------------------------
 
 org $c16534
-  cmp #$18
+  cmp #$EB
   
 ;------------------------------------------------------------------
 ;Fix equip menu gfx bug
@@ -427,3 +363,19 @@ org $c3918c
 org $c391a9
 	jmp $947f
 
+;Fixed Dumpty script (conditional Safe>Shell)
+
+org $CF95C0
+db $15
+
+;Wounded
+org $C3371B		
+	db " KO    "
+
+;scroll fixing on lore menus
+
+org $C32175
+	LDA #$1800	;v-speed 24 pixel
+
+org $C3218B
+    LDA #$04	;scroll limit at line 12 (Tsunami)
