@@ -7,31 +7,46 @@ table "menu.tbl",ltr
 ;Item list
 ;------------------------------------------------------------------
 
+org $D2BC99
+	db $EB 
+
+org $D2BB7B
+	db $D8,"Defibr",$10,$11,"ator"
+
 org $D2BEBB
 
-    db $18,"Rename>Card "
-    db $18,"Tonic       "
-    db $18,"Potion      "
-    db $18,"X-Potion    "
-    db $18,"Tincture    "
-    db $18,"Ether       "
-    db $18,"X-Ether     "
-    db $18,"Elixir      "
-    db $18,"Megalixir   "
-    db $18,"Phoenix>Down"
-    db $18,"Holy>Water  "
-    db $18,"Antidote    "
-    db $18,"Eyedrops    "
-    db $18,"Snake>Oil   "
-    db $18,"Remedy      "
-    db $18,"Scrap       "
-    db $18,"Tent        "
-    db $18,"Green>Cherry"
-    db $18,"Phoenix>Tear"
-    db $18,"Bouncy>Ball "
-    db $18,"Red>Bull    "
-    db $18,"Slim>Jim    "
-    db $18,"Warp>Whistle"
-    db $18,"Dried>Meat  "
+    db $EB,"Rename>Card "
+    db $EB,"Tonic       "
+    db $EB,"Potion      "
+    db $EB,"X-Potion    "
+    db $EB,"Tincture    "
+    db $EB,"Ether       "
+    db $EB,"X-Ether     "
+    db $EB,"Elixir      "
+    db $EB,"Megalixir   "
+    db $EB,"Phoenix>Down"
+    db $EB,"Holy>Water  "
+    db $EB,"Antidote    "
+    db $EB,"Eyedrops    "
+    db $EB,"Snake>Oil   "
+    db $EB,"Remedy      "
+    db $EB,"Scrap       "
+    db $EB,"Tent        "
+    db $EB,"Green>Cherry"
+    db $EB,"Phoenix>Tear"
+    db $EB,"Bouncy>Ball "
+    db $EB,"Red>Bull    "
+    db $EB,"Slim>Jim    "
+    db $EB,"Warp>Whistle"
+    db $EB,"Dried>Meat  "
     
 warnpc $D2BFF3
+
+;------------------------------------------------------------------
+;fan translation items
+;------------------------------------------------------------------
+
+;org $D2C11B
+;
+;    db $EB,"Chocobo>Wing"
+;    db $EB,"Hero>Drink  "
