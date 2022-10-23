@@ -134,7 +134,7 @@ org $C3FA1E
 org $C3FB0A
 
 holdy:
-	db $1F,$79,"Y",$fe,"per",$fe,"dettagli",$c5,$00
+	db $1F,$79,"Y",$fe,"for",$fe,"details",$c5,$00
 shopvigor:
 	db $0d,$82,"Vigor",$00
 shopspeed:
