@@ -1,0 +1,49 @@
+2.2 changelog (at b7 release 10/23/2022)
+
+- Adds custom intro and title (Ryo_Hazuki)
+- Cleaner coliseum and consumable screens graphic (Ryo_Hazuki)
+- Deleted rare item counter (Ryo_Hazuki)
+- Added Tools attack values in shops. Edgar/Gogo cheering when selecting a tool (Ryo_Hazuki)
+- Added scrolls attack value in shops and Shadow/Gogo cheering while selecting them (Ryo_Hazuki)
+- Fix storm glitch (Leet-Sketcher)
+- Fix flash tool sprite position (C-Dude)
+- Unlock all wob rage formations after FC events (Seibaby) 
+- Adds mountains to the minimap (Madsiur)
+- Restores invisible chests in Soul Train (dark mage - edited by Gens)
+- Edgar and Sabin dont blush anymore during Setzer proposal to Celes (Novalia Spirit)
+- Adds a mysterious feature (Madsiur) 
+- Curative lores now show the sap/regen/rerise screen (Bropedio)
+- Longer skill names by 1 digit (properly named Reflect, Berserk and few other skills and updated inherent dialogues) (Ryo_hazuki, Gens)
+- Added 3 little graphical fixes: zozo sign (Madsiur), sealed gate bridge and switches on Gogo's ending scene (Gi Nattak)
+- Every "title" box is now 1 tile height: this leads to inventory active page showing 1 more item (Ryo_Hazuki)
+- Fixed Dumpty script
+- Added a pouch/bag icon to order consumables (Gens)
+- Fixed cut-out upper box border in equip screen (Ryo_Hazuki)
+- Status page now will show how much a stat has been raised by using esper levels (Ryo_Hazuki)
+  (added a dialogue to Ghost npc about it)
+- Drained pond fix (Gi Nattak)
+- Deleted entry with no rewards from coliseum and added prizes description (Ryo_Hazuki)
+- Wallchange now will not roll the same element twice in a row (Sir Newton Fig)
+- Final fight background Brave New World themed (Gens)
+- better positioned skills descriptions text
+- added fixes to Seibaby x-files (some almost invisible graphic imprecisions)
+- added native support to msu-1 soundtracks
+- Banon riding fix (glitched sprite if you ride a chocobo with Banon as party leader) (Leet Sketcher)
+- Castle Party (Shadow leader when you switch from Cyan scene to imperial camp) (Leet Sketcher)`
+- Overhaul Opera scene with dialogues synced with music
+- Added every active flag to weapon submenu in inventory
+- (experimental) font with different spacing
+- imported Docile NPCs by SilentEnigma (an hack that leads npc to not occupy tiles pointed by the player)
+- half atb refund for incorrect blitz input (by Sir Newton Fig)
+- fixed scrolling in Lore menu (now stops correctly at Tsunami)
+- added Oceanic Line anomaly (by Gi Nattak)
+- party selection menu "how it should have always been" (by Ryo_Hazuki)
+
+B8 (or whatever rev will be the final release) roadmap (ordered by priority):
+
+- Fix Magitek right column and Lore Battle menu
+- Import Rage checklist hack by Assassin to bnw
+(an hack that shows in gray, rages unlocked into the Veldt but not yet "leaped")
+- Alphabetical Lore (not needed for bnw but very useful for translations or for eventual future changes to Lore names)
+- Summon active for a sage stone equipped char
+- Fix mp colors corrupting reflect palette
