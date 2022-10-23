@@ -3,6 +3,8 @@ hirom
 ; MP Colors
 ; author: Imzogelmo
 ; editor: Bropedio
+; bugfix: Silent Enigma
+; bnw compatibility: Ryo_Hazuki
 
 ; C1 ================================================
 
