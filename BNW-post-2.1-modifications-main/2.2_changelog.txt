@@ -1,4 +1,4 @@
-2.2 changelog (at b7 release 10/23/2022)
+2.2 changelog (at b7 release 10/24/2022)
 
 - Adds custom intro and title (Ryo_Hazuki)
 - Cleaner coliseum and consumable screens graphic (Ryo_Hazuki)
@@ -35,13 +35,13 @@
 - (experimental) font with different spacing
 - imported Docile NPCs by SilentEnigma (an hack that leads npc to not occupy tiles pointed by the player)
 - half atb refund for incorrect blitz input (by Sir Newton Fig)
-- fixed scrolling in Lore menu (now stops correctly at Tsunami)
+- fixed scrolling in Lore menu and in Lore battle menu (now both stops correctly at Tsunami)
 - added Oceanic Line anomaly (by Gi Nattak)
 - party selection menu "how it should have always been" (by Ryo_Hazuki)
 
 B8 (or whatever rev will be the final release) roadmap (ordered by priority):
 
-- Fix Magitek right column and Lore Battle menu
+- Move Magitek right column text 1 tile to the left
 - Import Rage checklist hack by Assassin to bnw
 (an hack that shows in gray, rages unlocked into the Veldt but not yet "leaped")
 - Alphabetical Lore (not needed for bnw but very useful for translations or for eventual future changes to Lore names)
