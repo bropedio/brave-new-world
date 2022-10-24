@@ -45,6 +45,6 @@ B8 (or whatever rev will be the final release) roadmap (ordered by priority):
 - Move Magitek right column text 1 tile to the left
 - Import Rage checklist hack by Assassin to bnw
 (an hack that shows in gray, rages unlocked into the Veldt but not yet "leaped")
-- Alphabetical Lore (not needed for bnw but very useful for translations or for eventual future changes to Lore names)
 - Summon active for a sage stone equipped char
+- Alphabetical Lore (not needed for bnw but very useful for translations or for eventual future changes to Lore names)
 - Fix mp colors corrupting reflect palette
