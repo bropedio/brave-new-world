@@ -379,3 +379,9 @@ org $C32175
 
 org $C3218B
     LDA #$04	;scroll limit at line 12 (Tsunami)
+
+; Lore Battle Menu
+
+org $C18336 : CMP #$08    ; lore menu length 12 (4 shown on first page + 8 scrolling)
+org $C1838F : LDA #$08    ; lore menu scrollbar flash
+org $C18393 : LDX #$0500  ; scrollbar reaching the end of the menu correctly
