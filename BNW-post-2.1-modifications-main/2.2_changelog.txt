@@ -39,10 +39,10 @@
 - added Oceanic Line anomaly (by Gi Nattak)
 - added D-pad button prompts in dialogues and tutorials 
 - party selection menu "how it should have always been" (by Ryo_Hazuki)
+- better alignment of status icons on main menu screen
 
 B8 (or whatever rev will be the final release) roadmap (ordered by priority):
 
-- Move Magitek right column text 1 tile to the left
 - Import Rage checklist hack by Assassin to bnw
 (an hack that shows in gray, rages unlocked into the Veldt but not yet "leaped")
 - Summon active for a sage stone equipped char
