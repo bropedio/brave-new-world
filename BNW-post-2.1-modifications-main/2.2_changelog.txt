@@ -1,4 +1,4 @@
-2.2 changelog (at b7 release 10/24/2022)
+2.2 changelog (at b7 release 10/25/2022)
 
 - Adds custom intro and title (Ryo_Hazuki)
 - Cleaner coliseum and consumable screens graphic (Ryo_Hazuki)
