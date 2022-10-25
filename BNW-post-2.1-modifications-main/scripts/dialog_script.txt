@@ -2284,7 +2284,7 @@ Characters also gain [esper points] (EP) when they earn spell points and exp. fr
 Esper points earn [esper levels] (EL), which are used to grant permanent stat boosts from espers.<EOP>
 Esper levels are not applied automatically after gaining them, but are rather [banked] just like spell points are.<EOP>
 Banked ELs are spent just like spell points - go to the esper menu and then click on the EL bonus for that esper.<EOP>
-The yellow value next to each stat in status page, indicates how much it has been raised by ELs.<EOP>
+The yellow value next to each stat on the status screen indicates how much it has been raised by ELs.<EOP>
 Espers also grant temporary bonuses while they're equipped just like equipment would.<EOP>
 For example, Kirin raises magic power while equipped, but will permanently raise stamina and HP for each EL spent on it.<EOP>
 Finally, just like weapons and armor, not every esper can be used by every character. See the printme for more info.
@@ -3742,8 +3742,7 @@ Great people here!
 
 [caption #1052]
 Set the hour hand:
-<C> II     <C> IV    <C> VI
-<C> VIII   <C> X    <C> XII
+<C> II   <C> IV   <C> VI   <C> VIII   <C> X   <C> XII
 
 [caption #1053]
 Where's my welfare check?
