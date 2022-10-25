@@ -4,9 +4,9 @@ table "menu.tbl", ltr
 
 !freeBank = #$C0
 !initXY = #$812F-64		; tilemap coords for first property string
-!numProps = #$0013		; how many properties to check for (should match size of tables at the bottom)
+!numProps = #$0014		; how many properties to check for (should match size of tables at the bottom)
 !maxProps = #$0005		; how many properties are we willing to display?
-!overwriteRow = $C0DC5D
+!overwriteRow = $C0DC6E
 !Continue = $C3F651
 !HealingWeapons = $C3F66D
 
@@ -342,6 +342,8 @@ OffensiveProps2:
 multiflag:
 	CMP #$13				; If byte 0C is 12 or below the weapons are dual wield
 	BCC .end                ; branch if so and go to print dual wield
+	CMP #$48				; If byte 0C is 48 you are on a spear
+	BEQ .clear				; branch if so				
 	AND #$F0				; AND and set value on X0
 	CMP #$F0				; If 1B is $F0 (Demonsbane & Tarot) you are on Undead Slayer flag
 	BEQ .Undead             ; branch if so
@@ -353,12 +355,17 @@ multiflag:
 	BEQ .InstaKill          ; branch if so
 	CMP #$70                ; MP critical weapon?
 	BEQ .MPCrit             ; branch if so
+	CMP #$A0				; Valiance?
+	BEQ .IgnoresDef         ; branch if so
+	CMP #$50                ; Morning Star?
+	BEQ .IgnoresDef         ; branch if so
 	CMP #$80                ; Anti-Air and High Critical Bonus?
 	BEQ .end                ; branch if so
+.clear
 	LDA $00	                ; If the flag doesn't fit the above values clear and return always false
 	RTS
 .Undead
-	LDA #$08                ; turn A into a BIT mask value that can return true only with Undead
+	LDA #$03                ; turn A into a BIT mask value that can return true only with Undead
 .end
 	RTS                     ; go back
 .InstaKill                  
@@ -370,7 +377,9 @@ multiflag:
 .AntiHuman                  
 	LDA #$30                ; Turn Man Eater and Butterlfy flag value into bitmask value
 	BRA .end                ; branch to go back
-
+.IgnoresDef
+	LDA #$08
+	BRA .end
 	
 org $C0DB40
 Bushido: db "Bushido",$00
@@ -391,6 +400,7 @@ Undead: db "Undead-Slayer",$00
 SpellcastUp: db "Spellcast ",$D4,$00
 AntiHuman: db "Anti-Human",$00
 XFight: db "Hits Twice",$00
+IgnoresDef: db "Ignores Def.",$00
 Heal: db "Cures HP",$00
 
 ; ... +more
@@ -415,6 +425,7 @@ ItemFlagPointers:      ; pointers to the strings for each item flag to be displa
   dw SpellcastUp
   dw AntiHuman
   dw XFight
+  dw IgnoresDef
   dw Heal
   ; ... +more
 
@@ -438,7 +449,8 @@ ItemFlagOffsets:       ; item data offsets relative to $D85000 struct
   db $1B
   db $0C
   db $1B
-  db $0B	; XFight
+  db $0C	; XFight
+  db $1B	; Ignores Def.
   
   ; ... +more
 
@@ -451,7 +463,7 @@ ItemFlagBitmasks:      ; which bit to check in corresponding item data byte abov
   db $20	; Ranged
   db $40	; Cover
   db $40	; Cover
-  db $80	; Always
+  db $83	; Always
   db $02	; Counter
   db $10	; Genji
   db $02	; Mp for crit
@@ -459,10 +471,11 @@ ItemFlagBitmasks:      ; which bit to check in corresponding item data byte abov
   db $40	; High Crit
   db $80	; Anti-Air
   db $80    ; High Crit
-  db $08	; Undead slayer
+  db $03	; Undead slayer
   db $80	; SpellcastUp
   db $30	; AntiHuman
-  db $04	; XFight
+  db $01	; XFight
+  db $08	; Ignores Def.
   ; ... +more
   
   
@@ -513,13 +526,10 @@ overwriteRow:
 	TAX							; index it
 	LDA $1869,X					; load item id from inventory SRAM position
 	CMP #$19					; Zantetsuken?
-	BEQ .always					; branch if so
+	BEQ .end					; branch if so
 	CMP #$23					; Gungnir?
-	BEQ .always					; branch if so
+	BEQ .end					; branch if so
 	PLA							; restore A
 	REP #$20					; 16 bit-A
-	LDA.l ItemFlagPointers+38	; load Cures HP pointer
+	LDA.l ItemFlagPointers+40	; load Cures HP pointer
 	JML !HealingWeapons			; go back to OffensiveProps2 routine - no need to restore X in this case
-.always
-	LDA #$80					; if Zantetsuken oe Gungnir change value into one tha can return true
-	BRA .end					; branch to go back
