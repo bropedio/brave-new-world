@@ -268,7 +268,7 @@ OffensiveProps2:
 ;                                                                                                 ;;
 ; When first 8 flags are done we need to change bitmask due to BIT opcode matters                 ;;
 ;                                                                                                 ;;
-  CPX #$0009           ; from this point need to change flag value due to aovid wrong BIT         ;;
+  CPX #$000A           ; from this point need to change flag value due to aovid wrong BIT         ;;
   BCC .NotMulti        ;                                                                          ;;
   JSR multiflag		   ; go to the routine that avoid print mistake                               ;;
 .NotMulti                                                                                         ;;
@@ -340,10 +340,6 @@ OffensiveProps2:
 ;;################################################################################################;;
 	
 multiflag:
-	CMP #$13				; If byte 0C is 12 or below the weapons are dual wield
-	BCC .end                ; branch if so and go to print dual wield
-	CMP #$48				; If byte 0C is 48 you are on a spear
-	BEQ .clear				; branch if so				
 	AND #$F0				; AND and set value on X0
 	CMP #$F0				; If 1B is $F0 (Demonsbane & Tarot) you are on Undead Slayer flag
 	BEQ .Undead             ; branch if so
@@ -365,7 +361,7 @@ multiflag:
 	LDA $00	                ; If the flag doesn't fit the above values clear and return always false
 	RTS
 .Undead
-	LDA #$03                ; turn A into a BIT mask value that can return true only with Undead
+	LDA #$04                ; turn A into a BIT mask value that can return true only with Undead
 .end
 	RTS                     ; go back
 .InstaKill                  
@@ -441,14 +437,14 @@ ItemFlagOffsets:       ; item data offsets relative to $D85000 struct
   db $15	; Always
   db $0C	; Counter
   db $0C	; Genji
-  db $1B
-  db $1B
-  db $1B
-  db $1B
-  db $1B
-  db $1B
-  db $0C
-  db $1B
+  db $1B	; Mp for crit
+  db $1B	; Instakill
+  db $1B	; High Crit
+  db $1B	; Anti-Air
+  db $1B	; High Crit
+  db $1B	; Undead slayer
+  db $0C	; SpellcastUp
+  db $1B	; AntiHuman
   db $0C	; XFight
   db $1B	; Ignores Def.
   
@@ -471,7 +467,7 @@ ItemFlagBitmasks:      ; which bit to check in corresponding item data byte abov
   db $40	; High Crit
   db $80	; Anti-Air
   db $80    ; High Crit
-  db $03	; Undead slayer
+  db $04	; Undead slayer
   db $80	; SpellcastUp
   db $30	; AntiHuman
   db $01	; XFight
@@ -497,6 +493,8 @@ overwriteRow:
 	BEQ .NoIgnoresRow		; branch if so
 	CPX #$0007				; always hit?
 	BEQ .NoAlwaysHit		; branch if so  
+	CPX #$0009				; Dual Wield?
+	BEQ .DualWield			; Branch if so
 	BRA .end				; branch to go back if not
 .NoIgnoresRow	
 	LDA $4B        			; load item position
@@ -533,3 +531,8 @@ overwriteRow:
 	REP #$20					; 16 bit-A
 	LDA.l ItemFlagPointers+40	; load Cures HP pointer
 	JML !HealingWeapons			; go back to OffensiveProps2 routine - no need to restore X in this case
+	
+.DualWield
+	CMP #$13					; If byte 0C is 12 or below the weapons are dual wield
+	BCC .end        	        ; branch if so and go to print dual wield	
+	BRA .change					; branch to clear A
