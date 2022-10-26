@@ -266,9 +266,9 @@ OffensiveProps2:
 ; Continue - Only when you are on Healing weapon and Cures must be print the prev. function       ;;
 ;            doesn't go back here and axe next 13 row code.                                       ;;
 ;                                                                                                 ;;
-; When first 8 flags are done we need to change bitmask due to BIT opcode matters                 ;;
+; When first 11 flags are done we need to change bitmask due to BIT opcode matters                 ;;
 ;                                                                                                 ;;
-  CPX #$000A           ; from this point need to change flag value due to aovid wrong BIT         ;;
+  CPX #$000B           ; from this point need to change flag value due to aovid wrong BIT         ;;
   BCC .NotMulti        ;                                                                          ;;
   JSR multiflag		   ; go to the routine that avoid print mistake                               ;;
 .NotMulti                                                                                         ;;
@@ -412,6 +412,7 @@ ItemFlagPointers:      ; pointers to the strings for each item flag to be displa
   dw Always
   dw Counter
   dw Genji
+  dw XFight
   dw MPCrit
   dw Instakill
   dw HighCrit
@@ -420,7 +421,6 @@ ItemFlagPointers:      ; pointers to the strings for each item flag to be displa
   dw Undead
   dw SpellcastUp
   dw AntiHuman
-  dw XFight
   dw IgnoresDef
   dw Heal
   ; ... +more
@@ -437,6 +437,7 @@ ItemFlagOffsets:       ; item data offsets relative to $D85000 struct
   db $15	; Always
   db $0C	; Counter
   db $0C	; Genji
+  db $0C	; XFight  
   db $1B	; Mp for crit
   db $1B	; Instakill
   db $1B	; High Crit
@@ -445,7 +446,6 @@ ItemFlagOffsets:       ; item data offsets relative to $D85000 struct
   db $1B	; Undead slayer
   db $0C	; SpellcastUp
   db $1B	; AntiHuman
-  db $0C	; XFight
   db $1B	; Ignores Def.
   
   ; ... +more
@@ -462,6 +462,7 @@ ItemFlagBitmasks:      ; which bit to check in corresponding item data byte abov
   db $83	; Always
   db $02	; Counter
   db $10	; Genji
+  db $01	; XFight
   db $02	; Mp for crit
   db $40	; Instakill
   db $40	; High Crit
@@ -470,7 +471,6 @@ ItemFlagBitmasks:      ; which bit to check in corresponding item data byte abov
   db $04	; Undead slayer
   db $80	; SpellcastUp
   db $30	; AntiHuman
-  db $01	; XFight
   db $08	; Ignores Def.
   ; ... +more
   
