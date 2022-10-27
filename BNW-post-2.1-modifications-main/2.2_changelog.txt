@@ -40,6 +40,7 @@
 - added D-pad button prompts in dialogues and tutorials 
 - party selection menu "how it should have always been" (by Ryo_Hazuki)
 - better alignment of ailments icons on the main menu screen
+- added a full party restore in party selection screen after Zoo events
 
 B8 (or whatever rev will be the final release) roadmap (ordered by priority):
 
