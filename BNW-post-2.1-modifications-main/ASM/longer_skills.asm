@@ -789,3 +789,15 @@ lda #$D3		;"..." magic mp separator
 
 org $c35546 
 lda #$D3		;"..." esper mp separator 
+
+;-----------------------------------------------------
+; Space between rages
+;-----------------------------------------------------
+
+; space
+org $C2E06E
+	db $03
+	
+; finger
+org $c1828A
+	db $7F
