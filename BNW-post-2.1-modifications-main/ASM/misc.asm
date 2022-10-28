@@ -297,10 +297,47 @@ org $C33BB8
 ;------------------------------------------------------------------
 ;New consumables icon
 ;------------------------------------------------------------------	
+org $C326E3
+.loop	
+	lda.l icon,x	; load icon value
+	phx         ; save X
+	sta $e0     ; save value on e0
+	jsr $2706   ; 
+	plx         ; restore X
+	inx         ; increase X
+	cpx #$0012  ; all icon checked?
+	bne .loop   ; branch if not
+	rts         ; return
+	
+padbyte $FF
+pad $C32706
+warnpc $C32706
 
-org $C326F5
-  db $EB
+org $C3294A
+icon:
+	db $eb
+	db $d8
+	db $d9
+	db $da
+	db $db
+	db $dc
+	db $dd
+	db $de
+	db $df
+	db $e0
+	db $e1
+	db $e2
+	db $ec
+	db $e3
+	db $e4
+	db $e5
+	db $e6
+	db $e7
 
+warnpc $C32965
+
+org $D26F8C
+	"Ranged"
 ;------------------------------------------------------------------
 ;Load empty tiles on category item in battle inventory
 ;------------------------------------------------------------------
