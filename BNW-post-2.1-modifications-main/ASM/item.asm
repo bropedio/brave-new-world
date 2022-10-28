@@ -7,11 +7,23 @@ table "menu.tbl",ltr
 ;Item list
 ;------------------------------------------------------------------
 
-org $D2BC99
+org $D2BC99	;Gum pod
 	db $EB 
 
 org $D2BB7B
 	db $D8,"Defibr",$10,$11,"ator"
+
+org $D2B681	;Full Moon
+	db $EC
+
+org $D2B69B	;Boomerang
+	db $EC
+
+org $D2B6A8	;Rising Sun
+	db $EC
+
+org $D2B6DC	;Wing Edge
+	db $EC
 
 org $D2BEBB
 
