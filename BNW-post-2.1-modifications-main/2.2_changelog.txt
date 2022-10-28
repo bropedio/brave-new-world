@@ -1,4 +1,4 @@
-2.2 changelog (at b7 release 10/27/2022)
+2.2 changelog (at b7.1 release 10/28/2022)
 
 - Adds custom intro and title (Ryo_Hazuki)
 - Cleaner coliseum and consumable screens graphic (Ryo_Hazuki)
@@ -40,10 +40,11 @@
 - added D-pad button prompts in dialogues and tutorials 
 - party selection menu "how it should have always been" (by Ryo_Hazuki)
 - better alignment of ailments icons on the main menu screen
-- added a full party restore in party selection screen after Zoo events
 
 B8 (or whatever rev will be the final release) roadmap (ordered by priority):
 
+- Add "Ranged" icon and category
+- Decensor Cafe signs (to show Pub like in the japanese version)
 - Import Rage checklist hack by Assassin to bnw
 (an hack that shows in gray, rages unlocked into the Veldt but not yet "leaped")
 - Summon active for a sage stone equipped char
