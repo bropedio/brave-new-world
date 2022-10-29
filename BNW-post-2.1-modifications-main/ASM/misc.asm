@@ -315,29 +315,29 @@ warnpc $C32706
 
 org $C3294A
 icon:
-	db $eb
-	db $d8
-	db $d9
-	db $da
-	db $db
-	db $dc
-	db $dd
-	db $de
-	db $df
-	db $e0
-	db $e1
-	db $e2
-	db $ec
-	db $e3
-	db $e4
-	db $e5
-	db $e6
-	db $e7
+	db $eb	;consumables
+	db $d8	;tool
+	db $d9	;star
+	db $da	;scroll
+	db $db	;knife	
+	db $dc	;sword
+	db $dd	;spear
+	db $de	;claw
+	db $df	;katana
+	db $e0	;casino
+	db $e1	;rod
+	db $e2	;brush
+	db $ec	;ranged
+	db $e3	;other
+	db $e4	;shield
+	db $e5	;helmet
+	db $e6	;armor
+	db $e7	;relic
 
 warnpc $C32965
 
 org $D26F8C
-	"Ranged"
+	db "Ranged "
 ;------------------------------------------------------------------
 ;Load empty tiles on category item in battle inventory
 ;------------------------------------------------------------------
