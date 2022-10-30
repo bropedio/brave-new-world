@@ -9,44 +9,44 @@
 - Fix flash tool sprite position (C-Dude)
 - Unlock all wob rage formations after FC events (Seibaby) 
 - Adds mountains to the minimap (Madsiur)
+- Adds a mysterious feature (Madsiur)
 - Restores invisible chests in Soul Train (dark mage - edited by Gens)
 - Edgar and Sabin dont blush anymore during Setzer proposal to Celes (Novalia Spirit)
-- Adds a mysterious feature (Madsiur) 
 - Curative lores now show the sap/regen/rerise screen (Bropedio)
 - Longer skill names by 1 digit (properly named Reflect, Berserk and few other skills and updated inherent descriptions) (Ryo_hazuki, Gens)
-- Added 3 little graphical fixes: zozo sign (Madsiur), sealed gate bridge and switches on Gogo's ending scene (Gi Nattak)
+- Added 4 graphical fixes (by Gi Nattak): bridge correction, button blunder, drained pond tile, oceanic line anomaly
 - Every "title" box is now 1 tile height: this leads to inventory active page showing 1 more item (Ryo_Hazuki)
 - Fixed Dumpty script
-- Added a pouch/bag icon to order consumables (Gens)
 - Fixed cut-out upper box border in equip screen (Ryo_Hazuki)
 - Status page now will show how much a stat has been raised by using esper levels (Ryo_Hazuki)
   (added a dialogue to Ghost npc about it)
-- Drained pond tile fix (Gi Nattak)
 - Deleted entry with no rewards from coliseum and added prizes description (Ryo_Hazuki)
 - Wallchange now will not roll the same element twice in a row (Sir Newton Fig)
 - Final fight background Brave New World themed (Gens)
-- better positioned skills descriptions text
+- better positioned skills descriptions text (Ryo)
 - added fixes to Seibaby x-files (some almost invisible graphic imprecisions)
-- added native support to msu-1 soundtracks
+- added native support to msu-1 soundtracks (Edale)
 - Banon riding fix (glitched sprite if you ride a chocobo with Banon as party leader) (Leet Sketcher)
 - Castle Party (correct party leader when you switch from Cyan scene to imperial camp) (Leet Sketcher)`
-- Overhaul Opera scene with dialogues synced with music
-- Added every active flag to weapon submenu in inventory
-- (experimental) font with different spacing
+- Overhaul Opera scene with dialogues synced with music (Gens)
+- Added every active flag to weapon submenu in inventory (Ryo_Hazuki)
+- 0 px font (as in Chrono Trigger)
 - imported Docile NPCs by SilentEnigma (an hack that leads npc to not occupy tiles pointed by the player)
 - half atb refund for incorrect blitz input (by Sir Newton Fig)
-- fixed scrolling in Lore menu and in Lore battle menu (now both stops correctly at Tsunami)
-- added Oceanic Line anomaly (by Gi Nattak)
-- added D-pad button prompts in dialogues and tutorials 
+- fixed scrolling in Lore menu and in Lore battle menu (Gens, Ryo)
+- Added a pouch/bag icon to order consumables (Gens)
+- added D-pad button prompts in dialogues and tutorials (Gens)
 - party selection menu "how it should have always been" (by Ryo_Hazuki)
-- better alignment of ailments icons on the main menu screen
+- better alignment of ailments icons on the main menu screen (by Ryo_Hazuki)
 
 B8 (or whatever rev will be the final release) roadmap (ordered by priority):
 
-- Add "Ranged" icon and category
-- Decensor Cafe signs (to show Pub like in the japanese version)
+- Add "Ranged" icon and category (Gens, Ryo)
+- Decensor Cafe>Pub signs (Gens)
+- autoscan feature - press Y to see HP/MP, X for weaknesses (by Bropedio)
+- tweak equip menu in battle (by Ryo_Hazuki)
 - Import Rage checklist hack by Assassin to bnw
-(an hack that shows in gray, rages unlocked into the Veldt but not yet "leaped")
+  (an hack that shows in gray, rages unlocked into the Veldt but not yet "leaped")
 - Summon active for a sage stone equipped char
 - Alphabetical Lore (not needed for bnw but very useful for translations or for eventual future changes to Lore names)
 - Fix mp colors corrupting reflect palette
