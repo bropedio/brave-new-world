@@ -13,7 +13,7 @@
 - Edgar and Sabin dont blush anymore during Setzer proposal to Celes (Novalia Spirit)
 - Curative lores now show the sap/regen/rerise screen (Bropedio)
 - Longer skill names by 1 digit (properly named Reflect, Berserk and few other skills and updated inherent descriptions) (Ryo_hazuki, Gens)
-- Added 3 graphical fixes (by Gi Nattak): bridge correction, button blunder, drained pond tile
+- Added 4 graphical fixes (by Gi Nattak): bridge correction, button blunder, drained pond tile, oceanic line anomaly
 - Every "title" box is now 1 tile height: this leads to inventory active page showing 1 more item (Ryo_Hazuki)
 - Fixed Dumpty script
 - Fixed cut-out upper box border in equip screen (Ryo_Hazuki)
@@ -23,30 +23,29 @@
 - Wallchange now will not roll the same element twice in a row (Sir Newton Fig)
 - Final fight background Brave New World themed (Gens)
 - better positioned skills descriptions text (Ryo)
-- added fixes to Seibaby x-files (some almost invisible graphic imprecisions)
-- added native support to msu-1 soundtracks (Edale)
+- Added Seibaby x-files (some almost invisible graphic imprecisions)
+- Added native support to msu-1 soundtracks (Edale)
 - Fix storm glitch (Leet-Sketcher)
 - Banon riding fix (glitched sprite if you ride a chocobo with Banon as party leader) (Leet Sketcher)
-- Castle Party (correct party leader when you switch from Cyan scene to imperial camp) (Leet Sketcher)`
+- Castle Party (correct party leader when you switch from Cyan scene to imperial camp) (Leet Sketcher)
+- Edgar fighting tentacle with "Gerad" palette (Leet Sketcher)
 - Overhaul Opera scene with dialogues synced with music (Gens)
 - Added every active flag to weapon submenu in inventory (Ryo_Hazuki)
 - 0 px font (as in Chrono Trigger)
-- imported Docile NPCs by SilentEnigma (an hack that leads npc to not occupy tiles pointed by the player)
-- half atb refund for incorrect blitz input (by Sir Newton Fig)
-- fixed scrolling in Lore menu and in Lore battle menu (Gens, Ryo)
+- Imported Docile NPCs by SilentEnigma (an hack that leads npc to not occupy tiles pointed by the player)
+- Half atb refund for incorrect blitz input (by Sir Newton Fig)
+- Fixed scrolling in Lore menu and in Lore battle menu (Gens, Ryo)
 - Added a pouch/bag icon to order consumables (Gens)
-- added D-pad button prompts in dialogues and tutorials (Gens)
-- party selection menu "how it should have always been" (by Ryo_Hazuki)
-- better alignment of ailments icons on the main menu screen (by Ryo_Hazuki)
+- Added D-pad button prompts in dialogues and tutorials (Gens)
+- Party selection menu "how it should have always been" (by Ryo_Hazuki)
+- Better alignment of ailments icons on the main menu screen (by Ryo_Hazuki)
 - Add "Ranged" icon and category (Gens, Ryo)
 - Decensor Cafe>Pub signs (Gens)
-- Edgar fighting tentacle with "Gerad" palette (Leet Sketcher)
 
 B9 (or whatever rev will be the final release) roadmap (ordered by priority):
 
-- tweak equip menu in battle (having only consumables in the main screen and equips in the swap hands screen)(by Ryo_Hazuki)
-- Import Rage checklist hack by Assassin to bnw
-  (an hack that shows in gray, rages unlocked into the Veldt but not yet "leaped")
+- Tweak equip menu in battle (having only consumables in the main screen and equips in the swap hands screen)(by Ryo_Hazuki)
+- Import Rage checklist hack by Assassin to bnw (an hack that shows in gray, rages unlocked into the Veldt but not yet "leaped")
 - Summon active for a sage stone equipped char
 - Autoscan feature - press Y to see HP/MP, X for statuses (for weaknesses using Scan is still needed)(by Bropedio)
 - Alphabetical Lore (not needed for bnw but very useful for translations or for eventual future changes to Lore names)
