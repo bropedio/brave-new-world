@@ -292,7 +292,7 @@ check bankcross on
 
 ;Brave New World data
 org $C33BB8
-	db $d1,$78,"Brave New World 2.2 b7",$00
+	db $d1,$78,"Brave New World 2.2 b8",$00
 
 ;------------------------------------------------------------------
 ;New consumables icon
