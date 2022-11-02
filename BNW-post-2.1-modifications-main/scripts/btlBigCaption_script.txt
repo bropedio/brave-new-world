@@ -523,13 +523,13 @@ Gestahl: Don't say anything.<P>
 I understand how you feel.<P>
 
 [caption #141]
-Kefka: Uwee hee hee_ <D>that's right!<P>
-Our top priority now is to collect
-magicite!<P>
+Kefka: Uwee hee hee_ <D>that's
+right!<P> Our top priority now is to
+collect magicite!<P>
 
 [caption #142]
-Leo: But my liege_ then what have
-I been fighting for?<P>
+Leo: But my liege_ then what
+have I been fighting for?<P>
 
 [caption #143]
 Gestahl: Leo, I'd like you to take a
@@ -779,7 +779,8 @@ and we'll be fine.<P>
 
 [caption #205]
 Kefka: Imagine! Thinking you could
-defeat me!<P> This is rich! Mwa ha ha!<P>
+defeat me!<P> This is rich!
+Mwa ha ha!<P>
 
 [caption #206]
 Kefka: Come to me, my little
@@ -842,9 +843,9 @@ You've become useless.<P>
 Your days are now over.<P>
 
 [caption #220]
-Gestahl: Just relax_ <P>I'm going to put
-you down with the very power you
-unleashed.<P>
+Gestahl: Just relax_ <P>I'm going to
+put you down with the very
+power you unleashed.<P>
 
 [caption #221]
 Gestahl: What are you laughing at?<P>
@@ -907,7 +908,8 @@ Kefka: You're way off!<P>
 Where the fuck are you aiming!?<P>
 
 [caption #236]
-Kefka: Ooh, close! More to the right!<P>
+Kefka: Ooh, close!
+More to the right!<P>
 
 [caption #237]
 Kefka: Run! Run! <D>Or you'll be well
@@ -984,4 +986,3 @@ die.<P> But enough talk! Have at you!]<P>
 [caption #255]
 [Urgh_ <D>chest_ <D>on fire_ <D>can't_
 <D>breathe_]<P>
-
