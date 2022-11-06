@@ -44,6 +44,7 @@
 
 B9 (or whatever rev will be the final release) roadmap (ordered by priority):
 
+- Fixed Intangir passing its weaknesses to Intangir Z ✓
 - Tweak equip menu in battle (having only consumables in the main screen and equips in the swap hands screen)(by Ryo_Hazuki)
 - Import Rage checklist hack by Assassin to bnw (an hack that shows in gray, rages unlocked into the Veldt but not yet "leaped")
 - Summon active for a sage stone equipped char
