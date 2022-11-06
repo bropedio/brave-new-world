@@ -1000,3 +1000,49 @@ org $CFFE40
     dw Fenrirb-Ramuhb
     dw Starletb-Ramuhb
     dw Phoenixb-Ramuhb
+
+;----------------------------------------------
+;Esper bonus descriptions
+;----------------------------------------------
+
+org $EDFE00
+
+HP: db "+60 HP per EL spent",$00
+MP: db "+40 MP per EL spent",$00
+HMPP: db "+30 HP/+15 MP per EL spent",$00
+VgrHP: db "+1 Vigor/+20 HP per EL spent",$00
+MagMP: db "+1 Magic/+20 MP per EL spent",$00
+VgrSpd: db "+1 Vigor/+1 Speed per EL spent",$00
+MagSpd: db "+1 Magic/+1 Speed per EL spent",$00
+VgrSta: db "+1 Vigor/+1 Stamina per EL spent",$00
+MagSta: db "+1 Magic/+1 Stamina per EL spent",$00
+SpdSta: db "+1 Speed/+1 Stamina per EL spent",$00
+HPSta: db "+30 HP/+1 Stamina per EL spent",$00
+MPSta: db "+25 MP/+1 Stamina per EL spent",$00
+Vigor: db "+2 Vigor per EL spent",$00
+Speed: db "+2 Speed per EL spent",$00
+Stamina: db "+2 Stamina per EL spent",$00
+Magic: db "+2 Magic per EL spent",$00
+
+warnpc $EDFFCF
+
+org $EDFFD0
+
+dw HP-HP
+dw MP-HP
+dw HMPP-HP
+dw VgrHP-HP
+dw MagMP-HP
+dw VgrSpd-HP
+dw MagSpd-HP
+dw VgrSta-HP
+dw MagSta-HP
+dw SpdSta-HP
+dw HPSta-HP
+dw MPSta-HP
+dw Vigor-HP
+dw Speed-HP
+dw Stamina-HP
+dw Magic-HP
+
+warnpc $EDFFFF
