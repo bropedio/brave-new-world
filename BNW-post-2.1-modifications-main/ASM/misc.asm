@@ -290,10 +290,6 @@ org $D8f000
 	incbin "../asm/D8F000_Cinematic_Title_Isle_GFX.bin"	;Cinematic, Title, Isle GFX & Tilemap Properties
 check bankcross on
 
-;Brave New World data
-org $C33BB8
-	db $d1,$78,"Brave New World 2.2 b8",$00
-
 ;------------------------------------------------------------------
 ;New consumables icon
 ;------------------------------------------------------------------	
@@ -405,6 +401,14 @@ org $c391a9
 org $CF95C0
 db $15
 
+;Deleted Intangir from formation 338 2nd slot to avoid transfering its weaknesses to Intangir Z
+
+org $CF75D1 
+db $FF
+
+org $CF75D7
+db $00
+
 ;Wounded
 org $C3371B		
 	db " KO    "
@@ -422,3 +426,8 @@ org $C3218B
 org $C18336 : CMP #$08    ; lore menu length 12 (4 shown on first page + 8 scrolling)
 org $C1838F : LDA #$08    ; lore menu scrollbar flash
 org $C18393 : LDX #$0500  ; scrollbar reaching the end of the menu correctly
+
+
+;Brave New World version
+org $C33BB8
+	db $d1,$78,"Brave New World 2.2 b8",$00
