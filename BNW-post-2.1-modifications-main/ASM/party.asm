@@ -80,7 +80,7 @@ org $C376DA
 ; portrait y pos.
 
 org $C37944
-	LDA #$2a		; Y
+	LDA #$2B		; Y
 
 org $C375A0
 	dw $598B,$041C	; 30x07 at $598B (Stats)
