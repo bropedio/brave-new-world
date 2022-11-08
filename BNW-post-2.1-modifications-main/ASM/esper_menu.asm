@@ -115,10 +115,10 @@ PosWRAM:
 	RTS
 spend: db "Raise "
 spendq: db "1",$16,$17,$18
-warnpc $c3f480
+warnpc $C3F480
 
-org $C3f30F
-	db "Ava",$12,$13,$14,$15,"e: EL",$00
+org $C3F30F
+	db "Ava",$12,$13,$14,$15,"e:",$16,$17,$18,$00
 	
 ; Navigation data for esper data menu
 org $C3598C
