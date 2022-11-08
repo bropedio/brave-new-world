@@ -117,6 +117,8 @@ spend: db "Raise "
 spendq: db "1",$16,$17,$18
 warnpc $C3F480
 
+org $C35CBC
+	db " Bonus LE:"
 org $C3F30F
 	db "Ava",$12,$13,$14,$15,"e:",$16,$17,$18,$00
 	
