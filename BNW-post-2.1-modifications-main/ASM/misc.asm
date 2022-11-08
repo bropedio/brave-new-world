@@ -309,7 +309,7 @@ padbyte $FF
 pad $C32706
 warnpc $C32706
 
-org $C3294A
+org $C0FF9A
 icon:
 	db $eb	;consumables
 	db $d8	;tool

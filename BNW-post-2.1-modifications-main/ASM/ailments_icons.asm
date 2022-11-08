@@ -29,4 +29,4 @@ org $C3625E
 
 ; Display status effects in lineup menu	
 org $C37983
-	ldx #$3048
+	ldx #$2A48
