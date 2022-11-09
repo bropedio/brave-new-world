@@ -73,6 +73,7 @@ C34E63:	LDA.L C34E7F,X  ; Bottom V-Data
 		BNE C34E63      ; Loop if not
 		LDA #$C0        ; Scrollbar: Off
 		RTL
+
 ; BG1 V-Shift table for skill menus (condenses text)
 C34E7F:	db $3F,$00,$00  ; LV
 		db $0C,$04,$00  ; HP
@@ -107,11 +108,8 @@ C34E7F:	db $3F,$00,$00  ; LV
 		db $04,$B0,$FF  ; Ability row X
 		db $1E,$20,$FF  ; Ability row Y
 		db $00          ; End 
-		
-warnpc $c0ece0
 
-org $c3f41a 
-	LDY #$47A9
+warnpc $c0ece0
 
 ; which number option finger cursor allow EL bonus
 org $C33BE2
