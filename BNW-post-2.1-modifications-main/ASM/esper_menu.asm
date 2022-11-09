@@ -11,7 +11,7 @@ table "menu.tbl", ltr
 ;#########################################################################;
 
 ; Initialize esper data menu
-; Most of this code it's a kind of placholder
+; Most of this code it's a kind of placeholder
 
 org $C35897
 	LDY $4F         ; Cursor position
@@ -31,7 +31,7 @@ org $C35897
 	STA $5F         ; Save for return
 	LDA #$07        ; BG1 VRAM row: 7
 	STA $49         ; Save for V-Shift
-; the only changes: JSL to $C0EC10 instead of JSR to $C34E2D
+; the only changes: JSL to $C0EC20 instead of JSR to $C34E2D
 	JSL C34E2D      ; Load V-shift data
 	nop
 	TRB $46         ; Set anim index
@@ -40,7 +40,7 @@ org $C35897
 
 
 ; Load vertical shift values for BG1 text in skill menus
-org $c0ec10
+org $c0ec20
 C34E2D:	LDX $00         ; Index: 0
 C34E2F:	LDA.L C34E7F,X  ; Stats V-Data
 		STA $7E9849,X   ; Save in RAM
@@ -108,7 +108,7 @@ C34E7F:	db $3F,$00,$00  ; LV
 		db $1E,$20,$FF  ; Ability row Y
 		db $00          ; End 
 		
-warnpc $c0ecd0
+warnpc $c0ece0
 
 org $c3f41a 
 	LDY #$47A9
