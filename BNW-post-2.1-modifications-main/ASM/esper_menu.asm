@@ -115,12 +115,14 @@ PosWRAM:
 	RTS
 spend: db "Raise "
 spendq: db "1",$16,$17,$18
+UnspentTxt:	db "Ava",$12,$13,$14,$15,"e:",$16,$17,$18,$00
 warnpc $C3F480
 
+org $c3f3fa
+	LDA UnspentTxt,X  ; get "Unspent EL:" tile
+
 org $C35CBC
-	db " EL Bonus "
-org $C3F30F
-	db "Ava",$12,$13,$14,$15,"e: EL",$00
+	db " Bonus LE:"
 
 org $C3F41A 
 	LDY #$47AB	;Unspent EL quantity coordinates
@@ -139,7 +141,7 @@ org $C35991
 	dw $7C18        ; Spell A
 	dw $8818        ; Spell B
 	dw $9418        ; Spell C
-	dw $AC18        ; Bonus
+	dw $b018        ; Bonus
 	dw $AC18        ; 
 	dw $B818        ; 
 
