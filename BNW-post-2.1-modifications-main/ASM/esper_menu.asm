@@ -118,10 +118,13 @@ spendq: db "1",$16,$17,$18
 warnpc $C3F480
 
 org $C35CBC
-	db " Bonus LE:"
+	db " EL Bonus "
 org $C3F30F
-	db "Ava",$12,$13,$14,$15,"e:",$16,$17,$18,$00
-	
+	db "Ava",$12,$13,$14,$15,"e: EL",$00
+
+org $C3F41A 
+	LDY #$47AB	;Unspent EL quantity coordinates
+
 ; Navigation data for esper data menu
 org $C3598C
 	db $80          ; Wraps vertically
