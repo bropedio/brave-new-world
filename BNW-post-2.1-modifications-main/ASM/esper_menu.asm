@@ -11,27 +11,8 @@ table "menu.tbl", ltr
 ;#########################################################################;
 
 ; Initialize esper data menu
-; Most of this code it's a kind of placeholder
 
-org $C35897
-	LDY $4F         ; Cursor position
-	STY $8E         ; Set return loc
-	LDA $4A         ; Scroll position
-	STA $90         ; Set return loc
-	JSR $5B54       ; Load esper info
-	JSR $599F       ; Draw esper info
-	JSR $0F11       ; Queue its upload
-	JSR $1368       ; Upload it now
-	JSR $0EFD       ; Requeue esper list
-	REP #$20        ; 16-bit A
-	LDA #$0100      ; BG1 H-Shift: 256
-	STA $7E9A10     ; Hide esper list
-	SEP #$20        ; 8-bit A
-	LDA $49         ; Top BG1 write row
-	STA $5F         ; Save for return
-	LDA #$07        ; BG1 VRAM row: 7
-	STA $49         ; Save for V-Shift
-; the only changes: JSL to $C0EC20 instead of JSR to $C34E2D
+org $c358c1
 	JSL C34E2D      ; Load V-shift data
 	nop
 	TRB $46         ; Set anim index
