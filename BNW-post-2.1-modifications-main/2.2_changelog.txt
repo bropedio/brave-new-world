@@ -46,9 +46,9 @@ B9 (or whatever rev will be the final release) roadmap (ordered by priority):
 
 - Fixed Intangir passing its weaknesses to Intangir Z ✓ (Seibaby)
 - Cleanup Esper Menu to highlight EL bonus assigning ✓ (Ryo_Hazuki)
-- Tweak equip menu in battle (having only consumables in the main screen and equips in the swap hands screen)(by Ryo_Hazuki)
+- Tweak equip menu in battle (having only consumables in the main screen and equips in the swap hands screen)(Ryo_Hazuki)
 - Import Rage checklist hack by Assassin to bnw (an hack that shows in gray, rages unlocked into the Veldt but not yet "leaped")
 - Summon active for a sage stone equipped char
-- Autoscan feature - press Y to see HP/MP, X for statuses (for weaknesses using Scan is still needed)(by Bropedio)
+- Autoscan feature - press Y to see HP/MP, X for statuses (Scan is still needed for weaknesses)(Bropedio)
 - Alphabetical Lore (not needed for bnw but very useful for translations or for eventual future changes to Lore names)
-- Fix mp colors corrupting reflect palette
+- Fix mp colors corrupting reflect palette (Ryo_Hazuki)
