@@ -45,7 +45,9 @@
 
 2.2 roadmap (ordered by priority):
 
+- Added an icon to distinguish lores (Gens) ✓
 - Tweak equip menu in battle having only consumables in the main screen and equips in the swap hands screen (Ryo_Hazuki)
+- Toggle Y (or double-click) to show Rage details (Elemental weaknesses/resistance, Statuses immunities/innate)
 - Import Rage checklist hack by Assassin to bnw (an hack that shows in gray, rages unlocked into the Veldt but not yet "leaped")
 - Summon command active for a sage stone (X-Magic) equipped char (?)
 - Autoscan feature - press Y to see HP/MP, X for statuses - Scan is still needed for weaknesses (Bropedio)
