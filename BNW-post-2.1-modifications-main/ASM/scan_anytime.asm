@@ -1,5 +1,14 @@
+arch 65816
 hirom
-; header
+
+org $C23431
+  db #$80     ; change BMI to BRA
+
+org $C206AF
+  NOP #3
+
+org $C20706
+  NOP #3	;freeing up unused ram
 
 ; Flag for pending scan (tentative RAM)
 !scan_buff = $32B8 ; controlled/controllee
@@ -111,8 +120,6 @@ ScanHPMP:
 
 ScanWeakAI:
   JSR ScanInit        ; initialize scan args
-  ;LDA $3019,X         ; monster target's unique bit
-  ;TRB !weakied        ; indicate weakness not exploited yet (copied to !scanned at end of turn)
   LDA #$15            ; first weakness message ID
   STA $2D6F           ; set message ID
   TDC                 ; zero A/B
@@ -132,11 +139,6 @@ ScanWeakAI:
   STA $2D6F           ; set message ID
   JSL LongMsg         ; process "No Weakness" message animation
 .ai
-  ;LDA $3C94,X         ; AI hint message ID
-  ;CMP #$FF            ; check null
-  ;BEQ .exit           ; exit if ^
-  ;STA $2D6F           ; set message ID
-  ;JSL LongMsg         ; process message box animation
 .exit
   RTL
 
@@ -180,4 +182,3 @@ CheckEach:
   BNE .loop           ; loop if still bits left
   RTS
 warnpc $C4F2B9
-
