@@ -1,0 +1,63 @@
+Elements
+
+$D6	Holy
+$D8	Bolt
+$D9	Wind
+$DA	Earth
+$DB	Ice
+$DC	Fire
+$DD	Water
+$DE	Dark
+
+Ailments and buffs
+
+$D4	Death
+$E0	Petrify
+$E1	Poison
+$E2	Mute
+$E3	Lore
+$E4	Blind
+$E5	Undead
+$E6	KO
+$E7	Sleep
+$E8	White
+$E9	Black
+$EA	Gray
+$EB	Muddle
+$EC	Stop
+$ED	Berserk
+$EE	Imp
+$EF	Slow
+$F0	Sap
+$F1	Haste
+$F2	Regen
+$F3	Float
+$F4	Reflect
+$F5	Safe
+$F6	Shell
+$F7	Image
+$F8	Clear
+$F9	Rerise
+$FA	All
+
+Label 
+ 
+$14	W (weakness)
+$15	N (nullify)
+$16	A (absorb)
+$17	B (blocks)
+$18	I (innate)
+
+Blank tiles
+   
+$02	2 px
+$03	3 px
+$FF	4 px
+$05	5 px
+$06	6 px
+$07	7 px
+$04	8 px
+$0E	9 px
+$0F	10 px
+$13	11 px
+$12	12 px
