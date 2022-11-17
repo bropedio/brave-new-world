@@ -392,18 +392,18 @@ Mgtek:
 	
 ;org	$E6F9FD
 blue_magic:
-	db "Aqualung   "
-	db "Bad>Breath "
-	db "Black>Omen "
-	db "Blaze      "
-	db "Blow>Fish  "
-	db "Discord    "
-	db "Holy>Wind  "
-	db "Raid       "
-	db "Raze       "
-	db "Refract    "
-	db "Shield     "
-	db "Tsunami    "
+	db $E3,"Aqualung  "
+	db $E3,"Bad>Breath"
+	db $E3,"Black>Omen"
+	db $E3,"Blaze     "
+	db $E3,"Blow>Fish "
+	db $E3,"Discord   "
+	db $E3,"Holy>Wind "
+	db $E3,"Raid      "
+	db $E3,"Raze      "
+	db $E3,"Refract   "
+	db $E3,"Shield    "
+	db $E3,"Tsunami   "
 	db "Jackpot    "
 	db $be,"WindSlash "
 	db $be,"Aero      "
@@ -788,7 +788,7 @@ org $c35005
 lda #$D3		;"..." magic mp separator 
 
 org $c35546 
-lda #$D3		;"..." esper mp separator 
+lda #$D3		;"..." esper mp separator
 
 ;-----------------------------------------------------
 ; Space between rages
