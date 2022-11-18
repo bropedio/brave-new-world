@@ -46,7 +46,7 @@
 2.2 roadmap (ordered by priority):
 
 - Added an icon to distinguish lores (Gens) ✓
-- Exploder (player version) now leaves the caster with 1 HP ✓
+- Exploder (player version) now leaves the caster with 1 HP (Sir Newton Fig)✓
 - Tweak equip menu in battle having only consumables in the main screen and equips in the swap hands screen (Ryo_Hazuki)
 - Toggle Y (or double-click) to show Rage details (Elemental weaknesses/resistance, Statuses immunities/innate)
 - Import Rage checklist hack by Assassin to bnw (an hack that shows in gray, rages unlocked into the Veldt but not yet "leaped")
