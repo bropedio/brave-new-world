@@ -168,7 +168,7 @@ LazyShell:      db "Halves Bolt/Wind damage",$00
 Minerva:        db "Blocks Fire/Ice/Bolt damage",$00
 TabbyHide:      db "Halves Earth damage",$00
 GatorHide:      db "Halves Water damage",$00
-ChocoboHide:    db "Halves Water/Wind damage",$D9,$00
+ChocoboHide:    db "Halves Water/Wind damage",$00
 MoogleHide:     db "Halves Earth/Wind damage",$00
 DragonHide:     db "Halves Fire/Wind damage",$00
 SnowMuffler:    db "Blocks Ice/Wind damage|HP+25%",$00
@@ -206,8 +206,8 @@ MysteryEgg:     db "It's a mystery_",$00
 BlackHeart:     db "HP+50%",$00
 MagicCube:      db "MP+50%",$00
 PowerGlove:     db "Physical output +25%|(It's so bad)",$00
-BlizzardOrb:    db "Magical output +25%|(? on yeti)",$00
-PsichoBelt:     db "Physical output +25%|(? on yeti)",$00
+BlizzardOrb:    db "Magical output +25%|(??? on yeti)",$00
+PsichoBelt:     db "Physical output +25%|(??? on yeti)",$00
 RogueCloak:     db "[Fight] always hits|Magical output +25%",$00
 WallRing:       db "Auto-Shell",$00
 HeroRing:       db "HP/MP+25%|May guard allies",$00
@@ -227,7 +227,7 @@ HeijiCoin:      db "[Slot] to [GP Toss]",$00
 SageStone:      db "[Magic] to [X-Magic]",$00
 GemBox:         db "MP costs = 1/2",$00
 NirvanaBand:    db "All output +25%",$00
-Economizer:     db "MP costs = 1",$00
+Economizer:     db "1 MP cost",$00
 MementoRing:    db "That is not dead|Which can rise again",$00
 QuartzCharm:    db "Auto-Safe/Shell",$00
 GhostRing:      db "Makes wearer undead",$00
@@ -883,7 +883,7 @@ EsperDescPointers:
 Ramuh: db "Bolt damage - all foes",$00
 Ifrit: db "Fire damage - all foes",$00
 Shiva: db "Ice damage - all foes",$00
-Siren: db "Sets [Berserk] - all foes",$00
+Siren: db "Sets [Muddle]/[Berserk] - all foes",$00
 Terrato: db "Earth damage - all foes",$00
 Shoat: db "Sets [Petrify] - all foes",$00
 Maduin: db "Wind damage - all foes|Ignores def.",$00
