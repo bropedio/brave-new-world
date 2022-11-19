@@ -6,7 +6,7 @@ table "menu.tbl", ltr ; Tabella per le stringhe di testo
 ;;--------------------------------------------------
 ;;Item box dimension
 ;;	First value: Start print position X assis
-;;      Second value: Start print position Y assis
+;;  Second value: Start print position Y assis
 ;;	Third value: Height
 ;;	Fourth value: Lenght
 ;;--------------------------------------------------
@@ -427,7 +427,11 @@ org $C18336 : CMP #$08    ; lore menu length 12 (4 shown on first page + 8 scrol
 org $C1838F : LDA #$08    ; lore menu scrollbar flash
 org $C18393 : LDX #$0500  ; scrollbar reaching the end of the menu correctly
 
+;Adding Muddle to Siren Song
 
-;Brave New World version
+org $C46DE9
+	db $30
+
+;Brave New World data
 org $C33BB8
-	db $d1,$78,"Brave New World 2.2 b8",$00
+	db $d1,$78,"Brave New World 2.2 b10",$00
