@@ -1,4 +1,4 @@
-2.2 changelog (at b9 release 11/23/2022)
+2.2 changelog (at b10 release 11/23/2022)
 
 - Adds custom intro and title (Ryo_Hazuki)
 - Cleaner coliseum "select a challenger" screen (Ryo_Hazuki)
