@@ -1,4 +1,4 @@
-2.2 changelog (at b9 release 11/10/2022)
+2.2 changelog (at b9 release 11/23/2022)
 
 - Adds custom intro and title (Ryo_Hazuki)
 - Cleaner coliseum "select a challenger" screen (Ryo_Hazuki)
@@ -42,12 +42,12 @@
 - Decensor Cafe>Pub signs (Gens)
 - Fixed Intangir transfering its weaknesses to Intangir Z (Seibaby)
 - Cleanup Esper Menu to highlight EL bonus assigning (Ryo_Hazuki)
+- Added an icon to distinguish lores (Gens)
+- Exploder (player version) now leaves the caster with 1 HP (Sir Newton Fig)
+- Siren Song may set Muddle+Berserk (Gens)
 
 2.2 roadmap (ordered by priority):
 
-- Added an icon to distinguish lores (Gens) ✓
-- Exploder (player version) now leaves the caster with 1 HP (Sir Newton Fig) ✓
-- Siren Song may set Muddle+Berserk (Gens) ✓
 - Tweak equip menu in battle having only consumables in the main screen and equips in the swap hands screen (Ryo_Hazuki)
 - Toggle Y (or double-click) to show Rage details (Elemental weaknesses/resistance, Statuses immunities/innate)
 - Import Rage checklist hack by Assassin to bnw (an hack that shows in gray, rages unlocked into the Veldt but not yet "leaped")
