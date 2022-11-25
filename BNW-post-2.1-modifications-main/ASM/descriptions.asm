@@ -185,7 +185,7 @@ WaveScroll:     db "(Split) Water damage - all foes|Use w/ [Throw]",$00
 BoltScroll:     db "(Split) Bolt damage - all foes|Use w/ [Throw]",$00
 InvizScroll:    db "Ninja vanish!",$00
 SmokeBomb:      db "Sets [Image] - one ally|Use w/ [Throw]",$00
-LeoCrest:       db $D4,$00
+LeoCrest:       db $E6,$00
 Bracelet:       db "Blocks [Poison]",$00
 SpiritStone:    db "Blocks [Blind]/[Poison]/[Petrify]",$00
 Amulet:         db "Blocks [Sleep]/[Muddle]/[Berserk]",$00
@@ -773,7 +773,7 @@ Eclipse:
 Tempest:	
 	db "4x physical attack",$00
 Cleave:	
-	db $D4,$00
+	db $E6,$00
 
 warnpc $CFFE00
 
