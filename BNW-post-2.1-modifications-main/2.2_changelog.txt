@@ -45,14 +45,14 @@
 - Added an icon to distinguish lores (Gens)
 - Exploder (player version) now leaves the caster with 1 HP (Sir Newton Fig)
 - Siren Song may set Muddle+Berserk (Gens)
+- A mysterious feature (Madsiur) is added but will be unlockme content for the official release
 
 2.2 roadmap (ordered by priority):
 
-- Tweak equip menu in battle having only consumables in the main screen and equips in the swap hands screen
-- Import Rage checklist hack by Assassin to bnw (an hack that shows in gray, rages unlocked into the Veldt but not yet "leaped")
-- Press A on a Rage to show details (Elemental weaknesses/resistance, Statuses immunities/innate)
-- Summon command active for a sage stone (X-Magic) equipped char
+- Tweak battle inventory to show only consumables in the main screen and only equippable pieces in the equip submenu
+- Import Rage checklist (Assassin): an hack that shows in gray, rages unlocked into the Veldt but not yet "leaped"
+- Press A on a Rage to show details: Elemental weaknesses/resistance, Statuses immunities/innate
+- Summon command active with X-Magic
 - Autoscan feature - press Y to see HP/MP, X for statuses - Scan is still needed for weaknesses (Bropedio)
-- Implement Alphabetical Lore (Silent Enigma)
+- Import Alphabetical Lore (Silent Enigma): useless for english version but useful for translations or future lores edits
 - Fix mp colors corrupting reflect palette (Ryo_Hazuki)
-- Make the "mysterious feature" (Madsiur) an alt patch for the official release
