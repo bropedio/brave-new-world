@@ -19,7 +19,6 @@ org $c358c1
 	JSR $597D       ; Load navig data
 	JMP $5986       ; Relocate cursor
 
-
 ; Load vertical shift values for BG1 text in skill menus
 org $c0ec20
 C34E2D:	LDX $00         ; Index: 0
@@ -195,9 +194,9 @@ PosWRAM:
 	RTS
 spend: db "Raise "
 spendq: db "1",$16,$17,$18
-org $c0fef0
-UnspentTxt:	db "Ava",$12,$13,$14,$15,"e: EL",$00
 
+org $c0fef0
+UnspentTxt:	db "Ava",$12,$13,$14,$15,"e:",$16,$17,$18,$00
 
 org $C3F3FA
 	LDA UnspentTxt,X  ; get "Unspent EL:" tile
@@ -206,7 +205,7 @@ org $C35CBC
 	db " EL Bonus "
 
 org $C3F41A 
-	LDY #$47AB	;Unspent EL quantity coordinates
+	LDY #$47A9	;Unspent EL quantity coordinates
 
 ; Navigation data for esper data menu
 org $C3598C
@@ -226,7 +225,7 @@ org $C35991
 	dw $AC18        ; 
 	dw $B818        ; 
 
-; rearrange esper code to avoid redoundant text on screen
+; rearrange esper code to avoid redundant text on screen
 org $d86e00
 	db $01,$02,$0f,$07,$0a,$16,$0c,$0c,$ff,$ff,$0c
 	db $01,$00,$0f,$05,$0a,$18,$0d,$0d,$ff,$ff,$0d
