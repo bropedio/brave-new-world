@@ -6,6 +6,7 @@
 
 ;uncomment to activate patches ;activate just one speed patch
 
+;incsrc "version.asm"
 ;incsrc "levelcap.asm"
 ;incsrc "inventory_limits.asm"
 ;incsrc "coreography.asm"
