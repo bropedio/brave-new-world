@@ -2278,7 +2278,7 @@ Need esper info?
 <C> No
 
 [caption #627]
-Equipped espers may be summoned once per battle by going [up] at the magic menu.<EOP>
+Equipped espers may be summoned once per battle by pressing <$74> in the [Magic] menu.<EOP>
 Magic is learned from espers by spending [spell points], which characters earn from fighting battles with an esper equipped.<EOP>
 Characters also gain [esper points] (EP) when they earn spell points and exp. from the same battle.<EOP>
 Esper points earn [esper levels] (EL), which are used to grant permanent stat boosts from espers.<EOP>
@@ -2304,7 +2304,7 @@ Holy-elemental spells (including curative ones) are best used on the undead for 
 And if all else fails, use fire.
 
 [caption #630]
-Weapons and/or shields can be swapped in battle by pressing up in the [Item] menu.<EOP>
+Weapons and/or shields can be swapped in battle by pressing <$74> in the [Item] menu.<EOP>
 Doing so will consume half a turn for one hand; changing both requires a full turn.
 
 [caption #631]
@@ -9065,9 +9065,9 @@ Lola: I'll take your words to heart_ <D>thank you.
 
 [caption #2555]
 
-  The world before the fall_
-Delightful is the light of dawn_
-  Noble is the heart of man_ <E$1C><OP$12>
+          The world before the fall_
+        Delightful is the light of dawn_
+          Noble is the heart of man_ <E$1C><OP$12>
 
 [caption #2556]
 [<A2>!]
