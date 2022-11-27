@@ -34,6 +34,13 @@ dw $0f68
 ;Rare
 dw $0fb0
 
+; Text
+org $C38d16
+	dw $78cd : db "Item",$00
+	dw $78dd : db "USE",$00
+	dw $78e7 : db "ARRANGE",$00
+	dw $78f9 : db "RARE",$00
+
 ; Load navigation data & Handle D-Pad for Item, Colosseum, or Sell menu
 
 org $C37D1C
@@ -250,7 +257,7 @@ org $C3336a
 
 org $C333B6
 	ldy #$3c1b		;3 Name position
-	
+
 org $c33402
 	ldy #$3d9b		;4 Name position
 
@@ -266,7 +273,7 @@ org $C38A3B
 	db $4b,$59,$07,$03	;Owned window
 
 org $C38A54
-	db $cd,$78			;Move Item name 1 line up 
+	db $cd,$78  	;Move Item name 1 line up
 
 ;------------------------------------------------------
 ;Hide rare counter item and expand description box
@@ -291,7 +298,7 @@ org $D8f000
 check bankcross on
 
 ;------------------------------------------------------------------
-;New consumables icon
+;New consumable icon
 ;------------------------------------------------------------------	
 org $C326E3
 .loop	
@@ -315,7 +322,7 @@ icon:
 	db $d8	;tool
 	db $d9	;star
 	db $da	;scroll
-	db $db	;knife	
+	db $db	;knife
 	db $dc	;sword
 	db $dd	;spear
 	db $de	;claw
@@ -396,6 +403,27 @@ org $c3918c
 org $c391a9
 	jmp $947f
 
+;Cleaner Equip screen
+
+;org $C395D8
+;	db $0f,$00,$00
+;	db $0c,$04,$00
+;	db $0c,$06,$00
+;	db $14,$0a,$00
+;	db $0c,$0c,$00
+;	db $0c,$10,$00
+;	db $0c,$14,$00
+;	db $08,$1c,$00
+;	db $0c,$20,$00
+;	db $0c,$24,$00
+;	db $0c,$28,$00
+;	db $0c,$2c,$00
+;	db $0c,$30,$00
+;	db $0c,$34,$00
+;	db $0c,$38,$00
+;	db $0c,$3c,$00
+;	db $0c,$40,$00
+
 ;Fixed Dumpty script (conditional Safe>Shell)
 
 org $CF95C0
@@ -410,7 +438,7 @@ org $CF75D7
 db $00
 
 ;Wounded
-org $C3371B		
+org $C3371B
 	db " KO    "
 
 ;scroll fixing on lore menus
@@ -434,4 +462,4 @@ org $C46DE9
 
 ;Brave New World data
 org $C33BB8
-	db $d1,$78,"Brave New World 2.2 b10",$00
+	db $d1,$78,"Brave New World 2.2 b11",$00
