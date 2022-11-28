@@ -87,6 +87,13 @@ org $C38A4B
 	org $C388E6 : LDX #$7CCD-160     ; nullify
 	org $C388F2 : LDX #$7CE9-64      ; weakness
 
+; Text
+org $C38d16
+	dw $78cd : db "Item",$00
+	dw $78dd : db "USE",$00
+	dw $78e7 : db "ARRANGE",$00
+	dw $78f9 : db "RARE",$00
+
 CanBeUsed:
 	db " can be used by:",$00
 
