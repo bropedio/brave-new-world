@@ -46,6 +46,10 @@
 - Exploder (player version) now leaves the caster with 1 HP (Sir Newton Fig)
 - Siren Song may set Muddle+Berserk (Gens)
 - A mysterious feature (Madsiur) is added but will be unlockme content for the official release
+b11
+- fixed battle strings abbreviations
+- added every button prompt to the char table
+- added new narshe worldmap tiles
 
 2.2 roadmap (ordered by priority):
 
