@@ -201,7 +201,7 @@ Need help?
 <C> No
 
 [caption #54]
-You'll fight in 3 groups. Press Y to switch between them.<EOP>
+You'll fight in 3 groups. Press ± to switch between them.<EOP>
 Your objective is to defeat the commander before his men reach <A0>.<EOP>
 And don't steal my spear - I need it to defend myself. <D>Go buy your own, kupo.
 
@@ -2144,8 +2144,8 @@ We thought that was stupid, so now they don't.
 
 [caption #605]
 When outfitting your party, remember that most equipment does more now than just boost raw defense or battle power.<EOP>
-Hold [Y] when shopping to view the full stats of any item prior to purchase.<EOP>
-Equipment can be also reviewed in the item menu: double-click for info and use @/& on the # to switch views.<EOP>
+Hold ± when shopping to view the full stats of any item prior to purchase.<EOP>
+Equipment can be also reviewed in the item menu: double-click for info and use @/& on the | to switch views.<EOP>
 Note that while stat boosts from equipment will stack, other properties (including HP/MP boosts) will not.
 
 [caption #606]
@@ -2167,17 +2167,18 @@ Larger foes and bosses may counter ANY kind of damage, so be careful when attack
 Finally, hitting an elemental weakness can sometimes have additional effects on enemies beyond the extra damage dealt.
 
 [caption #609]
-Hold down L and R to run from battles that get out of hand.<EOP>
+Hold down £ and { to run from battles that get out of hand.<EOP>
 Faster characters like <A1> are better at getting away quickly than others are.<EOP>
-Also, you can view your party's maximum HP values in battle by holding the select button.
+Also, you can view your party's maximum HP values in battle by holding }`.
 
 [caption #610]
-Press X or Y in battle to [hold] an active character's turn and cycle to the next available ally.<EOP>
+Press ^ or ± in battle to [hold] an active character's turn and cycle to the next available ally.<EOP>
 When a command is input, there will be a delay until it executes indicated by the ATB gauge counting down.<EOP>
 This feature can be disabled in the config menu if you find it distracting.
 
 [caption #611]
-Press L or R to select multiple targets for any spell with no targeting restrictions, such as <A0>'s Fire and Cure spells.<EOP>
+Press £ or { to select multiple targets for any spell with no targeting restrictions, such as
+<A0>'s Fire and Cure spells.<EOP>
 Other commands with [free] targeting are [Throw] (with stars) and [GP Toss].<EOP>
 The damage (or healing) dealt by anything split in this manner will be reduced by 50%.<EOP>
 This [split] penalty also applies to some attacks that hit more than one enemy by default, such as elemental ninja scrolls.
@@ -2187,7 +2188,7 @@ You can change which row each character occupies (default is front) by double-cl
 Characters in the back row take less damage from physical attacks and deal less damage with their own.<EOP>
 This penalty affects physical damage from special skills such as [Bushido], as well as spells randomly cast from weapons.<EOP>
 Some weapons do full damage from the back row, as will the [Throw]/[GP Toss] commands or [Jump] with any weapon.<EOP>
-Characters can change row in battle by pressing @ on the #. This is a [quick] action that only uses half of a turn.<EOP>
+Characters can change row in battle by pressing @ on the |. This is a [quick] action that only uses half of a turn.<EOP>
 Press & to [Defend], which halves all damage until another command is input (note: this is also a [quick] action).<EOP>
 Defending characters are more likely to guard (healthy) allies if able, but will lose their defense bonus when they do so.
 
@@ -2222,7 +2223,7 @@ Weaker statuses like [Blind] and [Imp] are a safe bet for disabling foes since t
 [Sap] can only be remedied by setting the [Regen] status.
 
 [caption #617]
-Want to walk faster? Just hold down the [B] button.<EOP>
+Want to walk faster? Just hold down \.<EOP>
 You can also set it as the default movement speed in the config menu.
 
 [caption #618]
@@ -3161,7 +3162,7 @@ Need some info?
 <C> No
 
 [caption #877]
-You'll fight in 2 groups. Press Y to switch between them.<EOP>
+You'll fight in 2 groups. Press ± to switch between them.<EOP>
 Defeat Kefka before his men reach Banon, or it's game over!
 
 [caption #878]
@@ -3342,10 +3343,10 @@ Sorry, friend, I'm too busy to talk right now.
 Wanna know how to ride a chocobo?
 
 [caption #933]
-# = steer
-A = move forward
-B = dismount
-L/R = do a barrel roll
+| = steer
+$ = move forward
+\ = dismount
+£/{ = do a barrel roll
 
 [caption #934]
 Chocobo ride, 100 GP!
@@ -4685,10 +4686,10 @@ That would be an exceptionally bad idea.
 <A9>: <D>_here's the manual.
 
 [caption #1314]
-# = steer
-A = move forward
-X = go amidships
-B = land
+| = steer
+$ = move forward
+^ = go amidships
+\ = land
 
 [caption #1315]
 Got it?
@@ -4701,7 +4702,7 @@ Would you like to know more?
 <C> No
 
 [caption #1317]
-<A9>: Press Start to toggle the map. Hold Y and use the # to move in all directions.<EOP>
+<A9>: Press #+ to toggle the map. Hold ± and use the | to move in all directions.<EOP>
 <A9>: Crash this thing and so help me I will fuck you with a rake.
 
 [caption #1318]
@@ -9291,7 +9292,7 @@ Many people have since gone there in search of loot.<EOP>
 Some like to call it [treasure hunting], but I just call it common thievery.
 
 [caption #2614]
-Press Y to switch parties.
+Press ± to switch parties.
 
 [caption #2615]
 Don't bother heading in_ <D>there's nothing left.
