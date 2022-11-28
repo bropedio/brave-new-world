@@ -456,7 +456,7 @@ org $C46DE9
 ;Changing element tiles to print in inventory sub-menu
 
 org $D8E90E
-	db $FD,$FA,$F6,$F9,$FE,$F8,$FB,$FC,$00		; water, earth, holy, wind, dark, bolt, ice, fire
+	db $FD,$FA,$F6,$F9,$EF,$F8,$FB,$FC,$00		; water, earth, holy, wind, dark, bolt, ice, fire
 
 ;Brave New World data
 org $C33BB8
