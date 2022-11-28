@@ -34,13 +34,6 @@ dw $0f68
 ;Rare
 dw $0fb0
 
-; Text
-org $C38d16
-	dw $78cd : db "Item",$00
-	dw $78dd : db "USE",$00
-	dw $78e7 : db "ARRANGE",$00
-	dw $78f9 : db "RARE",$00
-
 ; Load navigation data & Handle D-Pad for Item, Colosseum, or Sell menu
 
 org $C37D1C
@@ -459,6 +452,11 @@ org $C18393 : LDX #$0500  ; scrollbar reaching the end of the menu correctly
 
 org $C46DE9
 	db $30
+	
+;Changing element tiles to print in inventory sub-menu
+
+org $D8E90E
+	db $FD,$FA,$F6,$F9,$FE,$F8,$FB,$FC,$00		; water, earth, holy, wind, dark, bolt, ice, fire
 
 ;Brave New World data
 org $C33BB8
