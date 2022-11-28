@@ -1,13 +1,13 @@
 Elements
 
-$D6	Holy
-$D8	Bolt
-$D9	Wind
-$DA	Earth
-$DB	Ice
-$DC	Fire
-$DD	Water
-$DE	Dark
+$F6	Holy
+$F8	Bolt
+$F9	Wind
+$FA	Earth
+$FB	Ice
+$FC	Fire
+$FD	Water
+$FE	Dark
 
 Ailments and Innate status
 
@@ -30,10 +30,19 @@ $F2	Regen
 $F3	Float
 $F4	Reflect
 $F5	Safe
-$F6	Shell
+$F7	Shell
 
-Others(unused)
-$EF	Slow
-$F7	Image
-$F8	Clear
-$F9	Rerise
+Buttons
+
+$=A
+\=B
+^=X
+±=Y
+<$7A>=L
+{=R
+|=D-PAD
+<$74>=UP
+@=LEFT
+&=RIGHT
+#+=START
+}`=SELECT
