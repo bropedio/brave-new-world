@@ -24,6 +24,7 @@ echo Applying ips...
 %FLIPS% --apply "misc.ips" %EDITED_ROM%
 %FLIPS% --apply "minimap.ips" %EDITED_ROM%
 %FLIPS% --apply "docileNPCs.ips" %EDITED_ROM%
+%FLIPS% --apply "newnarshe.ips" %EDITED_ROM%
 rem %FLIPS% --apply "msu-1.ips" %EDITED_ROM%
 
 echo Inserting strings...
