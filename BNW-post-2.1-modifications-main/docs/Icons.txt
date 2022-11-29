@@ -7,7 +7,7 @@ $FA	Earth
 $FB	Ice
 $FC	Fire
 $FD	Water
-$FE	Dark
+$EF	Dark
 
 Ailments and Innate status
 
