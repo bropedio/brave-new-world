@@ -30,7 +30,7 @@ Couldn't steal! <END>
 //POINTER #3 @ $11F7A6 - STRING #3 @ $11F031
 
 #W16($11F7A6)
-Stole <item> x 1 !<END>
+Stole <item> × 1 !<END>
 
 //POINTER #4 @ $11F7A8 - STRING #4 @ $11F040
 
@@ -175,12 +175,12 @@ Can't sketch! <END>
 //POINTER #32 @ $11F7E0 - STRING #32 @ $11F194
 
 #W16($11F7E0)
-Got <item> x 1<wait for key><END>
+Got <item> × 1<wait for key><END>
 
 //POINTER #33 @ $11F7E2 - STRING #33 @ $11F1A0
 
 #W16($11F7E2)
-Got <item> x <VAR2><wait for key><END>
+Got <item> × <VAR2><wait for key><END>
 
 //POINTER #34 @ $11F7E4 - STRING #34 @ $11F1AC
 
