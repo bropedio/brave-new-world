@@ -34,15 +34,15 @@ $F7	Shell
 
 Buttons
 
-$=A
-\=B
-^=X
-±=Y
-<$7A>=L
-{=R
-|=D-PAD
-<$74>=UP
-@=LEFT
-&=RIGHT
-#+=START
-}`=SELECT
+$     =A
+\     =B
+^     =X
+±     =Y
+<$7A> =L
+{     =R
+|     =D-PAD
+<$74> =UP
+@     =LEFT
+&     =RIGHT
+#+    =START
+}`    =SELECT
