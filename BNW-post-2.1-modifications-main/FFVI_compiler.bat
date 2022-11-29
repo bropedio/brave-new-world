@@ -29,7 +29,7 @@ rem %FLIPS% --apply "msu-1.ips" %EDITED_ROM%
 
 echo Inserting strings...
 
-%ATLAS% %EDITED_ROM% %SCRIPTS%\battle_strings_english.txt
+%ATLAS% %EDITED_ROM% battle_strings_english.txt
 
 echo Compressing GFX
 rem %FFVIDECOMP% -m c -s 0x02686C %EDITED_ROM% < %GFX%\modified\02686C_Title_Program.bin
