@@ -175,12 +175,12 @@ Can't sketch! <END>
 //POINTER #32 @ $11F7E0 - STRING #32 @ $11F194
 
 #W16($11F7E0)
-Got 1 <item><wait for key><END>
+Got 1x <item>!<wait for key><END>
 
 //POINTER #33 @ $11F7E2 - STRING #33 @ $11F1A0
 
 #W16($11F7E2)
-Got <VAR2> <item><wait for key><END>
+Got <VAR2>x <item>!<wait for key><END>
 
 //POINTER #34 @ $11F7E4 - STRING #34 @ $11F1AC
 
