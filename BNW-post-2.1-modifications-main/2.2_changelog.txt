@@ -35,7 +35,7 @@
 - Half atb refund for incorrect blitz input (by Sir Newton Fig)
 - Fixed scrolling in Lore menu and in Lore battle menu (Gens, Ryo)
 - Added a pouch/bag icon to order consumables (Gens)
-- Added D-pad button prompts in dialogues and tutorials (Gens)
+- Added controller key prompts in dialogues and tutorials (Gens)
 - Party selection menu "how it should have always been" (Ryo_Hazuki)
 - Better alignment of ailments icons into the main menu screen (Ryo_Hazuki)
 - Added "Ranged" icon and category to the inventory (Gens, Ryo)
@@ -46,10 +46,8 @@
 - Exploder (player version) now leaves the caster with 1 HP (Sir Newton Fig)
 - Siren Song may set Muddle+Berserk (Gens)
 - A mysterious feature (Madsiur) is added but will be unlockme content for the official release
-b11
-- fixed battle strings abbreviations
-- added every button prompt to the char table
-- added new narshe worldmap tiles
+- New Narshe world of balance tiles
+- Fixed battle strings abbreviations(and lightning>bolt)
 
 2.2 roadmap (ordered by priority):
 
