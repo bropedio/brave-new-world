@@ -47,7 +47,8 @@
 - Siren Song may set Muddle+Berserk (Gens)
 - A mysterious feature (Madsiur) is added but will be unlockme content for the official release
 - New Narshe world of balance tiles
-- Fixed battle strings abbreviations(and lightning>bolt)
+- Fixed battle strings abbreviations and lightning>bolt
+- Equip menu tweak: better positioning of the elements on the screen
 
 2.2 roadmap (ordered by priority):
 
