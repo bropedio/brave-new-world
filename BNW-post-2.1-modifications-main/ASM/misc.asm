@@ -396,27 +396,6 @@ org $c3918c
 org $c391a9
 	jmp $947f
 
-;Cleaner Equip screen
-
-;org $C395D8
-;	db $0f,$00,$00
-;	db $0c,$04,$00
-;	db $0c,$06,$00
-;	db $14,$0a,$00
-;	db $0c,$0c,$00
-;	db $0c,$10,$00
-;	db $0c,$14,$00
-;	db $08,$1c,$00
-;	db $0c,$20,$00
-;	db $0c,$24,$00
-;	db $0c,$28,$00
-;	db $0c,$2c,$00
-;	db $0c,$30,$00
-;	db $0c,$34,$00
-;	db $0c,$38,$00
-;	db $0c,$3c,$00
-;	db $0c,$40,$00
-
 ;Fixed Dumpty script (conditional Safe>Shell)
 
 org $CF95C0
@@ -452,6 +431,23 @@ org $C18393 : LDX #$0500  ; scrollbar reaching the end of the menu correctly
 
 org $C46DE9
 	db $30
+
+;Fix to totally drain Serpent Trench water pool
+
+org $CA8AD5
+	db $F7
+
+;;Mute magitek sound in Cyan's dream
+;org $CB93EF
+;	db $FD,$FD
+;org $CB93F8
+;	db $FD,$FD
+;org $CB9400
+;	db $FD,$FD
+;org $CB9408
+;	db $FD,$FD
+;org $CB9410
+;	db $FD,$FD
 	
 ;Changing element tiles to print in inventory sub-menu
 
