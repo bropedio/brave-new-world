@@ -13,7 +13,7 @@
 - Edgar and Sabin dont blush anymore during Setzer proposal to Celes (Novalia Spirit)
 - Curative lores now show the sap/regen/rerise screen (Bropedio)
 - Longer skill names by 1 digit (properly named Reflect, Berserk and few other skills and updated inherent descriptions) (Ryo_hazuki, Gens)
-- Added 4 graphical fixes (Gi Nattak): bridge correction, button blunder, drained pond tile, oceanic line anomaly
+- Added 5 graphical fixes (Gi Nattak): bridge correction, button blunder, drained pond tile, oceanic line anomaly, tube job
 - Every "title" box is now 1 tile height: this makes the inventory active page showing 1 more item (Ryo_Hazuki)
 - Fixed Dumpty script (Gens)
 - Fixed cut-out upper box border in equip screen (Ryo_Hazuki)
