@@ -602,18 +602,18 @@ org $CEFB60
 
 org $D8C9A0
 
-Fire: db $DC,$00
-Ice: db $DB,$00
-Bolt: db $D8,$00
+Fire: db $FC,$00
+Ice: db $FB,$00
+Bolt: db $F8,$00
 Sap: db "Dark damage - single|May set [Sap]",$00
 Poison: db "Dark damage|May set [Poison]",$00
-Fire2: db $DC,$DC,$00
-Ice2: db $DB,$DB,$00
-Bolt2: db $D8,$D8,$00
+Fire2: db $FC,$FC,$00
+Ice2: db $FB,$FB,$00
+Bolt2: db $F8,$F8,$00
 Break: db "Wind damage - single|Ignores def.",$00
-Fire3: db $DC,$DC,$DC,$00
-Ice3: db $DB,$DB,$DB,$00
-Bolt3: db $D8,$D8,$D8,$00
+Fire3: db $FC,$FC,$FC,$00
+Ice3: db $FB,$FB,$FB,$00
+Bolt3: db $F8,$F8,$F8,$00
 Quake: db "Earth (ground) damage - all|Ignores def.",$00
 Doom: db "Instant death - single|(Heals undead)",$00
 Holy: db "Holy damage - single|Ignores def.",$00
