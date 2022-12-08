@@ -1,4 +1,4 @@
-2.2 changelog (at b11 release 12/03/2022)
+2.2 changelog (at b11.1 release 12/08/2022)
 
 - Adds custom intro and title (Ryo_Hazuki)
 - Cleaner coliseum "select a challenger" screen (Ryo_Hazuki)
@@ -59,3 +59,4 @@
 - Autoscan feature - press Y to see HP/MP, X for statuses - Scan is still needed for weaknesses (Bropedio)
 - Import Alphabetical Lore (Silent Enigma): useless for english version but useful for translations or future lores edits
 - Fix mp colors corrupting reflect palette (Ryo_Hazuki)
+- Port Psx bestiary to BNW
