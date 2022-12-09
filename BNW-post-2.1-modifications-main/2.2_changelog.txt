@@ -16,7 +16,7 @@
 - Added 5 graphical fixes (Gi Nattak): bridge correction, button blunder, drained pond tile, oceanic line anomaly, tube job
 - Every "title" box is now 1 tile height: this makes the inventory active page showing 1 more item (Ryo_Hazuki)
 - Fixed Dumpty script (Gens)
-- Fixed cut-out upper box border in equip screen (Ryo_Hazuki)
+- Fixed cut-out upper box border in equip screen and better positioned the text (Ryo_Hazuki)
 - Status page now will show how much a stat has been raised by using esper levels (Ryo_Hazuki)
   (added a dialogue to Ghost npc about it)
 - Deleted entry with no rewards from coliseum and added prizes description (Ryo_Hazuki)
@@ -48,7 +48,6 @@
 - A mysterious feature (Madsiur) is added but will be unlockme content for the official release
 - New Narshe world of balance tiles
 - Fixed battle strings abbreviations and lightning>bolt
-- Equip menu tweak: better positioning of the elements on the screen
 
 2.2 roadmap (ordered by priority):
 
@@ -59,4 +58,4 @@
 - Autoscan feature - press Y to see HP/MP, X for statuses - Scan is still needed for weaknesses (Bropedio)
 - Import Alphabetical Lore (Silent Enigma): useless for english version but useful for translations or future lores edits
 - Fix mp colors corrupting reflect palette (Ryo_Hazuki)
-- Port Psx bestiary to BNW
+- Port Psx bestiary to BNW (this would make the rage details obsolete)
