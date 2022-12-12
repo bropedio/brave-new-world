@@ -58,4 +58,3 @@
 - Autoscan feature - press Y to see HP/MP, X for statuses - Scan is still needed for weaknesses (Bropedio)
 - Import Alphabetical Lore (Silent Enigma): useless for english version but useful for translations or future lores edits
 - Fix mp colors corrupting reflect palette (Ryo_Hazuki)
-- Port Psx bestiary to BNW (this would make the rage details obsolete)
