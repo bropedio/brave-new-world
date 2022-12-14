@@ -2145,7 +2145,7 @@ We thought that was stupid, so now they don't.
 [caption #605]
 When outfitting your party, remember that most equipment does more now than just boost raw defense or battle power.<EOP>
 Hold ± when shopping to view the full stats of any item prior to purchase.<EOP>
-Equipment can be also reviewed in the item menu: double-click for info and use @/& on the | to switch views.<EOP>
+Equipment can be also reviewed in the item menu: press $ twice for info and use @/& to switch views.<EOP>
 Note that while stat boosts from equipment will stack, other properties (including HP/MP boosts) will not.
 
 [caption #606]
@@ -2184,11 +2184,11 @@ The damage (or healing) dealt by anything split in this manner will be reduced b
 This [split] penalty also applies to some attacks that hit more than one enemy by default, such as elemental ninja scrolls.
 
 [caption #612]
-You can change which row each character occupies (default is front) by double-clicking on them in the menu screen.<EOP>
+You can change which row each character occupies (default is front) by pressing $ twice on their portraits.<EOP>
 Characters in the back row take less damage from physical attacks and deal less damage with their own.<EOP>
 This penalty affects physical damage from special skills such as [Bushido], as well as spells randomly cast from weapons.<EOP>
 Some weapons do full damage from the back row, as will the [Throw]/[GP Toss] commands or [Jump] with any weapon.<EOP>
-Characters can change row in battle by pressing @ on the |. This is a [quick] action that only uses half of a turn.<EOP>
+Characters can change row in battle by pressing @. This is a [quick] action that only uses half of a turn.<EOP>
 Press & to [Defend], which halves all damage until another command is input (note: this is also a [quick] action).<EOP>
 Defending characters are more likely to guard (healthy) allies if able, but will lose their defense bonus when they do so.
 
@@ -2223,7 +2223,8 @@ Weaker statuses like [Blind] and [Imp] are a safe bet for disabling foes since t
 [Sap] can only be remedied by setting the [Regen] status.
 
 [caption #617]
-Want to walk faster? Just hold down \.<EOP>
+Want to walk faster?
+Just hold down \.<EOP>
 You can also set it as the default movement speed in the config menu.
 
 [caption #618]
@@ -10780,11 +10781,11 @@ Kefka: I, Kefka, will knock you all down!
 
 [caption #3036]
 
-          _is cupcakes. <E$08><OP$12>
+          _is ********. <E$08><OP$12>
 
 [caption #3037]
 
-     Got it? It's cupcakes. <E$08><OP$12>
+     Got it? It's ********. <E$08><OP$12>
 
 [caption #3038]
 <A6>: Ugh_ <E$08><OP$12>
