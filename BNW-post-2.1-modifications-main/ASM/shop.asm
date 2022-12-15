@@ -122,12 +122,12 @@ org $C3f905
 
 org $C3F9E4
 	dw #shopatthyphens
-org	$C3FA10
-	dw #shopdefhyphens		;Defense hyphens pointer
-org $C3FA16
-	dw #shopmdefhyphens		;Magic Defense hyphens pointer
-
-org $C3FA1E
+org	$C3FA0F
+	LDY #shopdefhyphens
+	JSR $02F9
+	LDY #shopmdefhyphens
+	JSR $02F9
+	DW  $0680
 	dw #shopquestionmarks
 
 ;Text data
@@ -290,8 +290,11 @@ avoid_btl_equip_routine:
 
 org $c3fa9a	
 	jmp set_100_scroll				;Jump to new code instead of Shop 0 Attack value
-
-
+	jsr $02f9
+	LDY #shopdefhyphens
+	jsr $02f9
+	LDY #shopmdefhyphens
+	
 ;;-----------------------------------------------------
 ;;
 ;;Fix Tools bug
