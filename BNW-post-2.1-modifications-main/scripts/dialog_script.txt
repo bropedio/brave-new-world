@@ -2184,7 +2184,7 @@ The damage (or healing) dealt by anything split in this manner will be reduced b
 This [split] penalty also applies to some attacks that hit more than one enemy by default, such as elemental ninja scrolls.
 
 [caption #612]
-You can change which row each character occupies (default is front) by pressing $ twice on their portraits.<EOP>
+You can change which row each character occupies (default is front) by pressing $ twice on a portrait.<EOP>
 Characters in the back row take less damage from physical attacks and deal less damage with their own.<EOP>
 This penalty affects physical damage from special skills such as [Bushido], as well as spells randomly cast from weapons.<EOP>
 Some weapons do full damage from the back row, as will the [Throw]/[GP Toss] commands or [Jump] with any weapon.<EOP>
@@ -2197,7 +2197,7 @@ The [stamina] attribute helps you evade status ailments set by enemy attacks and
 A [fail] message is displayed whenever stamina prevents a negative status. If the target is immune, it will say [null].<EOP>
 Stamina also raises the HP recovery from [Regen] and lowers the drain from [Sap].<EOP>
 Several abilities, such as the Remedy and Regen spells or the Aurabolt Blitz, now use stamina to determine their strength_<EOP>
-_and it also affects the frequency of counter-attacks and/or guarding allies for characters who can do so.<EOP>
+_and it also affects the frequency of counterattacks and/or guarding allies for characters who can do so.<EOP>
 Finally, stamina helps you take lower - and more consistent - damage from magical attacks.<EOP>
 The [vigor] attribute does the same thing for physical damage taken (in addition to governing physical damage dealt).
 
@@ -10930,5 +10930,4 @@ Maduin: _you may be able to remain in this world as a human. <E$10><OP$12>
 <A8>: _just you wait and see!
 
 [caption #3083]
-
 
