@@ -453,7 +453,12 @@ org $CA8AD5
 
 org $D8E90E
 	db $FD,$FA,$F6,$F9,$EF,$F8,$FB,$FC,$00		; water, earth, holy, wind, dark, bolt, ice, fire
+	
+; Mosaic effect mitigation
+
+org $C00E82  
+	db $0F, $1F, $2F, $3F, $2F, $1F, $2F, $3F, $2F, $1F, $2F, $3F, $2F, $1F, $2F, $3F, $2F, $1F, $2F, $3F, $2F, $1F, $2F, $3F, $2F, $1F, $2F, $3F, $2F, $1F
 
 ;Brave New World data
 org $C33BB8
-	db $d1,$78,"Brave New World 2.2 b11",$00
+	db $d1,$78,"Brave New World 2.2 b12",$00
