@@ -134,7 +134,7 @@ org	$C3FA0F
 org $C3FB0A
 
 holdy:
-	db $1F,$79,"Y",$fe,"for",$fe,"details",$c5,$00
+	db $1F,$79,"Y>for>details.",$00
 shopvigor:
 	db $0d,$82,"Vigor",$00
 shopspeed:
@@ -156,11 +156,11 @@ shopattack:
 shopquestionmarks:
 	db $3f,$81,$bf,$bf,$bf,$00	 		;Question marks 
 shopatthyphens:
-	db $3f,$81,"---",$00				;Attack hyphens
+	db $3f,$81,"  -",$00				;Attack hyphens
 shopdefhyphens:
-	db $3f,$82,"---",$00				;Defense hyphens
+	db $3f,$82,"  -",$00				;Defense hyphens
 shopmdefhyphens:
-	db $3f,$83,"---",$00				;M.Defense hyphens
+	db $3f,$83,"  -",$00				;M.Defense hyphens
 shopynamebox: 
 	db $4b,$71,$1c,$07				;BCG
 shopystatbox:
