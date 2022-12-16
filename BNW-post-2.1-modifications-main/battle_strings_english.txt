@@ -15,7 +15,7 @@
 //POINTER #0 @ $11F7A0 - STRING #0 @ $11F000
 
 #W16($11F7A0)
-Failed! <END>
+Failed!<END>
 
 //POINTER #1 @ $11F7A2 - STRING #1 @ $11F009
 
@@ -25,7 +25,7 @@ Doesn't have anything!<END>
 //POINTER #2 @ $11F7A4 - STRING #2 @ $11F020
 
 #W16($11F7A4)
-Couldn't steal! <END>
+Couldn't steal!<END>
 
 //POINTER #3 @ $11F7A6 - STRING #3 @ $11F031
 
@@ -35,17 +35,17 @@ Stole <item>!<END>
 //POINTER #4 @ $11F7A8 - STRING #4 @ $11F040
 
 #W16($11F7A8)
-Can't control! <END>
+Can't control!<END>
 
 //POINTER #5 @ $11F7AA - STRING #5 @ $11F050
 
 #W16($11F7AA)
-Can't dive! <END>
+Can't dive!<END>
 
 //POINTER #6 @ $11F7AC - STRING #6 @ $11F05D
 
 #W16($11F7AC)
-Stumbled! <END>
+Stumbled!<END>
 
 //POINTER #7 @ $11F7AE - STRING #7 @ $11F068
 
@@ -55,17 +55,17 @@ Mugu mugu?<END>
 //POINTER #8 @ $11F7B0 - STRING #8 @ $11F073
 
 #W16($11F7B0)
-No money! <END>
+No money!<END>
 
 //POINTER #9 @ $11F7B2 - STRING #9 @ $11F07E
 
 #W16($11F7B2)
-Can't run away! <END>
+Can't run away!<END>
 
 //POINTER #10 @ $11F7B4 - STRING #10 @ $11F08F
 
 #W16($11F7B4)
-Can't escape! <END>
+Can't escape!<END>
 
 //POINTER #11 @ $11F7B6 - STRING #11 @ $11F09E
 
@@ -115,7 +115,7 @@ Move, and you're dust!<END>
 //POINTER #20 @ $11F7C8 - STRING #20 @ $11F0BD
 
 #W16($11F7C8)
-Can't possess! <END>
+Can't possess!<END>
 
 //POINTER #21 @ $11F7CA - STRING #21 @ $11F0CD
 
@@ -145,7 +145,7 @@ Weak against wind<END>
 //POINTER #26 @ $11F7D4 - STRING #26 @ $11F12D
 
 #W16($11F7D4)
-Weak against holy <END>
+Weak against holy<END>
 
 //POINTER #27 @ $11F7D6 - STRING #27 @ $11F140
 
@@ -170,7 +170,7 @@ Better off <item>!<END>
 //POINTER #31 @ $11F7DE - STRING #31 @ $11F185
 
 #W16($11F7DE)
-Can't sketch! <END>
+Can't sketch!<END>
 
 //POINTER #32 @ $11F7E0 - STRING #32 @ $11F194
 
@@ -220,22 +220,22 @@ Need MP<END>
 //POINTER #41 @ $11F7F2 - STRING #41 @ $11F20A
 
 #W16($11F7F2)
-Annihilated<wait for key><END>
+Annihilated_<wait for key><END>
 
 //POINTER #42 @ $11F7F4 - STRING #42 @ $11F217
 
 #W16($11F7F4)
-Dispelled curse on shield<wait for key><END>
+Dispelled curse on shield!<wait for key><END>
 
 //POINTER #43 @ $11F7F6 - STRING #43 @ $11F232
 
 #W16($11F7F6)
-Level was halved! <END>
+Level was halved!<END>
 
 //POINTER #44 @ $11F7F8 - STRING #44 @ $11F245
 
 #W16($11F7F8)
-No weaknesses!     <END>
+No weaknesses!<END>
 
 //POINTER #45 @ $11F7FA - STRING #45 @ $11F259
 
@@ -330,7 +330,7 @@ Banon fell_<END>
 //POINTER #63 @ $11F81E - STRING #63 @ $11F2E9
 
 #W16($11F81E)
-<VAR2> GP was stolen! <END>
+<VAR2> GP was stolen!<END>
 
 //POINTER #64 @ $11F820 - STRING #64 @ $11F2FB
 
@@ -340,7 +340,7 @@ Mastered a new dance!<wait for key><END>
 //POINTER #65 @ $11F822 - STRING #65 @ $11F312
 
 #W16($11F822)
-Can't throw! <END>
+Can't throw!<END>
 
 //POINTER #66 @ $11F824 - STRING #66 @ $11F320
 
