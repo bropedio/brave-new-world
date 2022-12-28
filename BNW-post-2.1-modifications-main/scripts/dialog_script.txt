@@ -28,16 +28,16 @@ Wedge: We'll approach from the east. <D>Move out! <D12>
         simply ceased to exist. <E$FF><OP$12>
 
 [caption #6]
-  A thousand years have passed.
-    Iron, gunpowder, and steam
-     engines have all emerged,
-    and high technology reigns_ <E$FF><OP$12>
+   A thousand years have passed.
+     Iron, gunpowder, and steam
+      engines have all emerged,
+     and high technology reigns_ <E$FF><OP$12>
 
 [caption #7]
-       But there are some who
-     would enslave the world by
-   reviving the dread destructive
-       force known as [magic]. <E$FF><OP$12>
+        But there are some who
+      would enslave the world by
+    reviving the dread destructive
+        force known as [magic]. <E$FF><OP$12>
 
 [caption #8]
            Can it be that those
@@ -65,7 +65,7 @@ Imperial bastards!
 Your kind is not welcome here!
 
 [caption #15]
-Wedge: According to our source, the esper was found frozen in ice under a new mine shaft. <D>This must be it_
+Wedge: According to our source, the esper was found frozen under a new mine shaft. <D>This must be it_
 
 [caption #16]
 Biggs: Stand back, I've got this.
@@ -7495,7 +7495,7 @@ Choose 3 characters.
 
 [caption #2125]
 
- Three is this many:  \   \   \
+ Three is this many: / / /
 
 [caption #2126]
 [It's the Imperial Air Force (IAF)!]<EOP>
@@ -10930,4 +10930,5 @@ Maduin: _you may be able to remain in this world as a human. <E$10><OP$12>
 <A8>: _just you wait and see!
 
 [caption #3083]
+
 
