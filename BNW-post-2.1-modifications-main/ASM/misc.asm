@@ -311,20 +311,20 @@ warnpc $C32706
 
 org $C0FF9A
 icon:
-	db $eb	;consumables
-	db $d8	;tool
-	db $d9	;star
-	db $da	;scroll
+	db $eb	;item
+	db $e1	;rod
 	db $db	;knife
 	db $dc	;sword
 	db $dd	;spear
 	db $de	;claw
 	db $df	;katana
 	db $e0	;casino
-	db $e1	;rod
 	db $e2	;brush
 	db $ec	;ranged
 	db $e3	;other
+	db $d8	;tool
+	db $d9	;star
+	db $da	;scroll
 	db $e4	;shield
 	db $e5	;helmet
 	db $e6	;armor
