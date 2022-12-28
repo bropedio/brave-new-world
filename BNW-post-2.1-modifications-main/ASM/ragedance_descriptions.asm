@@ -390,7 +390,7 @@ RageDescs:
   db "Attack (Poison)",$00
 .leafer
   db "Wind Slash (",$F9,")",$01
-  db "Air Blast (",$F9," = HP*1/2)",$00
+  db "Air Blast (",$F9," = HP * 1/2)",$00
 .stray_cat
   db "Snowball (",$FB," - May set Slow)",$01
   db "Attack (3x dmg)",$00
@@ -446,7 +446,7 @@ RageDescs:
   db !l,"Blow Fish",$01
   db !w,"Rerise",$00
 .bomb
-  db "Exploder (dmg = Caster's HP*2.5)",$01
+  db "Exploder (dmg = Caster's HP * 2.5)",$01
   db "Exploder",$00
 .magic_pot
   db !w,"Cure",$01
@@ -489,9 +489,9 @@ RageDescs:
   db "Sun Bath (Cures HP)",$00
 .doggo
   db "Attack (3x dmg)",$01
-  db "Step Mine (dmg raised by steps)",$00
+  db "Step Mine (dmg rises w/ steps)",$00
 .zombone
-  db "Cave In (",$FA," = HP*3/4, sets Sap)",$01
+  db "Cave In (",$FA," = HP * 3/4, sets Sap)",$01
   db "Attack (Zombie - no dmg)",$00
 .windrunner
   db "Aero (",$F9," - May set Sap)",$01
@@ -501,7 +501,7 @@ RageDescs:
   db "Harvester (Lifts most ailments)",$00
 .griffin
   db "Giga Volt (",$F8,"/",$F9," - May set Sap)",$01
-  db "Air Blast (",$F9," = HP*1/2)",$00
+  db "Air Blast (",$F9," = HP * 1/2)",$00
 .scarab
   db "Starlight (May set Blind)",$01
   db "Mega Volt (",$F8,"/",$F9," - May set Sap)",$00
@@ -524,13 +524,13 @@ RageDescs:
   db "Shrapnel (Stamina-based)",$01
   db "Attack (Sap)",$00
 .grizzly
-  db "Cave In (",$FA," = HP*3/4, sets Sap) ",$01
+  db "Cave In (",$FA," = HP * 3/4, sets Sap) ",$01
   db "Attack (3x dmg)",$00
 .vagrant
   db "Flash Rain (",$F8,"/",$FD,")",$01
   db "Attack (2x dmg)",$00
 .repo_man
-  db "Step Mine (dmg raised by steps)",$01
+  db "Step Mine (dmg rises w/ steps)",$01
   db "Vanish (Sets Clear)",$00
 .anemone
   db "Discharge (",$F8,")",$01
