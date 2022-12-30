@@ -188,7 +188,7 @@ org $c38808 : LDA #$8843-64	; m.evade
 
 
 org $C3FBEF
-
+Item_Description:
 	db $17,$00,$00		; row 1
 	db $0c,$04,$00      ; row 2
 	db $0c,$08,$00      ; row 3
