@@ -171,10 +171,28 @@ shopycharabox:
 	db $8b,$73,$1c,$04				;BCG	
 	
 padbyte $ff
-pad $C3fbbe
-warnpc $c3fbbf
+pad $C3fb9f
+warnpc $c3fb9f
 
-org $c3fbbf
+
+org $c3fa8d						; set 0 on item and - on tools and scroll
+	LDX $2134					; load index
+	LDA $D85000,x				; get ID
+	AND #$07					; get class
+	CMP #$06					; item or scroll?
+	BNE skip_all_dashes			; branch if not
+	jmp set_100_scroll			; Jump to new code instead of Shop 0 Attack value
+is_item:
+	LDY #shop0defense			; 0 on defense (only item)
+	jsr $02f9                   
+	LDY #shop0mdefense          ; 0 on m.defense (only item)
+	jsr $02f9
+skip_all_dashes:
+	RTS
+warnpc $c3faac
+
+
+org $c3fba9
 shop0attack:
 	db $3f,$81,"  0",$00		;0 set instead of - in the item shop
 shop0defense:
@@ -185,39 +203,29 @@ shop100attack:
 	db $3f,$81,"100",$00		;100 set in the item shop
 
 set_100_scroll:
-	ldy #shop100attack				;Load "100" attack value in Shop Menu
-	cpx #$1428						;Are you on Ninja scroll water?
-	beq	13							;Branch to 100 if is it
-	cpx #$140a              		;Are you on Ninja scroll fire?
-	beq	8                   		;Branch to 100 if is it       
-	cpx #$1446						;Are you on Ninja scroll bolt?
-	beq	3							;Branch to 100 if is it
-	ldy	#shop0attack				;Load "0" attack value in Shop Menu
-	jmp $fa9d						;Go back to original routine and start print
+	LDA $D85000,x				; get ID
+	CMP #$16                    ; is scroll?
+	BEQ scroll                  ; branch if so
+	ldy #shop0attack			; Load "0" attack value in Shop Menu
+	jsr $02f9
+	jmp is_item					; go back
 	
-; BG3 V-Shift table for Item and Colosseum menus
-; original data on c37f57 adress
+scroll:
+	ldy	#shop0attack			; Load "0" attack value in Shop Menu
+	cpx #$1482					; is smoke bomb?
+	beq smoke_bomb              ; branch if so
+	ldy	#shop100attack          ; load 100 attack instead of 0
+smoke_bomb:                     
+	jsr $02f9	                
+	LDY #shopdefhyphens         ; load def hyphens
+	jsr $02f9                   
+	LDY #shopmdefhyphens        ; load m.def hyphens
+	jsr $02f9                   
+	jmp skip_all_dashes			; Go back
 
-Item_Description:
-	db $2F,$00,$00  ; Title
-	db $0C,$04,$00  ; Desc row 1
-	db $0C,$08,$00  ; Desc row 2
-	db $0C,$0C,$00  ; 2-hand
-	db $0C,$10,$00  ; 50% Dmg
-	db $0C,$14,$00  ; Vigor
-	db $0C,$18,$00  ; Speed
-	db $0C,$1C,$00  ; Stamina
-	db $0C,$20,$00  ; Mag.Pwr
-	db $0C,$24,$00  ; Bat.Pwr
-	db $0C,$28,$00  ; Defense
-	db $0C,$2C,$00  ; Evade
-	db $0C,$30,$00  ; Mag.Def
-	db $0C,$34,$00  ; MBlock
-	db $0C,$38,$00  ; Nothing
-	db $0C,$3C,$00  ; Nothing
-	db $00          ; End
 
-warnpc $c3fc20
+
+warnpc $c3fbef
 
 
 ;Stats value
@@ -288,13 +296,7 @@ avoid_btl_equip_routine:
 	lda $d85001,x 					;Set Item's equippable characters
 	jml $c25530						;Go on check if onscreen character can equip item
 
-org $c3fa9a	
-	jmp set_100_scroll				;Jump to new code instead of Shop 0 Attack value
-	jsr $02f9
-	LDY #shopdefhyphens
-	jsr $02f9
-	LDY #shopmdefhyphens
-	
+
 ;;-----------------------------------------------------
 ;;
 ;;Fix Tools bug
