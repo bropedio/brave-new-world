@@ -200,7 +200,7 @@ Need help?
 <C> No
 
 [caption #54]
-You'll fight in 3 groups. Press ± to switch between them.<EOP>
+You'll fight in 3 groups. Press Â± to switch between them.<EOP>
 Your objective is to defeat the commander before his men reach <A0>.<EOP>
 And don't steal my spear - I need it to defend myself. <D>Go buy your own, kupo.
 
@@ -2141,7 +2141,7 @@ This is no longer the case.
 
 [caption #605]
 When outfitting your party, remember that most equipment does more now than just boost raw defense or battle power.<EOP>
-Hold ± when shopping to view the full stats of any item prior to purchase.<EOP>
+Hold Â± when shopping to view the full stats of any item prior to purchase.<EOP>
 Equipment can be also reviewed in the item menu: press $ twice for info and use @/& to switch views.<EOP>
 Note that while stat boosts from equipment will stack, other properties (including HP/MP boosts) will not.
 
@@ -2164,17 +2164,17 @@ Larger foes and bosses may counter ANY kind of damage, so be careful when attack
 Finally, hitting an elemental weakness can sometimes have additional effects on enemies beyond the extra damage dealt.
 
 [caption #609]
-Hold down £ and { to run from battles that get out of hand.<EOP>
+Hold down Â£ and { to run from battles that get out of hand.<EOP>
 Faster characters like <A1> are better at getting away quickly than others are.<EOP>
 Also, you can view your party's maximum HP values in battle by holding }`.
 
 [caption #610]
-Press ^ or ± in battle to [hold] an active character's turn and cycle to the next available ally.<EOP>
+Press ^ or Â± in battle to [hold] an active character's turn and cycle to the next available ally.<EOP>
 When a command is input, there will be a delay until it executes indicated by the ATB gauge counting down.<EOP>
 This feature can be disabled in the config menu if you find it distracting.
 
 [caption #611]
-Press £ or { to select multiple targets for any spell with no targeting restrictions, such as
+Press Â£ or { to select multiple targets for any spell with no targeting restrictions, such as
 <A0>'s Fire and Cure spells.<EOP>
 Other commands with [free] targeting are [Throw] (with stars) and [GP Toss].<EOP>
 The damage (or healing) dealt by anything split in this manner will be reduced by 50%.<EOP>
@@ -3152,7 +3152,7 @@ Need some info?
 <C> No
 
 [caption #877]
-You'll fight in 2 groups. Press ± to switch between them.<EOP>
+You'll fight in 2 groups. Press Â± to switch between them.<EOP>
 Defeat Kefka before his men reach Banon, or it's game over!
 
 [caption #878]
@@ -3337,7 +3337,7 @@ Wanna know how to ride a chocobo?
 | = steer
 $ = move forward
 \ = dismount, bird returns here
-£/{ = sharp turn
+Â£/{ = sharp turn
 
 [caption #934]
 Chocobo ride, 100 GP!
@@ -4286,7 +4286,7 @@ The next line is_?
 <C> [Alas, Draco_] <D17>
 
 [caption #1209]
-<$75> Oh <E$03>my <E$04>hero,<E$09> 
+<$75> Oh <E$03>my <E$04>hero,<E$09>
    my beloved,<E$0B><OP$12>
    shall we still<E$09>
    be made to part? <E$12><OP$12><EOP>
@@ -4690,7 +4690,7 @@ Would you like to know more?
 <C> No
 
 [caption #1317]
-<A9>: Press #+ to toggle the map. Hold ± and use the | to move in all directions.<EOP>
+<A9>: Press #+ to toggle the map. Hold Â± and use the | to move in all directions.<EOP>
 <A9>: Crash this thing and I'll make you wish the crash had killed you.
 
 [caption #1318]
@@ -5313,35 +5313,35 @@ Maduin: Madonna!
 
 [caption #1497]
 
-       7 dragons left<E$08><OP$12> 
+       7 dragons left<E$08><OP$12>
 
 [caption #1498]
 
-       6 dragons left<E$08><OP$12> 
+       6 dragons left<E$08><OP$12>
 
 [caption #1499]
 
-       5 dragons left<E$08><OP$12> 
+       5 dragons left<E$08><OP$12>
 
 [caption #1500]
 
-       4 dragons left<E$08><OP$12> 
+       4 dragons left<E$08><OP$12>
 
 [caption #1501]
 
-       3 dragons left<E$08><OP$12> 
+       3 dragons left<E$08><OP$12>
 
 [caption #1502]
 
-       2 dragons left<E$08><OP$12> 
+       2 dragons left<E$08><OP$12>
 
 [caption #1503]
 
-       1 dragon left<E$08><OP$12> 
+       1 dragon left<E$08><OP$12>
 
 [caption #1504]
 
-       No dragons left_<E$08><OP$12> 
+       No dragons left_<E$08><OP$12>
 
 [caption #1505]
 
@@ -8102,7 +8102,7 @@ I can tell_
 [Me either!]<D4>
 
 [caption #2299]
-<A0>: Thank you. You all helped me understand what it means_ <D>to love. 
+<A0>: Thank you. You all helped me understand what it means_ <D>to love.
 
 [caption #2300]
 Our mamas and papas are gone_
@@ -8313,10 +8313,10 @@ There's no use in moping around, so we're staying busy!
 The Figaro Cave is still there, but it doesn't go anywhere anymore.
 
 [caption #2365]
-For each life lost, a new one arrives to fill the void!
+Just a short break, then back to work_
 
 [caption #2366]
-What are we, bunnies?
+C'mon! You always put duty first_
 
 [caption #2367]
 Whoa! Am I dizzy!
@@ -8443,7 +8443,7 @@ Kefka's one shy of a six pack!
 I know someone who deserves to be locked up in here!
 
 [caption #2401]
-I knew we should have taken that left turn at Albuquerque.
+We have begun studying the ruins. I wonder what ancient knowledge it holds?
 
 [caption #2402]
 No more Returners, no more Empire_ seems we need to decide on our own what to fight for.
@@ -8939,9 +8939,7 @@ A single letter is carved_
         Got [Daryl's Soul]
 
 [caption #2531]
-A Knight came through here recently_
-He was amazing! But his heart was full of chaos_<EOP>
-When he can cope with his pain, he'll be the mightiest warrior alive.
+Your own past can be your worst enemy. Friends_family_gotta let 'em all go_
 
 [caption #2532]
 I saw a dinosaur in a forest north of the Veldt.
@@ -9257,7 +9255,7 @@ Many people have since gone there in search of loot.<EOP>
 Some like to call it [treasure hunting], but I just call it common thievery.
 
 [caption #2614]
-Press ± to switch parties.
+Press Â± to switch parties.
 
 [caption #2615]
 Don't bother heading in_ <D>there's nothing left.
@@ -10740,11 +10738,11 @@ Kefka: I, Kefka, will knock you all down!
 
 [caption #3036]
 
-          _is cupcakes. <E$08><OP$12>
+          _is ********. <E$08><OP$12>
 
 [caption #3037]
 
-     Got it? It's cupcakes. <E$08><OP$12>
+     Got it? It's ********. <E$08><OP$12>
 
 [caption #3038]
 <A6>: Ugh_ <E$08><OP$12>
@@ -10889,5 +10887,4 @@ Maduin: _you may be able to remain in this world as a human. <E$10><OP$12>
 <A8>: _just you wait and see!
 
 [caption #3083]
-
 
