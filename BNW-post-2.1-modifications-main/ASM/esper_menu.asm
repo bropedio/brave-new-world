@@ -91,6 +91,17 @@ C34E7F:	db $3F,$00,$00  ; LV
 
 warnpc $c0ece0
 
+; shrink esper list by 1 line to have just 26 slots for 26 total espers
+
+org $C320D0
+         LDA #$05        ; Top row: Carbuncle's
+         STA $5C         ; Set scroll limit
+
+org $c320ba        
+
+ LDA #$1300      ; V-Speed: 19 px
+         STA $7E354A,X   ; Set scrollbar's
+
 ; which number option finger cursor allow EL bonus
 org $C33BE2
 	cmp #$04		; row index description msg bouns print
