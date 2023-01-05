@@ -405,7 +405,7 @@ RageDescs:
   db "Meteo (Ignores def.)",$00
 .mesosaur
   db !l,"Holy Wind",$01
-  db "Magnitude (",$FA," - Ground attack)",$00
+  db "Magnitude (",$FA,", ground dmg)",$00
 .albatross
   db "Fireball (",$FC," - May set Sap)",$01
   db "Attack (2x dmg)",$00
@@ -422,13 +422,13 @@ RageDescs:
   db !w,"Cure 3",$01
   db "Attack (Steal HP)",$00
 .exocite
-  db "Rock (May set Muddle)",$01
+  db "Rock (Stamina, may set Muddle)",$01
   db "Attack (2x dmg)",$00
 .chickenlip
   db "Attack (Muddle)",$01
   db "Net (Sets Slow/Stop)",$00
 .onion_kid
-  db "Brown Note (Random ailments)",$01
+  db "Brown Note (Random bad status)",$01
   db "Attack (Berserk)",$00
 .tek_armor
   db "Barrier (Sets Shell/Reflect)",$01
@@ -467,7 +467,7 @@ RageDescs:
   db "Bio Blast (",$EF," - May set Poison)",$01
   db !l,"Bad Breath",$00
 .crawler
-  db "Magnitude (",$FA," - Ground attack)",$01
+  db "Magnitude (",$FA,", ground dmg)",$01
   db "Attack (Steal HP)",$00
 .eye_goo
   db "Lode Stone (",$FA,$03,"= HP*5/8, may slow)",$01
@@ -482,14 +482,14 @@ RageDescs:
   db !b,"Doom",$01
   db "Attack (Petrify - no dmg)",$00
 .rocky
-  db "Harvester (Lifts most ailments)",$01
-  db "Rock (May set Muddle)",$00
+  db "Harvester",$03,"(Cures HP/bad statuses)",$01
+  db "Rock (Stamina, may set Muddle)",$00
 .rhydon
   db "Attack (2x dmg)",$01
   db "Sun Bath (Cures HP)",$00
 .doggo
   db "Attack (3x dmg)",$01
-  db "Step Mine (dmg rises w/ steps)",$00
+  db "Step Mine (Dmg rises w/ steps)",$00
 .zombone
   db "Cave In (",$FA," = HP * 3/4, sets Sap)",$01
   db "Attack (Zombie - no dmg)",$00
@@ -498,7 +498,7 @@ RageDescs:
   db "Blight (",$EF,"/",$F9," - May set Poison)",$00
 .vulture
   db "Razor Leaf (",$FA,"/",$F9,")",$01
-  db "Harvester (Lifts most ailments)",$00
+  db "Harvester",$03,"(Cures HP/bad statuses)",$00
 .griffin
   db "Giga Volt (",$F8,"/",$F9," - May set Sap)",$01
   db "Air Blast (",$F9," = HP * 1/2)",$00
@@ -512,7 +512,7 @@ RageDescs:
   db !b,"Quake",$01
   db "Razor Leaf (",$FA,"/",$F9,")",$00
 .cephalid
-  db "Tentacle (Stamina-based)",$01
+  db "Tentacle (Stamina)",$01
   db "Attack (Slow)",$00
 .nastidon
   db "Snowball (",$FB," - May set Slow)",$01
@@ -521,7 +521,7 @@ RageDescs:
   db "Gale Cut (",$F9,")",$01
   db "Mirage (Randomly sets Image)",$00
 .mantodea
-  db "Shrapnel (Stamina-based)",$01
+  db "Shrapnel (Stamina)",$01
   db "Attack (Sap)",$00
 .grizzly
   db "Cave In (",$FA," = HP * 3/4, sets Sap) ",$01
