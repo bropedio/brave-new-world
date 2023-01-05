@@ -91,17 +91,6 @@ C34E7F:	db $3F,$00,$00  ; LV
 
 warnpc $c0ece0
 
-; shrink esper list by 1 line to have just 26 slots for 26 total espers
-
-org $C320D0
-         LDA #$05        ; Top row: Carbuncle's
-         STA $5C         ; Set scroll limit
-
-org $c320ba        
-
- LDA #$1300      ; V-Speed: 19 px
-         STA $7E354A,X   ; Set scrollbar's
-
 ; which number option finger cursor allow EL bonus
 org $C33BE2
 	cmp #$04		; row index description msg bouns print
@@ -114,7 +103,7 @@ org $c35a24
 
 org $C35a3e
 	jsr $7fd9		; Draw spend q.ty string
-	ldy #$4693		; Bonus string Pos
+	ldy #$4793		; Bonus string Pos
 	jsr $3519		; Set pos, Wram
 	LDX $4216       ; Index product
 	LDY #$0009      ; Letters: 9
@@ -132,65 +121,88 @@ warnpc $c35a67
 
 
 org $c3f430		
-	ldy #$460F			; El bonus position
+	ldy #$46CF			; El bonus position
 	JSR $3519			; Set pos, WRAM
-	bra .new_print
-.back
+	bra new_print
+back:
 	rts
 
 warnpc $c3f43b
 
 org $c3f46b
-.new_print
+new_print:
 	jsl print_new		; go to load string
 	jsr $7fd9			; Draw EL bonus string
 	jsl print_new2
 	jsr $7fd9			; Draw Spend string
 	jsl print_new3
-	bra .back
+	jmp to_new4
+	
+org $c3f612
+to_new4:
+	jsr $7fd9
+	jsl print_new4
+	jmp back
 
 org $c0ff20
 print_new:
-	lda #$24		; blue color
-	sta $29			; store
-	LDX $00			; Char index: 0
+	lda #$24			; blue color
+	sta $29				; store
+	LDX $00				; Char index: 0
 .loop
-	LDA.L $C35CBC,X	; "At..." char
-	STA $2180		; Add to string
-	INX				; Point to next
-	CPX #$000b		; Done all 14?
-	BNE .loop		; Loop if not
+	LDA.L _EL_Bonus,X	; "At..." char
+	STA $2180			; Add to string
+	INX					; Point to next
+	CPX #$000b			; Done all 14?
+	BNE .loop			; Loop if not
 	STZ $2180
 	rtl
 	
 print_new2:	
-	ldy #$4637		; "spend" position
-	JSR PosWRAM		; Set pos, WRAM
-	LDX $00			; Char index: 0
+	ldy #$47B1			; "EL available text" position
+	JSR PosWRAM			; Set pos, WRAM
+	LDX $00				; Char index: 0
 .loop2
-	LDA.L spend,X	; "At..." char
-	STA $2180		; Add to string
-	INX				; Point to next
-	CPX #$0006		; Done all 14?
-	BNE .loop2		; Loop if not
+	LDA.L ELavlbl,X		; "At..." char
+	STA $2180			; Add to string
+	INX					; Point to next
+	CPX #$0002			; Done all?
+	BNE .loop2			; Loop if not
 	STZ $2180
 	rtl
 
 print_new3:
 	lda #$20		; white colour
 	sta $29			; store
-	ldy #$46B9		; "spend" position
+	ldy #$47BB		; "spend" position
 	JSR PosWRAM		; Set pos, WRAM
 	LDX $00			; Char index: 0
 .loop3
 	LDA.L spendq,X	; "At..." char
 	STA $2180		; Add to string
 	INX				; Point to next
-	CPX #$0004		; Done all 14?
+	CPX #$0003		; Done all 14?
 	BNE .loop3		; Loop if not
 	STZ $2180
 	rtl
 
+print_new4:
+	ldy #$429d		; "Remove" position
+	JSR PosWRAM		; Set pos, WRAM
+	LDX $00			; Char index: 0
+.loop3
+	LDA.L remove,X	; "At..." char
+	STA $2180		; Add to string
+	INX				; Point to next
+	CPX #$0006		; Done all?
+	BNE .loop3		; Loop if not
+	STZ $2180
+	rtl
+ELavlbl: db "EL"
+spendq: db "/25"
+remove: db "      "
+
+org $c0fcb0	
 PosWRAM:
 	LDX #$9E89      ; 7E/9E89
 	STX $2181       ; Set WRAM LBs
@@ -203,28 +215,41 @@ PosWRAM:
 	TDC             ; Clear A
 	LDY $67         ; Actor address
 	RTS
-spend: db "Raise "
-spendq: db "1",$16,$17,$18
 
-org $c0fef0
-UnspentTxt:	db "Ava",$12,$13,$14,$15,"e:",$16,$17,$18,$00
 
+org $c3f30f
+available:	db "Ava",$12,$13,$14,$15,"e",$00
+warnpc $c3f31b
+
+org $c3f3f2
+	ldy #$46f1			; availabvle position
 org $C3F3FA
-	LDA UnspentTxt,X  ; get "Unspent EL:" tile
+	LDA.l available,X 	; get "available" txt
 
-org $C35CBC
+org $c3f41a
+	ldy #$47a9			; numer of available EL
+
+	
+org $C35Ca7
+	dw $4631 : db "SP ",$00
+	dw $4435 : db " Learn",$00
+	dw $463B : db "/30",$00
+_EL_Bonus:
 	db " EL Bonus "
 
 org $C3F41A 
-	LDY #$47A9	;Unspent EL quantity coordinates
-
+	LDY #$47b7	; Unspent EL quantity coordinates
+	
+org $c3f751
+	ldx #$4637	; unspent SP quantity coordinates
+	
 ; Navigation data for esper data menu
 org $C3598C
 	db $80          ; Wraps vertically
 	db $00          ; Initial column
 	db $00          ; Initial row
 	db $01          ; 1 column
-	db $05          ; 7 rows
+	db $06          ; 6 rows
 	
 ; Cursor positions for esper data menu
 org $C35991
@@ -232,8 +257,8 @@ org $C35991
 	dw $7C18        ; Spell A
 	dw $8818        ; Spell B
 	dw $9418        ; Spell C
-	dw $B018        ; Bonus
-	dw $AC18        ; 
+	dw $C418        ; Bonus
+	dw $3F40        ; Remove
 	dw $B818        ; 
 
 ; rearrange esper code to avoid redundant text on screen
