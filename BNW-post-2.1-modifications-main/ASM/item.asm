@@ -53,12 +53,3 @@ org $D2BEBB
     db $EB,"Dried>Meat  "
     
 warnpc $D2BFF3
-
-;------------------------------------------------------------------
-;fan translation items
-;------------------------------------------------------------------
-
-;org $D2C11B
-;
-;    db $EB,"Chocobo>Wing"
-;    db $EB,"Hero>Drink  "
