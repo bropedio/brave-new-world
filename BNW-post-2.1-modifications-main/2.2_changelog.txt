@@ -1,4 +1,4 @@
-2.2 changelog (at b11.1 release 12/08/2022)
+2.2 changelog (at b12 release 01/04/2023)
 
 - Adds custom intro and title (Ryo_Hazuki)
 - Cleaner coliseum "select a challenger" screen (Ryo_Hazuki)
@@ -6,6 +6,7 @@
 - Deleted rare item counter (Ryo_Hazuki)
 - Added Tools attack values in shops. Edgar/Gogo cheering when selecting a tool (Ryo_Hazuki)
 - Added scrolls attack value in shops and Shadow/Gogo cheering while selecting them (Ryo_Hazuki)
+- Consumables will show 0 next to defense stats (as every other stat) in the shop details screen (Ryo_Hazuki)
 - Fix flash tool sprite position (FF6hacking)
 - Unlock all wob rage formations after FC events (Seibaby) 
 - Adds mountains to the minimap (Madsiur)
@@ -48,6 +49,12 @@
 - A mysterious feature (Madsiur) is added but will be unlockme content for the official release
 - New Narshe world of balance tiles
 - Fixed battle strings abbreviations and lightning>bolt
+- Detailed rage abilities descriptions (damage type, bad statuses, etc)
+- Shrinked esper list by 1 line to have 26 slots available for 26 espers
+- Inventory order changed to make Rod 1st place in weapon category and tools/scrolls last (this will reduce the amount of scrolling needed to break a rod or to swap a weapon)
+- Mitigated Mosaic effect when poisoned
+- Centered location names
+- Fairy charm's chest in Returner's hideout is side-openable
 
 2.2 roadmap (ordered by priority):
 
