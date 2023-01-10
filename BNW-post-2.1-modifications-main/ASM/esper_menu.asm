@@ -19,6 +19,9 @@ org $c358c1
 	JSR $597D       ; Load navig data
 	JMP $5986       ; Relocate cursor
 
+org $c3592a
+	lda #$0068		; blinking cursor whe exit submenu
+
 ; Load vertical shift values for BG1 text in skill menus
 org $c0ec20
 C34E2D:	LDX $00         ; Index: 0
@@ -65,29 +68,20 @@ C34E7F:	db $3F,$00,$00  ; LV
 		db $04,$94,$FF  ; Ability row A
 		db $04,$94,$FF  ; Ability row B
 		db $04,$94,$FF  ; Ability row C
-		db $04,$98,$FF  ; Ability row D
-		db $04,$98,$FF  ; Ability row E
-		db $04,$98,$FF  ; Ability row F
-		db $04,$9C,$FF  ; Ability row G
-		db $04,$9C,$FF  ; Ability row H
-		db $04,$9C,$FF  ; Ability row I
-		db $08,$A0,$FF  ; Ability row J
-		db $08,$A0,$FF  ; Ability row K
-		db $0C,$A0,$FF  ; Ability row L
-		db $08,$A4,$FF  ; Ability row M
-		db $08,$A4,$FF  ; Ability row N
-		db $08,$A4,$FF  ; Ability row O
-		db $08,$B0,$FF  ; Ability row P
-		db $08,$B0,$FF  ; Ability row Q
-		db $08,$B0,$FF  ; Ability row R
-		db $04,$AC,$FF  ; Ability row S
-		db $04,$AC,$FF  ; Ability row T
-		db $04,$AC,$FF  ; Ability row U
-		db $04,$B0,$FF  ; Ability row V
-		db $04,$B0,$FF  ; Ability row W
-		db $04,$B0,$FF  ; Ability row X
-		db $1E,$20,$FF  ; Ability row Y
-		db $00          ; End 
+		db $08,$98,$FF  ; Ability row D
+		db $08,$98,$FF  ; Ability row E
+		db $08,$9c,$FF  ; Ability row F
+		db $08,$a0,$FF  ; Ability row G
+		db $04,$a0,$FF  ; Ability row H
+		db $04,$a0,$FF  ; Ability row I
+		db $04,$A4,$FF  ; Ability row J
+		db $04,$A4,$FF  ; Ability row K
+		db $08,$b0,$FF  ; Ability row L
+		db $08,$A8,$FF  ; Ability row M
+		db $0c,$ac,$FF  ; Ability row N
+		db $10,$b0,$ff  ; Ability row O
+		db $0c,$Ae,$FF
+		db $00         ; End 
 
 warnpc $c0ece0
 
@@ -114,6 +108,8 @@ loop:
 	DEY             ; One less left
 	BNE loop		; Loop till last
 	STZ $2180       ; End string
+	lda #$20		; white colour	
+	sta $29		
 	JMP $7FD9       ; Draw string
 padbyte $ff
 pad $c35a66
@@ -121,7 +117,7 @@ warnpc $c35a67
 
 
 org $c3f430		
-	ldy #$46CF			; El bonus position
+	ldy #$4711			; El bonus position
 	JSR $3519			; Set pos, WRAM
 	bra new_print
 back:
@@ -132,34 +128,26 @@ warnpc $c3f43b
 org $c3f46b
 new_print:
 	jsl print_new		; go to load string
-	jsr $7fd9			; Draw EL bonus string
-	jsl print_new2
-	jsr $7fd9			; Draw Spend string
-	jsl print_new3
-	jmp to_new4
+	jsr $7fd9			; Draw string
+	jsl print_new2		; go to load string
+	bra back
 	
-org $c3f612
-to_new4:
-	jsr $7fd9
-	jsl print_new4
-	jmp back
-
-org $c0ff20
+org $c0ed10
 print_new:
 	lda #$24			; blue color
 	sta $29				; store
 	LDX $00				; Char index: 0
 .loop
-	LDA.L _EL_Bonus,X	; "At..." char
+	LDA.L EL_Bonus,X	; "EL Bonus" char
 	STA $2180			; Add to string
 	INX					; Point to next
-	CPX #$000b			; Done all 14?
+	CPX #$0009			; Done all 14?
 	BNE .loop			; Loop if not
 	STZ $2180
 	rtl
 	
 print_new2:	
-	ldy #$47B1			; "EL available text" position
+	ldy #$47bb			; "EL text" bottom position
 	JSR PosWRAM			; Set pos, WRAM
 	LDX $00				; Char index: 0
 .loop2
@@ -171,38 +159,9 @@ print_new2:
 	STZ $2180
 	rtl
 
-print_new3:
-	lda #$20		; white colour
-	sta $29			; store
-	ldy #$47BB		; "spend" position
-	JSR PosWRAM		; Set pos, WRAM
-	LDX $00			; Char index: 0
-.loop3
-	LDA.L spendq,X	; "At..." char
-	STA $2180		; Add to string
-	INX				; Point to next
-	CPX #$0003		; Done all 14?
-	BNE .loop3		; Loop if not
-	STZ $2180
-	rtl
-
-print_new4:
-	ldy #$429d		; "Remove" position
-	JSR PosWRAM		; Set pos, WRAM
-	LDX $00			; Char index: 0
-.loop3
-	LDA.L remove,X	; "At..." char
-	STA $2180		; Add to string
-	INX				; Point to next
-	CPX #$0006		; Done all?
-	BNE .loop3		; Loop if not
-	STZ $2180
-	rtl
 ELavlbl: db "EL"
-spendq: db "/25"
-remove: db "      "
 
-org $c0fcb0	
+
 PosWRAM:
 	LDX #$9E89      ; 7E/9E89
 	STX $2181       ; Set WRAM LBs
@@ -218,27 +177,27 @@ PosWRAM:
 
 
 org $c3f30f
-available:	db "Ava",$12,$13,$14,$15,"e",$00
+available:	db "Ava",$12,$13,$14,$15,"e:",$00
 warnpc $c3f31b
 
 org $c3f3f2
-	ldy #$46f1			; availabvle position
+	ldy #$472F			; availabvle position
 org $C3F3FA
 	LDA.l available,X 	; get "available" txt
 
-org $c3f41a
-	ldy #$47a9			; numer of available EL
+org $c3599f :	lda #$24
+org $c359a3	:	ldy #learnlabel
+org $c359a9	:	ldy #splabel
+org $c3fd7c	:	ldy #thirty
 
-	
 org $C35Ca7
-	dw $4631 : db "SP ",$00
-	dw $4435 : db " Learn",$00
-	dw $463B : db "/30",$00
-_EL_Bonus:
-	db " EL Bonus "
+splabel:	dw $462f : db "SP",$00
+learnlabel:	dw $4435 : db " Learn",$00
+thirty:		dw $463B : db "/30",$00
+EL_Bonus:	db "EL Bonus:"				;fd86
 
 org $C3F41A 
-	LDY #$47b7	; Unspent EL quantity coordinates
+	LDY #$47b5	; Unspent EL quantity coordinates
 	
 org $c3f751
 	ldx #$4637	; unspent SP quantity coordinates
@@ -249,16 +208,16 @@ org $C3598C
 	db $00          ; Initial column
 	db $00          ; Initial row
 	db $01          ; 1 column
-	db $06          ; 6 rows
+	db $05          ; 6 rows
 	
 ; Cursor positions for esper data menu
 org $C35991
-	dw $7010        ; Esper
-	dw $7C18        ; Spell A
-	dw $8818        ; Spell B
-	dw $9418        ; Spell C
-	dw $C418        ; Bonus
-	dw $3F40        ; Remove
+	dw $7210        ; Esper
+	dw $7e18        ; Spell A
+	dw $8a18        ; Spell B
+	dw $9618        ; Spell C
+	dw $c418        ; Bonus
+	dw $c810        ; 
 	dw $B818        ; 
 
 ; rearrange esper code to avoid redundant text on screen
@@ -299,3 +258,31 @@ org $d86e00
 	db $13,$e0,$0a,$14,$f0,$0e,$e0,$46
 	db $14,$f0,$09,$e0,$82,$14,$f0,$04
 	db $bf,$01,$50,$d8,$5c,$30,$55,$c2
+
+
+; Navigation data for Espers menu
+org $C34C27
+	db $01          ; Wraps horizontally
+	db $00          ; Initial column
+	db $00          ; Initial row
+	db $02          ; 2 columns
+	db $08          ; 8 rows
+
+; Cursor positions for Espers menu
+org $C34C2C
+	dw $7208        ; Esper 1
+	dw $7278        ; Esper 2
+	dw $7e08        ; Esper 3
+	dw $7e78        ; Esper 4
+	dw $8a08        ; Esper 5
+	dw $8a78        ; Esper 6
+	dw $9608        ; Esper 7
+	dw $9678        ; Esper 8
+	dw $A208        ; Esper 9
+	dw $A278        ; Esper 10
+	dw $ae08        ; Esper 11
+	dw $ae78        ; Esper 12
+	dw $Ba08        ; Esper 13
+	dw $Ba78        ; Esper 14
+	dw $C608        ; Esper 15
+	dw $C678        ; Esper 16
