@@ -35,13 +35,13 @@ org $C35D52	; Blue text
 
 org $C35D45	; White text
 	ldx #slashes							; Start pointer address
-	ldy #LVMPPlaceHolder-slashes			; Pointers to read (2 bytes each pointer)
+	ldy #Stats_BG1-slashes			; Pointers to read (2 bytes each pointer)
 
-org $c35d69	; Yellow Text text (BG3)
-	lda #$34								; Load Yellow Palette  
-	sta $29   								; Store on $29
-	ldx #LVMPPlaceHolder					; Start pointer address
-	ldy #$0004								; Pointers to read (2 bytes each pointer)
+org $c35d69	; Blue Text (BG1)
+	lda #$24						; Load Blue Palette  
+	sta $29   						; Store on $29
+	ldx #Stats_BG1					; Start pointer address
+	ldy #$000A						; Pointers to read (2 bytes each pointer)
 	jsr $69ba						; Jump to sub routine that add new pointers instead of "prepare print"
 	rts
 
@@ -53,12 +53,7 @@ statusstats:
 	dw #statusvigor
 	dw #statusstamina
 	dw #statusmagic
-	dw #statusevade
-	dw #statusmagicevade
 	dw #statusspeed
-	dw #statusattack
-	dw #statusdefense
-	dw #statusmagicdefense
 	dw #statusexp
 	dw #statusnextlv
 	
@@ -71,10 +66,14 @@ slashes:
 	dw #statusslash
 	dw #statusslash2
 
-LVMPPlaceHolder:
-	dw #LVPlaceHolder
-	dw #MPPlaceHolder
+Stats_BG1:
+	dw #statusattack
+	dw #statusdefense
+	dw #statusmagicdefense
+	dw #statusevade
+	dw #statusmagicevade
 
+	
 ;Data
 
 statusslash:
@@ -110,32 +109,44 @@ statusspeed:
 statusstamina:
 	db $cd,$7d,"Stamina",$00
 	
-statusattack:
-	db $4d,$7f,"Attack",$00
-	
-statusdefense:
-	db $cd,$7f,"Defense",$00
-	
-statusmagicdefense:	
-	db $eb,$7f,"M.Defense",$00
-	
-statusevade:
-	db $4d,$88,"Evade",$00
-	
-statusmagicevade:
-	db $6b,$88,"M.Evade",$00
+statusattack:		dw $3d8d+128 : db "Attack",$00
+statusdefense:		dw $3e0d+128 : db "Defense",$00
+statusmagicdefense:	dw $3e2b+128 : db "M.Defense",$00
+statusevade:		dw $3e8d+128 : db "Evade",$00
+statusmagicevade:	dw $3eab+128 : db "M.Evade",$00
 
-
-	
-LVPlaceHolder:
-	db $b7,$39," ",$00
-MPPlaceHolder:
-	db $f7,$39," ",$00
-	
-	
+; Set to condense BG1 text in Status menu
+Condense_Status_txt:
+	LDA #$02        ; 1Rx2B to PPU
+	STA $4360       ; Set DMA mode
+	LDA #$0E        ; $2112
+	STA $4361       ; To BG3 V-Scroll
+	LDY #HDMA_Table ; 
+	STY $4362       ; Set src LBs
+	LDA #$C3        ; Bank: C3
+	STA $4364       ; Set src HB
+	LDA #$C3        ; ...
+	STA $4367       ; Set indir HB
+	LDA #$20        ; Channel: 5
+	TSB $43         ; Queue HDMA-5
+	JSR $5D05       ; Draw menu; portrait
+	RTS
+HDMA_Table:
+	db $70,$00,$00  ; Nothing
+	db $41,$0D,$00  ; Nothing
+	db $0D,$11,$00  ; Attack
+	db $0D,$15,$00  ; Def/M.Def
+	db $00
 padbyte $ff
-pad $c3651b
-warnpc $C3651c
+pad $c3652c
+warnpc $C3652d
+
+	
+; 0B: Initialize Status menu
+org $C31C46
+	JSR $352F  			      ; Reset/Stop stuff
+	JSR $620B 			      ; Set to shift text
+	JSR Condense_Status_txt  ; Draw menu; portrait
 
 ;---------------------------------------------------------------------;
 ;                                                                     ;
@@ -197,8 +208,8 @@ org $C3FDD1
 	dw $7DDF				; stamina   (11A2)
 	dw $7D5F				; speed     (11A4)
 	dw $7C5F				; vigor     (11A6)
-	dw $885F				; evade     (11A8)
-	dw $887F				; m.evade   (11AA)
+	dw $3F1F				; evade     (11A8)
+	dw $3F3F				; m.evade   (11AA)
 
 org $C3FDE0
 ; StatOffset
@@ -390,11 +401,11 @@ PrintValueRoutine:
 	BMI .loop				; Branch to loop and load stat value and coord.
 	LDA $11BA				; Defense value
 	JSR !TurnIntoText8bit
-	LDX #$7FDF				; Defense stat position
+	LDX #$3E1F+128			; Defense stat position
 	JSR !Draw3Digits	
 	LDA $11BB				; M.Defense Value
 	JSR !TurnIntoText8bit
-	LDX #$7FFF				; M.Defense stat position
+	LDX #$3e3F+128			; M.Defense stat position
 	JSR !Draw3Digits
 	JSR $9371				; Define Attack
 ;C36002 BNW new data
@@ -410,7 +421,7 @@ PowHelper:
 	Skip:	
 	JSR $052E				; [vanilla] unchanged, left for context
 ;C36010 'Till here
-	LDX #$7F5F				; Text position
+	LDX #$3D9F+128			; Attack Text position
 	JSR $0486				; Draw 3 digits
 	LDY #$78DB				; Text position
 	JSR $34CF				; Draw actor name
