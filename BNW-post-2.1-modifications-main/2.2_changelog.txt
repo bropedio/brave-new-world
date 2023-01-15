@@ -59,6 +59,7 @@
 2.2 roadmap (ordered by priority):
 
 - Tweak battle inventory to show only consumables in the main screen and only equippable pieces in the equip submenu
+- Import mastered espers icon (Madsiur)
 - Import Rage checklist (Assassin): an hack that shows in gray, rages unlocked into the Veldt but not yet "leaped"
 - Press A on a Rage to show details: Elemental weaknesses/resistance, Statuses immunities/innate
 - Summon command active with X-Magic
