@@ -177,11 +177,11 @@ PosWRAM:
 
 
 org $c3f30f
-available:	db "Ava",$12,$13,$14,$15,"e:",$00
+available:	db "  Unspent",$00
 warnpc $c3f31b
 
 org $c3f3f2
-	ldy #$472F			; availabvle position
+	ldy #$472F			; available position
 org $C3F3FA
 	LDA.l available,X 	; get "available" txt
 
@@ -194,7 +194,7 @@ org $C35Ca7
 splabel:	dw $462f : db "SP",$00
 learnlabel:	dw $4435 : db " Learn",$00
 thirty:		dw $463B : db "/30",$00
-EL_Bonus:	db "EL Bonus:"				;fd86
+EL_Bonus:	db "EL Bonus "				;fd86
 
 org $C3F41A 
 	LDY #$47b5	; Unspent EL quantity coordinates
@@ -286,3 +286,13 @@ org $C34C2C
 	dw $Ba78        ; Esper 14
 	dw $C608        ; Esper 15
 	dw $C678        ; Esper 16
+
+; shrink esper list by 1 line to have just 26 slots for 26 total espers
+
+org $C320D0
+	LDA #$05        ; Top row: Carbuncle's
+	STA $5C         ; Set scroll limit
+
+org $C320BA        
+	LDA #$1300      ; V-Speed: 19 px
+	STA $7E354A,X   ; Set scrollbar's
