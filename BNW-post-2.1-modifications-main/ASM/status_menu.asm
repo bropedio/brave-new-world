@@ -137,10 +137,33 @@ HDMA_Table:
 	db $0D,$11,$00  ; Attack
 	db $0D,$15,$00  ; Def/M.Def
 	db $00
-padbyte $ff
-pad $c3652c
-warnpc $C3652d
 
+new_sub_pointer:
+	LDA #$10				; duplicated from C3/1EF7
+	TRB $45
+	JSR $0EFD
+	CLC
+	JMP $8983				; originally pointed by C3/02A3
+reset_item_desc:
+	PHA
+	LDA $26
+	CMP #$5E
+	BEQ $FA4A
+	LSR
+	CMP #$32
+	BEQ $FA4A
+	STZ $3649,X				; resets the item description display
+	PLA
+	RTS
+padbyte $ff
+pad $C3652D
+warnpc $C3652D
+
+org $C302A3
+	dw #new_sub_pointer
+
+org $C3A897
+	JSR reset_item_desc		; Jump to new subroutine C3/FA3B
 	
 ; 0B: Initialize Status menu
 org $C31C46
