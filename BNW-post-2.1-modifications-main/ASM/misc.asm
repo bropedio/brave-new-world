@@ -458,7 +458,12 @@ org $D8E90E
 
 org $C00E82  
 	db $0F, $1F, $2F, $3F, $2F, $1F, $2F, $3F, $2F, $1F, $2F, $3F, $2F, $1F, $2F, $3F, $2F, $1F, $2F, $3F, $2F, $1F, $2F, $3F, $2F, $1F, $2F, $3F, $2F, $1F
+	
+; fix an hard to trigger bug that can softlock the game moving char sprite offscreen
+
+org $CACBAD
+	db $FD
 
 ;Brave New World data
 org $C33BB8
-	db $d1,$78,"Brave New World 2.2 b12",$00
+	db $d1,$78,"Brave New World 2.2 b13",$00
