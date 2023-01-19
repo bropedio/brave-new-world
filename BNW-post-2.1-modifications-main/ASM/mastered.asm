@@ -47,7 +47,7 @@ ICON = $CF				;; star icon value (can be changed to another icon)
 
 org $C31B5E
 	jsl SET_SPELL_OFFSET			;; calculate actor's spell starting RAM offset
-
+	lda $69,x					;; loac actor ID in slot
 ;; in draw esper's name and MP cost function
 
 org $C35550
