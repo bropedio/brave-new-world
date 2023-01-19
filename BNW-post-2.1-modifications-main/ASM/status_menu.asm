@@ -148,11 +148,12 @@ reset_item_desc:
 	PHA
 	LDA $26
 	CMP #$5E
-	BEQ $FA4A
+	BEQ .wait
 	LSR
 	CMP #$32
-	BEQ $FA4A
+	BEQ .wait
 	STZ $3649,X				; resets the item description display
+.wait
 	PLA
 	RTS
 padbyte $ff
