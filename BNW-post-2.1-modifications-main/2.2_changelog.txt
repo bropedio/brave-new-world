@@ -58,8 +58,8 @@
 
 b13 (unreleased)
 - Tweaked esper menu
-- Imported madsiur's mastered espers icon 
-- fixed a very rare bug that can softlock the game moving char sprite offscreen
+- Imported madsiur's mastered espers icon
+- Fixed a very rare bug that can softlock the game moving char sprite offscreen
 - Status icon overflow patch (Silent Enigma)
 - Description disruption (Silent Enigma)
 
