@@ -55,6 +55,9 @@ org $C35550
 	jsl CHECK_MASTERED			;; check if current esper is mastered
 	jsl ADD_ICON
 
+org $C3555D
+	ldy #$000D					;; blank tiles when scrolling menu
+
 ;;|----------------------------------------------|
 ;;| outside bank $C3 code                        |
 ;;|----------------------------------------------|
