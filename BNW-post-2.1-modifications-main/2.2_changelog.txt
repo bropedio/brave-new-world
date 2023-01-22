@@ -1,4 +1,4 @@
-2.2 changelog (at b12 release 01/04/2023)
+2.2 changelog (at b13 release 01/22/2023)
 
 - Adds custom intro and title (Ryo_Hazuki)
 - Cleaner coliseum "select a challenger" screen (Ryo_Hazuki)
@@ -47,21 +47,18 @@
 - Exploder (player version) now leaves the caster with 1 HP (Sir Newton Fig)
 - Siren Song may set Muddle+Berserk (Gens)
 - A mysterious feature (Madsiur) is added but will be unlockme content for the official release
-- New Narshe world of balance tiles
-- Fixed battle strings abbreviations and lightning>bolt
-- Detailed rage abilities descriptions (damage type, bad statuses, etc)
-- Shrinked esper list by 1 line to have 26 slots available for 26 espers
-- Inventory order changed to make Rod 1st place in weapon category and tools/scrolls last (this will reduce the amount of scrolling needed to break a rod or to swap a weapon)
-- Mitigated Mosaic effect when poisoned
-- Centered location names
-- Fairy charm's chest in Returner's hideout is side-openable
+- New Narshe world of balance tiles (Gens, Gi Nattak)
+- Fixed battle strings abbreviations and lightning>bolt (Gens)
+- Detailed rage abilities descriptions (damage type, bad statuses, etc) (Gens)
+- Shrinked esper list by 1 line to have 26 slots available for 26 espers (Gens)
+- Inventory order changed to make Rod 1st place in weapon category and tools/scrolls last (to reduce the amount of scrolling needed to break a rod or swap a weapon) (Gens)
+- Mitigated Mosaic effect when poisoned (Gens)
+- Centered location names (Gens)
+- Fairy charm's chest in Returner's hideout is side-openable (Gens)
+- Imported madsiur's mastered espers icon (Ryo_Hazuki)
+- Fixed a very rare bug that can softlock the game moving char sprite offscreen (Cdude)
+- Fixed "Description disruption" (Silent Enigma)
 
-b13 (unreleased)
-- Tweaked esper menu
-- Imported madsiur's mastered espers icon
-- Fixed a very rare bug that can softlock the game moving char sprite offscreen
-- Status icon overflow patch (Silent Enigma)
-- Description disruption (Silent Enigma)
 
 2.2 roadmap (ordered by priority):
 
