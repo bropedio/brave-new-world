@@ -300,7 +300,6 @@ Scholars the world over are doing research on magic.
 [caption #84]
 Ancient texts speak of a [1000 year-old city beneath the sand.]
 
-
 [caption #85]
 I heard the Empire is using something called [Magitek_]
 
@@ -716,14 +715,14 @@ Get out!
 What have I done? I betrayed the town, and I didn't even need the money!
 
 [caption #209]
-Derp.
+Chung chung_  Chung chung_
+Magitek Armor!!!!
 
 [caption #210]
 My dad's really important! He has drinks with General Leo!
 
 [caption #211]
-Legend says that if someone has been asleep for too long, a magical creature called a tapir appears to wake them up.<EOP>
-
+Legend says that if someone has been asleep for too long, a magical creature called a tapir appears to wake them up.
 
 [caption #212]
 Has war really begun?
@@ -807,7 +806,7 @@ Imperial troops everywhere! Gotta get out without being seen!
 Was this trip really necessary? <D>Seriously, there was no good reason to come back this way.
 
 [caption #236]
-<A4>: _what's that smell?<EOP>
+<A4>: _what's that smell?
 
 
 [caption #237]
@@ -1334,7 +1333,7 @@ Guard A: Hold your tongue!
 Guard A: Shut up!
 
 [caption #382]
-Guard A: Run your mouth while you can. The executioner comes for you tomorrow, bitch.
+Guard A: Run your mouth while you can. The executioner comes for you tomorrow, traitor.
 
 [caption #383]
 Guard A: You! Keep a close eye on her!
@@ -2294,7 +2293,7 @@ It boosts all damage and healing output by 50%, but it doubles all damage taken 
 This penalty can be lowered by raising <A0>'s stamina.
 
 [caption #629]
-Exploit elemental weaknesses for best win in battle. Humans, for example, are especially vulnerable to [dark] damage.<EOP>
+Exploit elemental weaknesses is an extremely effective tactic. Humans, for example, are especially vulnerable to [dark] damage.<EOP>
 Bolt and water are most effective against mechanical enemies. Bolt also works very well on anything that flies.<EOP>
 And while ice may not be one of the more powerful elements, it still killed the dinosaurs.<EOP>
 Earth and wind are very strong on the other hand, but no foes have a weakness to them.<EOP>
@@ -2701,9 +2700,9 @@ This region's called the Veldt. Beasts and vagrants from all over the world migr
 I saw a kid running with a herd of beasts when I was out hunting. He looked hungry_
 
 [caption #752]
-Hear about the Serpent Trench?
-<C> No
+Heard about the Serpent Trench?
 <C> Yes
+<C> No
 
 [caption #753]
 If you had a helmet you could make it to Nikeah. <D>Well one of you could_ <D>unless you figured out a way to share it.
@@ -5467,7 +5466,7 @@ Ooh_ me <A13>_ Yes, boss_ Me join you!<EOP>
 
 
 [caption #1536]
-Hey, you're kinda cute. You wanna_
+Say, you wanna get hitched?
 
 [caption #1537]
 Aisha, no!
@@ -5609,7 +5608,7 @@ This is Albrook, an occupied city_
 Business is picking up in the port!
 
 [caption #1580]
-What is this, 12,000 BC?
+How could an island float in the sky?!
 
 [caption #1581]
 The Empire built a base near the mountains to the east. Nobody is allowed anywhere near it, so don't even try.
@@ -6370,7 +6369,8 @@ Gestahl: After all that the Empire has put them through, we likely won't reach a
 Gestahl: That is why_ <D>I need <A0>'s help.
 
 [caption #1808]
-Cid: If anyone can bridge the gap between esper and human, it's <A0>.
+Cid: If anyone can bridge the gap between esper and human,
+it's <A0>.
 
 [caption #1809]
 Gestahl: There is a freighter moored at the port in Albrook ready to leave for Crescent Island.<EOP>
@@ -6928,8 +6928,7 @@ A talented young artist whose skill is surpassed only by her love for her grandf
 <A8>: Oh, all right_
 
 [caption #1978]
-<A7>: Before you go, would you like some kaiyowa bread?
-I just made it this morning.
+<A7>: What a beautiful day.
 
 [caption #1979]
 <A8>: Hmmph!
@@ -8939,7 +8938,8 @@ A single letter is carved_
         Got [Daryl's Soul]
 
 [caption #2531]
-Your own past can be your worst enemy. Friends_family_gotta let 'em all go_
+Your own past can be your worst enemy. Friends_ family_ gotta
+let 'em all go_
 
 [caption #2532]
 I saw a dinosaur in a forest north of the Veldt.
@@ -9488,7 +9488,7 @@ Nobody has seen or heard from Owzer in weeks. I wonder what's happened to him?
 
     A still-life of flowers.<EOP>
 
-    It gives you piece of mind_
+    It gives you peace of mind_
 
 [caption #2683]
 
@@ -10887,4 +10887,5 @@ Maduin: _you may be able to remain in this world as a human. <E$10><OP$12>
 <A8>: _just you wait and see!
 
 [caption #3083]
+
 
