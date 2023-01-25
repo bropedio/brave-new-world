@@ -69,8 +69,8 @@ Give it up, Vargas!<P>
 Vargas: Ah, <A$05>!<P>
 
 [caption #18]
-<A$05>: Why, Vargas? <P>How could you
-kill your own father!?<P>
+<A$05>: Why, Vargas? <P>How could
+you kill your own father!?<P>
 
 [caption #19]
 Vargas: The old bastard snubbed
@@ -85,20 +85,20 @@ chose!<P>
 Vargas: Liar!<P>
 
 [caption #22]
-<A$05>: He knew your potential was
-far greater!<P>
+<A$05>: He knew your potential
+was far greater!<P>
 
 [caption #23]
 Vargas: Enough of your lies!<P>
-See for yourself that I'm far more
-than mere potential!<P>
+See for yourself that I'm far
+more than mere potential!<P>
 
 [caption #24]
 Mortal Attack! Blizzard Fist!<P>
 
 [caption #25]
-Vargas: Ah, the master taught you
-well!<P>
+Vargas: Ah, the master taught
+you well!<P>
 
 [caption #26]
 <A$05>: I guess there's no
@@ -106,16 +106,17 @@ avoiding this_<P>
 
 [caption #27]
 Vargas: Fate made us train
-together, <A$05>! <P>And fate will send
-you to your doom!<P>
+together, <A$05>! <P>And fate will
+send you to your doom!<P>
 
 [caption #28]
 Vargas: Master Duncan already<P>
 taught you that?!<P>
 
 [caption #29]
-<A$05>: Of course he did_ If only you
-hadn't been in such rush for power.<P>
+<A$05>: Of course he did_ If only
+you hadn't been in such rush for
+power.<P>
 
 [caption #30]
 
@@ -444,30 +445,32 @@ home, so I followed you.<P>
 <A$08>: Hey there! What's your name?<P>
 
 [caption #122]
-Ultros: How dare you ask my name!<P>
-As if anyone wouldn't know the
-great Ultros!<P>
+Ultros: How dare you ask my
+name!<P> As if anyone wouldn't
+know the great Ultros!<P>
 
 [caption #123]
-<A$01>: <A$08> and Ultros_ <D>What ARE you doing_?<P>
+<A$01>: <A$08> and Ultros_ <D>
+What ARE you doing_?<P>
 
 [caption #124]
-<A$08>: Hey, Ulty_ <D>why don't you pose
-for me? <P>I want to draw your
-portrait!<P>
+<A$08>: Hey, Ulty_ <D>why don't you
+pose for me? <P>I want to draw
+your  portrait!<P>
 
 [caption #125]
-Ultros: Don't talk to me as if I was
-one of your kiddy friends!<P>
+Ultros: Don't talk to me as if I
+was one of your kiddy friends!<P>
 I don't want a stinkin' portrait!<P>
 
 [caption #126]
-<A$08>: Fine!<P> I didn't want to draw it
-anyway!<P>
+<A$08>: Fine!<P> I didn't want to draw
+it anyway!<P>
 
 [caption #127]
-<A$08>: It's okay_ <P>I'll just jump down
-from here_ <D>then you'll all be happy!<P>
+<A$08>: It's okay_ <P>I'll just jump
+down from here_ <D>then you'll all
+be happy!<P>
 
 [caption #128]
 <A$00>: No! <A$08>, don't!<P>
@@ -592,8 +595,8 @@ on this forever.<P>
 
 [caption #159]
 <A$0B>: Ah! Me give you <D>present!<P>
-<A$0B> give <A$02> and <A$05> <D>nice gift in
-thanks for food!<P>
+<A$0B> give <A$02> and <A$05> <D>nice gift
+in thanks for food!<P>
 
 [caption #160]
 <A$05>: What kind of junk do you
@@ -626,8 +629,8 @@ He try <D>to steal my treasure?<P>
 talking to you!<P>
 
 [caption #168]
-<A$02>: I believe he is trying to tell us
-something.<P>
+<A$02>: I believe he is trying to tell
+us something.<P>
 
 [caption #169]
 <A$05>: *sigh* <D>Fine, carry on_<P>
@@ -679,8 +682,8 @@ GAU!<P>
 
 [caption #182]
 <A$0B> can [Leap] onto such foes
-whenever you fight them, even if
-you're not on the Veldt.<P>
+whenever you fight them, even
+if you're not on the Veldt.<P>
 
 [caption #183]
 Kappa: <D>Here's how to use <A$0B>!<P>
@@ -801,10 +804,10 @@ Get going!<D>
 We've no time to lose!<D>
 
 [caption #212]
-[Filthy humans_<P> you slaughter
-my brethren and befoul their rest
-with the profanity of your
-continued existence_<P>
+[Filthy humans_<P>
+you slaughter my brethren and
+befoul their rest with the profanity
+of your continued existence_<P>
 
 [caption #213]
 In the name of all dragonkind,
@@ -932,7 +935,8 @@ Hey, little girl_ Uncle Ulty REALLY
 wants you to draw his portrait!<P>
 
 [caption #242]
-<A$08>: Hee hee_ <D>you're gonna love it!<P>
+<A$08>: Hee hee_
+<D>you're gonna love it!<P>
 
 [caption #243]
 <A$07>: Now that that's settled,
@@ -940,7 +944,8 @@ get away from that ledge!<P>
 
 [caption #244]
 [I will possess your body.<P>
-I will appear in this form again only-<P>]
+I will appear in this form
+again only-<P>]
 
 [caption #245]
 Kefka: Life_ <D>hope_ <D>dreams_<D><D>
@@ -966,9 +971,9 @@ you? <P>Die, foolish mortal, and serve
 my bidding in the afterlife!]<P>
 
 [caption #251]
-[Now, then_ where was I? <P>Oh, yes,
-I will possess your body until you
-die.]<P>
+[Now, then_ where was I? <P>Oh,
+yes, I will possess your body until
+you die.]<P>
 
 [caption #252]
 <A$02>: I am not certain_<P>
