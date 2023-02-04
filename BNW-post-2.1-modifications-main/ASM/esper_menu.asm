@@ -296,3 +296,11 @@ org $C320D0
 org $C320BA        
 	LDA #$1300      ; V-Speed: 19 px
 	STA $7E354A,X   ; Set scrollbar's
+	
+org $c35950	
+	LDA #$05        ; Top row: Golem's
+	STA $5C         ; Set scroll limit
+
+org $c35923
+	LDA #$1300      ; V-Speed: 16 px
+	STA $7E354A,X   ; Set scrollbar's
