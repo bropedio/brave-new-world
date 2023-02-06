@@ -19,7 +19,7 @@ ManEater:       db "2x damage to humans",$00
 Kunai:          db "",$00
 Avenger:        db "Holy damage",$00
 Valiance:       db "Ignores defense|Stronger at low HP",$00
-MythrilBolo:    db "Press $ twice and @ in item menu|to check weapon's properties",$00
+MythrilBolo:    db "Press $ twice and @ in item menu to|check every weapon's properties",$00
 IronCutlass:    db "",$00
 Scimitar:       db "Dual-wield|May counterattack",$00
 Flametongue:    db "Fire damage|May cast Fire 2",$00
@@ -205,7 +205,7 @@ ZephyrCape:     db "Sets [Haste] on low HP",$00
 MysteryEgg:     db "It's a mystery_",$00
 BlackHeart:     db "HP+50%",$00
 MagicCube:      db "MP+50%",$00
-PowerGlove:     db "Physical output +25%|(It's so bad)",$00
+PowerGlove:     db "Physical output +25%",$00
 BlizzardOrb:    db "Magical output +25%|(??? on yeti)",$00
 PsichoBelt:     db "Physical output +25%|(??? on yeti)",$00
 RogueCloak:     db "[Fight] always hits|Magical output +25%",$00
