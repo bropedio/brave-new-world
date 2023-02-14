@@ -528,6 +528,10 @@ overwriteRow:
 	BEQ .end					; branch if so
 	CMP #$23					; Gungnir?
 	BEQ .end					; branch if so
+	CMP #$41					; Shuriken?
+	BEQ .end					; branch if so
+	CMP #$43					; Ninja Star?
+	BEQ .end					; branch if so
 	PLA							; restore A
 	REP #$20					; 16 bit-A
 	LDA.l ItemFlagPointers+40	; load Cures HP pointer
