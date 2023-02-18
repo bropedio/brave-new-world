@@ -880,33 +880,33 @@ EsperDescPointers:
   dw Starlet
   dw Phoenix
 
-Ramuh: db "Bolt damage - all foes",$00
-Ifrit: db "Fire damage - all foes",$00
-Shiva: db "Ice damage - all foes",$00
-Siren: db "Sets [Muddle]/[Berserk] - all foes",$00
-Terrato: db "Earth damage - all foes",$00
-Shoat: db "Sets [Petrify] - all foes",$00
-Maduin: db "Wind damage - all foes|Ignores def.",$00
-Bismark: db "Water damage - all foes",$00
-Stray: db "Stamina-based cure - party|Sets [Regen]",$00
-Palidor: db "Party attacks with [Jump]",$00
-Tritoch: db "Fire/Ice/Bolt damage - all foes",$00
-Odin: db "Non-elemental dmg - all foes|Stamina-based; ignores def.",$00
+Ramuh: db "Judgement:|Bolt damage - all foes",$00
+Ifrit: db "Inferno:|Fire damage - all foes",$00
+Shiva: db "Gem Dust:|Ice damage - all foes",$00
+Siren: db "Siren Song:|Sets [Muddle]/[Berserk] - all foes",$00
+Terrato: db "Earth Rage:|Earth damage - all foes",$00
+Shoat: db "Hurricane:|Sets [Petrify] - all foes",$00
+Maduin: db "Chaos Wing: Wind damage - all foes|Ignores def.",$00
+Bismark: db "Sea Song:|Water damage - all foes",$00
+Stray: db "Caith Sith: Stamina-based cure - party|Sets [Regen]",$00
+Palidor: db "Air Raid:|Party attacks with [Jump]",$00
+Tritoch: db "Trisection:|Fire/Ice/Bolt damage - all foes",$00
+Odin: db "Atom Edge: Stamina-based - all foes|Non-elemental dmg; ignores def.",$00
 Loki: db $00
-Bahamut: db "Non-elemental dmg - all foes|Ignores def.",$00
-Crusader: db "Dark damage - all foes",$00
-Ragnarok: db "9999 damage - one foe",$00
-Alexandr: db "Holy damage - all foes",$00
-Kirin: db "Cures HP - party|Revives fallen allies",$00
-Zoneseek: db "Sets [Shell] - party",$00
-Carbunkl: db "Sets [Reflect] - party",$00
-Phantom: db "Sets [Vanish] - party",$00
-Seraph: db "Sets [Rerise] - party",$00
-Golem: db "Blocks physical attacks|(Durability = caster's max HP)",$00
-Unicorn: db "Stamina-based cure - party|Lifts most bad statuses",$00
-Fenrir: db "Sets [Image] - party",$00
-Starlet: db "Cures HP to max - party|Lifts all bad statuses",$00
-Phoenix: db "Revives fallen allies - party|(HP = max)",$00
+Bahamut: db "Mega Flare: Ignores def.|Non-elemental dmg - all foes",$00
+Crusader: db "Jihad:|Dark damage - all foes",$00
+Ragnarok: db "Oblivion:|9999 damage - one foe",$00
+Alexandr: db "Justice:|Holy damage - all foes",$00
+Kirin: db "Life Force: Cures HP - party|Revives fallen allies",$00
+Zoneseek: db "Light Wall:|Sets [Shell] - party",$00
+Carbunkl: db "Ruby Blast:|Sets [Reflect] - party",$00
+Phantom: db "Fader:|Sets [Vanish] - party",$00
+Seraph: db "Lifeline:|Sets [Rerise] - party",$00
+Golem: db "Earth Wall: Blocks physical attacks|(Durability = caster's max HP)",$00
+Unicorn: db "Heal Horn: Stamina-based cure - party|Lifts most bad statuses",$00
+Fenrir: db "Moonshine:|Sets [Image] - party",$00
+Starlet: db "Group Hug: Cures HP to max - party|Lifts all bad statuses",$00
+Phoenix: db "Rebirth: Revives fallen allies - party|(HP = max)",$00
 
 ;----------------------------------------------------
 ;Equip bonus descriptions
