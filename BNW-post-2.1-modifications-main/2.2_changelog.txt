@@ -58,14 +58,20 @@
 - Imported madsiur's mastered espers icon (Ryo_Hazuki)
 - Fixed a very rare bug that can softlock the game moving char sprite offscreen (Cdude)
 - Fixed "Description disruption" (Silent Enigma)
+b14 (not yet released)
+- Pressing on an esper twice remove it, pressing on an esper equipped on another char makes you choose if you want to "transfer" it
+- Added summon names to description field
+- Changed blind icon
+- Centered "Save" in the load/save screen
 
 2.2 roadmap (ordered by priority):
 
-- Pressing on an esper twice remove it, pressing on an esper equipped on another char makes you choose if you want to "steal" it
 - Tweak battle inventory to show only usable items (consumables and rods) in the main item screen and only equippable pieces in the equip submenu
 - Import Rage checklist (Assassin): an hack that shows in gray, rages unlocked into the Veldt but not yet "leaped"
 - Press A on a Rage to show details: Elemental weaknesses/resistance, Statuses immunities/innate (this would be useless if we build a complete bestiary)
-- Summon command active with X-Magic (needs an hacker working on it)
+- Summon command active with X-Magic, Rods don't consume MP on non critical attacks, Disintegration animation for enemies that get Petrified (needs hackers working on them)
 - Autoscan feature - press Y to see HP/MP, X for statuses - Scan is still needed for weaknesses (depends on Bropedio)
+- Event editing (add clear bytes to whit/red/silver dragons, convert relic tutorial in a gogo tutorial, add CT jingle to Ultima's door)
+- Other bro new world features (smart targeting, fight in yellow if will trigger a DA, Dog Block and Golem preempt check for cover, Defend work against piercing attacks, Status tick rate not affected by speed/haste/slow, etc...)
 - Import Alphabetical Lore (Silent Enigma): useless for english version but useful for translations or future lores edits
 - Fix mp colors corrupting reflect palette (Ryo_Hazuki) [very low priority - can stay as it is now]
