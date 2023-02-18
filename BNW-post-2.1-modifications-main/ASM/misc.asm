@@ -464,6 +464,15 @@ org $C00E82
 org $CACBAD
 	db $FD
 
+; centered "save" on save/load game screen
+
+org $C31600
+	dw #Savesave
+	
+org $C31A24	
+Savesave:
+	db $65,$79,"Save",$00
+
 ;Brave New World data
 org $C33BB8
-	db $d1,$78,"Brave New World 2.2 b13",$00
+	db $d1,$78,"Brave New World 2.2 b14",$00
