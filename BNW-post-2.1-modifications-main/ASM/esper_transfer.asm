@@ -327,7 +327,7 @@ cant_letter:
 	INX               ; Go to the next letter.
 	BRA cant_letter
 .exit
-	JML $C326f5
+	JML C326F5
 	
 NoEqTxt:
   db "Can't equip!",$00
