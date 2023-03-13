@@ -58,11 +58,12 @@
 - Imported madsiur's mastered espers icon (Ryo_Hazuki)
 - Fixed a very rare bug that can softlock the game moving char sprite offscreen (Cdude)
 - Fixed "Description disruption" (Silent Enigma)
-b14 (not yet released)
 - Pressing on an esper twice remove it, pressing on an esper equipped on another char makes you choose if you want to "transfer" it
 - Added summon names to description field
 - Changed blind icon
 - Centered "Save" in the load/save screen
+b15 (not yet released)
+- numbered bushido screen
 
 2.2 roadmap (ordered by priority):
 
