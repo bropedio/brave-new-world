@@ -312,19 +312,19 @@ warnpc $C32706
 org $C0FF9A
 icon:
 	db $eb	;item
-	db $e1	;rod
+	db $d8	;tool
+	db $d9	;star
+	db $da	;scroll
 	db $db	;knife
 	db $dc	;sword
 	db $dd	;spear
 	db $de	;claw
 	db $df	;katana
 	db $e0	;casino
+	db $e1	;rod
 	db $e2	;brush
 	db $ec	;ranged
 	db $e3	;other
-	db $d8	;tool
-	db $d9	;star
-	db $da	;scroll
 	db $e4	;shield
 	db $e5	;helmet
 	db $e6	;armor
@@ -473,6 +473,14 @@ org $C31A24
 Savesave:
 	db $65,$79,"Save",$00
 
+; fixed "pink gogo" bug
+
+org $C456EA
+	db $CD
+
+org $C4575F
+	db $0D
+
 ;Brave New World data
 org $C33BB8
-	db $d1,$78,"Brave New World 2.2 b14",$00
+	db $d1,$78,"Brave New World 2.2 b15",$00
