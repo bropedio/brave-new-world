@@ -1,5 +1,5 @@
 -1key_blitzes (Gens)
-Replace the default blitz combos with 1 digit triggering
+Replace the default blitz combos with 1 button inputted.
 
 Pummel      ←		Suplex      ↑
 Aurabolt    ↓		Fire Dance  →          
@@ -57,3 +57,10 @@ Change the whole cast appearance with sprites matching or heavily inspired from 
 
 -DoubleSpeedEnemies, SlowerPlayer or Both (Nowea)
 Alter player or/and enemy speed. Note: Use only 1 patch. "Both" leads enemies to get 3x turns compared to the player: use it at your own risk.
+
+-items_cap, levels_cap, no_escape and EL_tweak
+patches meant to work as a set of "draconian settings" (difficulty settings in dragon quest XI) for BNW. 
+1) Caps each item max quantity to 20
+2) Caps Level to 30 and ELs to 20
+3) Makes run away from fights impossible (warp is still useful to leave dungeons)
+4) Nerf HP and MP ELs (grant +20 of the stat (if accompanied by another stat) or +40 of the stat (if alone))
