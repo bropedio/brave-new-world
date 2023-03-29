@@ -1,4 +1,4 @@
-2.2 changelog (at b13 release 01/22/2023)
+2.2 changelog (at b14 release 03/06/2023)
 
 - Adds custom intro and title (Ryo_Hazuki)
 - Cleaner coliseum "select a challenger" screen (Ryo_Hazuki)
@@ -32,7 +32,7 @@
 - Overhaul Opera scene with dialogues synced with music (Gens)
 - Added every active flag to weapon submenu in inventory (Ryo_Hazuki)
 - 0 px font (as in Chrono Trigger)
-- Imported Docile NPCs by SilentEnigma (an hack that leads npc to not occupy tiles pointed by the player)
+- Imported Docile NPCs by SilentEnigma (a hack that leads npc to not occupy tiles pointed by the player)
 - Half atb refund for incorrect blitz input (by Sir Newton Fig)
 - Fixed scrolling in Lore menu and in Lore battle menu (Gens, Ryo)
 - Added a pouch/bag icon to order consumables (Gens)
@@ -51,7 +51,6 @@
 - Fixed battle strings abbreviations and lightning>bolt (Gens)
 - Detailed rage abilities descriptions (damage type, bad statuses, etc) (Gens)
 - Shrinked esper list by 1 line to have 26 slots available for 26 espers (Gens)
-- Inventory order changed to make Rod 1st place in weapon category and tools/scrolls last (to reduce the amount of scrolling needed to break a rod or swap a weapon) (Gens)
 - Mitigated Mosaic effect when poisoned (Gens)
 - Centered location names (Gens)
 - Fairy charm's chest in Returner's hideout is side-openable (Gens)
@@ -62,17 +61,66 @@
 - Added summon names to description field
 - Changed blind icon
 - Centered "Save" in the load/save screen
+- innate multitap support?
+- innate msu-1 support?
+
 b15 (not yet released)
-- numbered bushido screen
+- numbered Bushido screen
+- item/hands battle menu will always arrange inventory to have items/weapons-shields on top of the list
+- fixed pink gogo sprite in Cyan's dream
+? fixed cursor position here and there into the menu
+? show equip description by default (no more Y pressing)
+? added "CT - Mistery from the past" track to Ultima's sealed door
+? added a dialogue when you speak to the 24th soldier before banquet
 
 2.2 roadmap (ordered by priority):
 
-- Tweak battle inventory to show only usable items (consumables and rods) in the main item screen and only equippable pieces in the equip submenu
-- Import Rage checklist (Assassin): an hack that shows in gray, rages unlocked into the Veldt but not yet "leaped"
-- Press A on a Rage to show details: Elemental weaknesses/resistance, Statuses immunities/innate (this would be useless if we build a complete bestiary)
-- Summon command active with X-Magic, Rods don't consume MP on non critical attacks, Disintegration animation for enemies that get Petrified (needs hackers working on them)
-- Autoscan feature - press Y to see HP/MP, X for statuses - Scan is still needed for weaknesses (depends on Bropedio)
-- Event editing (add clear bytes to whit/red/silver dragons, convert relic tutorial in a gogo tutorial, add CT jingle to Ultima's door)
-- Other bro new world features (smart targeting, fight in yellow if will trigger a DA, Dog Block and Golem preempt check for cover, Defend work against piercing attacks, Status tick rate not affected by speed/haste/slow, etc...)
-- Import Alphabetical Lore (Silent Enigma): useless for english version but useful for translations or future lores edits
-- Fix mp colors corrupting reflect palette (Ryo_Hazuki) [very low priority - can stay as it is now]
+- Import Rage checklist (Assassin): a hack that shows in gray, rages unlocked into the Veldt but not yet "leaped"
+- Press A on a Rage to show details: Elemental weaknesses/resistance, Statuses immunities/innate
+- Summon command active with X-Magic
+- Import Alphabetical Lore by Silent Enigma: useless for english version but useful for translations or future lores edits
+
+2.2 side-notes (a sort of wishlist, good ideas notes):
+
+- Fix mp colors corrupting reflect palette (Ryo_Hazuki) (very low priority, can stay as it is now)
+- Rods don't consume MP on non critical attacks??
+- Phoenix glitch fix
+- Double Meteor fix in Kefka fight
+- Add the clear bytes to Red-D, Silver-D and White-D events (to avoid invisible obstacles on map)
+- full heal at party menu after zozo events??
+- Get rid of lag in shop menu
+- add a battle dialogue when you trigger elixir counter vs Magimaster (and/or a NPC line about dispel utility)
+- Disintegration animation for enemies that get petrified
+- Banon's death reference during Thamasa events (we can keep playing, amirite?)
+- move the relic tutorial scene after gogo recruitment to advice about commands customization in status menu
+- make fast animations by Sarah Shinespark default??
+
+?? = things that needs to be discussed/approved by BTB
+
+Bro new world features candidates for porting:
+
+- scan anytime (HP/MP accessible via X, Status via Y, weaknesses via scan)
+- If "Fight" will yield a desperation attack, the text is yellow
+- Blitz uses a special "merged" button press byte -- combining controller 1 and controller 2. Block controller 2 Blitz input.
+- Prevent using slim jim from field menu
+- Prevent using Red bull on already-floating character from field menu
+- Status tick rate not affected by speed/haste/slow
+- Defend work against piercing (ignore defense) attacks
+- Dog Block and Golem preempt check for cover
+- no longer show damage on Interceptor
+- # Smart targeting
+	Random targeting behaves differently 50% of the time
+	If setting/toggling status, selects target without the status
+	If lifting status, select target with the status
+	If damaging/healing, selects near fatal target
+
+Other ideas:
+
+- Mana battery power raised from 1 to 2
+- red-colored counters (check if it's possible to use the code to color in red battle quote just for counter abilities used by the enemy)
+- status icons on status screen (use the space available near to the name to add status icons to list innate buffs)
+
+Long-term goals:
+
+Colosseum overhaul
+Multiparty FC
