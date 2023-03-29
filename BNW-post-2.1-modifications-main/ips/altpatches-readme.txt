@@ -15,11 +15,11 @@ Changes window style from 2 to 7 available via config menu. Note: to set the def
 -black-d, dadaluma, dryad terra
 alt sprites patches included in bnw zip from 2.0
 
--coreography (Sir Fig Newton)
+-choreography (Sir Fig Newton)
 
 Restructures the Dance command, breaking each biome's list of steps up into two categories: transition steps and sustain steps.
 Transition steps are those that can be chosen from when you dance a new background.
-Sustain steps are those that can be chosen when you choose a dance that matches the current background
+Sustain steps are those that can be chosen when you choose a dance that matches the current background.
 There are 2 steps in each category, with probabilities as follows:
 Transition steps: 75%/25%
 Sustain steps: 60%/40%
