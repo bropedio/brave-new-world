@@ -75,6 +75,7 @@ b15 (not yet released)
 ? Figaro Guards and Imperial Camp dialog bugfixes (DrakeyC)
 ? omit battle strings reward if exp gain is off
 ? fixed "heal status using st cure on field"
+? compress title screen to restore compatibility with real hardware
 
 2.2 roadmap (ordered by priority):
 
