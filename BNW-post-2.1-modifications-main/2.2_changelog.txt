@@ -72,6 +72,9 @@ b15 (not yet released)
 ? show equip description by default (no more Y pressing)
 ? added "CT - Mistery from the past" track to Ultima's sealed door
 ? added a dialogue when you speak to the 24th soldier before banquet
+? Figaro Guards and Imperial Camp dialog bugfixes (DrakeyC)
+? omit battle strings reward if exp gain is off
+? fixed "heal status using st cure on field"
 
 2.2 roadmap (ordered by priority):
 
