@@ -1,4 +1,4 @@
-2.2 changelog (at b14 release 03/06/2023)
+2.2 changelog (at b15 release 05/24/2023)
 
 - Adds custom intro and title (Ryo_Hazuki)
 - Cleaner coliseum "select a challenger" screen (Ryo_Hazuki)
@@ -26,7 +26,6 @@
 - Better positioned skills descriptions text (Ryo)
 - Added Seibaby x-files (some almost invisible graphic imprecisions)
 - Fix storm glitch (Leet-Sketcher)
-- Banon riding fix (glitched sprite if you ride a chocobo with Banon as party leader) (Leet Sketcher)
 - Castle Party (correct party leader when you switch from Cyan scene to imperial camp) (Leet Sketcher)
 - Edgar fighting tentacle with "Gerad" palette (Leet Sketcher)
 - Overhaul Opera scene with dialogues synced with music (Gens)
@@ -57,61 +56,64 @@
 - Imported madsiur's mastered espers icon (Ryo_Hazuki)
 - Fixed a very rare bug that can softlock the game moving char sprite offscreen (Cdude)
 - Fixed "Description disruption" (Silent Enigma)
-- Pressing on an esper twice remove it, pressing on an esper equipped on another char makes you choose if you want to "transfer" it
-- Added summon names to description field
-- Changed blind icon
-- Centered "Save" in the load/save screen
-- innate multitap support?
-- innate msu-1 support?
+- Selecting an esper twice remove it, selecting an esper equipped on another char makes you choose if you want to "transfer" it (Ryo_Hazuki)
+- Added summon names to description field (Gens)
+- Changed blind icon (Gens)
+- Centered "Save" in the load/save screen (Ryo_Hazuki)
+- Numbered Bushido screen (Ryo_Hazuki)
+- Item/hands battle menu will always arrange inventory to have respectively items/weapons-shields on top of the list (Ryo_Hazuki)
+- Enable esper batch spending (Fëanor)
+- Prevent using slim jim from field menu (Gens)
+- Blocked controller 2 Blitz input (Sir Newton Fig)
+- More walkable beach tiles for faster fish catching (Fëanor)
+- Fixed pink gogo sprite in Cyan's dream (Gens)
+- Fixed ST Cure removing poison from chars wearing a poison denying relic (CDude)
+- Figaro Guards and Imperial Camp dialog bugfixes (DrakeyC)
 
-b15 (not yet released)
-- numbered Bushido screen
-- item/hands battle menu will always arrange inventory to have items/weapons-shields on top of the list
-- fixed pink gogo sprite in Cyan's dream
-? fixed cursor position here and there into the menu
-? show equip description by default (no more Y pressing)
-? added "CT - Mistery from the past" track to Ultima's sealed door
-? added a dialogue when you speak to the 24th soldier before banquet
-? Figaro Guards and Imperial Camp dialog bugfixes (DrakeyC)
-? omit battle strings reward if exp gain is off
-? fixed "heal status using st cure on field"
-? compress title screen to restore compatibility with real hardware
+new alt patches to upload: 	Anti-flashes patch
+	    				Select toggles MP display
+
+b16 (not yet released)
+
+- Battle quote box show enemy "reactions" in yellow (Fëanor)
+- Double GP by default on Veldt and reward bonuses not showing at the end of a battle if exp gain is off (Fëanor)
+- Bushido gauge speed capped when reaching 6 (Fëanor)
+- Changed soldier counter before banquet to show how many remains (Gens)
+- Align cursor position to text where needed into the menu (Ryo_Hazuki)
+- Changed font's shadow from black to dark gray and made glyphs immune to font color changing. (Ryo_Hazuki)
 
 2.2 roadmap (ordered by priority):
 
 - Import Rage checklist (Assassin): a hack that shows in gray, rages unlocked into the Veldt but not yet "leaped"
 - Press A on a Rage to show details: Elemental weaknesses/resistance, Statuses immunities/innate
 - Summon command active with X-Magic
+- Compress title screen graphic
+- Show description by default in equip menu (no y pressing)
 - Import Alphabetical Lore by Silent Enigma: useless for english version but useful for translations or future lores edits
 
 2.2 side-notes (a sort of wishlist, good ideas notes):
 
+- Add "CT - Mistery from the past" track to Ultima's sealed door
 - Fix mp colors corrupting reflect palette (Ryo_Hazuki) (very low priority, can stay as it is now)
-- Rods don't consume MP on non critical attacks??
+- Rods don't consume MP on non critical attacks
 - Phoenix glitch fix
 - Double Meteor fix in Kefka fight
 - Add the clear bytes to Red-D, Silver-D and White-D events (to avoid invisible obstacles on map)
-- full heal at party menu after zozo events??
+- Full heal at party menu after zozo events
 - Get rid of lag in shop menu
-- add a battle dialogue when you trigger elixir counter vs Magimaster (and/or a NPC line about dispel utility)
+- Add a battle dialogue when you trigger elixir counter vs Magimaster (and/or a NPC line about dispel utility)
 - Disintegration animation for enemies that get petrified
 - Banon's death reference during Thamasa events (we can keep playing, amirite?)
-- move the relic tutorial scene after gogo recruitment to advice about commands customization in status menu
-- make fast animations by Sarah Shinespark default??
-
-?? = things that needs to be discussed/approved by BTB
+- Move the relic tutorial scene after gogo recruitment to advice about commands customization in status menu
 
 Bro new world features candidates for porting:
 
-- scan anytime (HP/MP accessible via X, Status via Y, weaknesses via scan)
+- Scan anytime (HP/MP accessible via X, Status via Y, weaknesses via scan)
 - If "Fight" will yield a desperation attack, the text is yellow
-- Blitz uses a special "merged" button press byte -- combining controller 1 and controller 2. Block controller 2 Blitz input.
-- Prevent using slim jim from field menu
-- Prevent using Red bull on already-floating character from field menu
 - Status tick rate not affected by speed/haste/slow
 - Defend work against piercing (ignore defense) attacks
 - Dog Block and Golem preempt check for cover
-- no longer show damage on Interceptor
+- No longer show damage on Interceptor
 - # Smart targeting
 	Random targeting behaves differently 50% of the time
 	If setting/toggling status, selects target without the status
@@ -119,12 +121,14 @@ Bro new world features candidates for porting:
 	If damaging/healing, selects near fatal target
 
 Other ideas:
-
 - Mana battery power raised from 1 to 2
-- red-colored counters (check if it's possible to use the code to color in red battle quote just for counter abilities used by the enemy)
-- status icons on status screen (use the space available near to the name to add status icons to list innate buffs)
+- Status icons on status screen (next to the name) to show the innate buffs
+- Physical blitzes can crit
+
+Bugfixes temporarily discarded:
+- bird bars (setzer position after bar-bar-bar palidor)
+- banon riding chocobo pose
 
 Long-term goals:
-
 Colosseum overhaul
 Multiparty FC
