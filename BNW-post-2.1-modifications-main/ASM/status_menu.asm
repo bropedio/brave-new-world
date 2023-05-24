@@ -1,4 +1,4 @@
-                                         arch 65816
+arch 65816
 hirom
 
 ;;-----------------------------------------------------
@@ -133,7 +133,7 @@ Condense_Status_txt:
 	RTS
 HDMA_Table:
 	db $70,$00,$00  ; Nothing
-	db $41,$0D,$00  ; Nothing
+	db $43,$0D,$00  ; Nothing
 	db $0D,$11,$00  ; Attack
 	db $0D,$15,$00  ; Def/M.Def
 	db $00
@@ -196,6 +196,7 @@ db $00,$00,$68,$38,$ce,$39,$ff,$7f,$00,$00,$68,$38,$ce,$39,$ff,$7f	;4th row
 db $00,$00,$10,$42,$94,$52,$ff,$7f,$00,$00,$10,$42,$94,$52,$ff,$7f
 db $00,$00,$10,$42,$94,$52,$ff,$7f,$00,$00,$10,$42,$94,$52,$ff,$7f	;5th row
 
+Yellow:
 db $00,$00,$00,$00,$ce,$39,$bf,$03									;6th row
 
 Org $c36bee
@@ -209,8 +210,20 @@ Org $c36bee
 	inx					; Index +1
 	inx					; Index +1
 	cpx #$00a8			; Set 88 colors
-	
 
+org $C4B500
+C4B500:
+	phx
+	ldx $00
+pick_color:
+	LDA Yellow,x
+	sta $7E30E9,x
+	inx
+	cpx #$0008
+	bne pick_color
+	plx
+	rtl
+	
 ; Define labels
 	
 !plus = $d4
@@ -472,7 +485,7 @@ PowHelper:
 	JSR $0582				; Turn into text
 	LDX #$7B5B				; Text position
 	JSR $04AC				; Draw 8 digits
-	JSR $6BE8				; reload palette
+	JSL.l C4B500			; reload yellow palette
 	JSR !HpMpDiff	        ; go to routine that set Hp/Mp difference
 	JSR !StatDiff	        ; go to routine that set stats difference	
 	LDX $0102	            ; load $0102 (ship status menu portrait values) 
@@ -486,4 +499,3 @@ warnpc $C36096
 
 org $C39382
 	JSR PowHelper			; here just to avoid crash
-
