@@ -304,3 +304,99 @@ org $c35950
 org $c35923
 	LDA #$1300      ; V-Speed: 16 px
 	STA $7E354A,X   ; Set scrollbar's
+
+; -----------------------------------------------------------------------------
+; Synopsis: Enables batch spending of SP/EL instead of having to reopen the
+;           esper submenu for every single expenditure
+;     Base: BNW 2.2b14
+;   Author: Fëanor
+; Creation: 2023-05-16
+; -----------------------------------------------------------------------------
+
+; -----------------------------------------------------------------------------
+; Description
+; -----------------------------------------------------------------------------
+; This hack consists of a primary and an auxiliary splice. The primary splice
+; overwrites the following jump instruction
+;
+;   JMP $5913     ; exits back out to the esper selection menu
+;
+; within the routine that handles spending SP and EP in two places. Instead of
+; returning to the esper selection menu, the screen is redrawn by calling
+;
+;   JSR $599F     ; draw esper info
+;   JSR $0F11     ; queue its upload
+;   JMP $1368     ; upload it now
+;
+; This change alone, however, is not sufficient to do a proper redraw! When
+; drawing the esper submenu, the last stored pointer index ($4B) is used to
+; determine which esper is currently selected. As the pointer index has since
+; been updated, the wrong esper info will be drawn on screen.
+;
+; To fix this, an auxiliary splice is inserted into the routine that handles
+; the esper selection. It stores the pointer index of the selected esper in
+; scratchpad RAM which is then retrieved in the primary slice to set the
+; correct pointer index before doing the redraw.
+; -----------------------------------------------------------------------------
+
+!free_a = $C3F4AA     ; 7 bytes of free space in C3 required
+!warn_a = !free_a+7   ; 7 bytes available
+
+!free_b = $C3F612     ; 13 bytes of free space in C3 required
+!warn_b = !free_b+14  ; 14 bytes available
+
+!index  = $4B         ; holds pointer index
+!tmp    = $98         ; used to temporarily store pointer index
+
+; -----------------------------------------------------------------------------
+; Handle esper selection
+; -----------------------------------------------------------------------------
+; C3/28D3:
+;   ...
+;   ...
+;   CMP #$FF               ; None?
+;   BEQ $2908              ; Unequip if so
+;   STA $99                ; Memorize esper
+org $C32900
+    JSR SelectEsperSplice  ; perform splice after selecting esper
+;   LDA #$4D               ; C3/58CE
+;   STA $26                ; Next: Data menu
+;   RTS
+; -----------------------------------------------------------------------------
+; brave-new-world/asm/banks/c3.asm
+; -----------------------------------------------------------------------------
+; Pressed_A:
+;   ...
+;   ...
+;   SEP #$20            ; 8-bit A
+;   LDA #$FF            ; "learned"
+;   STA $1A6E,X         ; set spell learned
+org $C3F80C
+    JMP SpendingSplice  ; perform splice after spending SP
+; .nope
+; BzztPlayer:
+;   JMP $0EC0           ; sound: Bzzt
+;   ...
+;   ...
+;   JSL Do_Esper_Lvl    ; and apply esper boost
+;   JSR $0ECE           ; sound: "cha-ching"
+;   JSR $4EED           ; redraw HP/MP on the status screen
+org $C3F84C
+    JMP SpendingSplice  ; perform splice after spending EL
+; -----------------------------------------------------------------------------
+
+org !free_a
+SelectEsperSplice:
+    LDA !index      ; load pointer index
+    STA !tmp        ; store it
+    JMP $5897       ; init submenu
+warnpc !warn_a
+
+org !free_b
+SpendingSplice:
+    LDA !tmp        ; retrieve stored pointer index
+    STA !index      ; restore pointer index
+    JSR $599F       ; draw esper info
+    JSR $0F11       ; queue its upload
+    JMP $1368       ; upload it now
+warnpc !warn_b
