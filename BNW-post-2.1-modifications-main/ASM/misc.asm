@@ -481,6 +481,39 @@ org $C456EA
 org $C4575F
 	db $0D
 
+;;change shadow font
+;
+;org $c0814e
+;    jsr changeshadow
+;    nop
+;    nop
+;    nop
+;    
+;warnpc $c08154
+;
+;org $c0de00
+;changeshadow:
+;    lda #$0C63        ; set dark gray color (default color used in the small font palette)
+;    sta $7e7204
+;    rts
+
+; ST Cure no longer heals poison on affected chars equipping a poison denying relic
+
+org $C391EC	
+	AND #$20
+
+; slim jim not usable on menu
+	
+org $D86D88
+	db $26
+
+; blocks blitz p2 inputs
+
+org $C3A4B2      ; Scrap the old "merged inputs" behaviour that was located here
+  LDA $EB        ; It used to merge P1+P2 inputs together, and was read during
+  STA $04        ; Blitz inputs (?), allowing P2 to screw up P1's Blitzes, and
+  BRA $02        ; vice versa. This just makes $04 a copy of the current inputs.
+
 ;Brave New World data
 org $C33BB8
 	db $d1,$78,"Brave New World 2.2 b15",$00
