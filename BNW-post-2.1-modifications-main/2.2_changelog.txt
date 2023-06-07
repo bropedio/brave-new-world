@@ -68,43 +68,38 @@
 - More walkable beach tiles for faster fish catching (Fëanor)
 - Fixed pink gogo sprite in Cyan's dream (Gens)
 - Fixed ST Cure removing poison from chars wearing a poison denying relic (CDude)
-- Figaro Guards and Imperial Camp dialog bugfixes (DrakeyC)
-
-new alt patches to upload: 	Anti-flashes patch
-	    				Select toggles MP display
-
-b16 (not yet released)
-
+- Figaro Guards bugfix (DrakeyC)
 - Battle quote box show enemy "reactions" in yellow (Fëanor)
 - Double GP by default on Veldt and reward bonuses not showing at the end of a battle if exp gain is off (Fëanor)
 - Bushido gauge speed capped when reaching 6 (Fëanor)
-- Changed soldier counter before banquet to show how many remains (Gens)
-- Align cursor position to text where needed into the menu (Ryo_Hazuki)
-- Changed font's shadow from black to dark gray and made glyphs immune to font color changing. (Ryo_Hazuki)
+- Changed font's shadow to dark gray and category icons immunes to font color changing for better readability (Ryo_Hazuki)
+- A Moogle explains the commands customization feature after recruiting Gogo (Gens)
+- Optimized dte table and edited 3 captions (about yellow counters, the 2x gp gain with exp off, a hint about the number of soldiers to speak before banquet) (Gens)
 
 2.2 roadmap (ordered by priority):
 
-- Import Rage checklist (Assassin): a hack that shows in gray, rages unlocked into the Veldt but not yet "leaped"
 - Press A on a Rage to show details: Elemental weaknesses/resistance, Statuses immunities/innate
+- Import Rage checklist (Assassin): a hack that shows in gray, rages unlocked into the Veldt but not yet "leaped"
 - Summon command active with X-Magic
 - Compress title screen graphic
-- Show description by default in equip menu (no y pressing)
 - Import Alphabetical Lore by Silent Enigma: useless for english version but useful for translations or future lores edits
 
 2.2 side-notes (a sort of wishlist, good ideas notes):
 
+- Show description in equip menu with no need to press Y (Ryo_Hazuki)
+- Align cursor position to text where needed into the menu (Ryo_Hazuki)
 - Add "CT - Mistery from the past" track to Ultima's sealed door
 - Fix mp colors corrupting reflect palette (Ryo_Hazuki) (very low priority, can stay as it is now)
 - Rods don't consume MP on non critical attacks
 - Phoenix glitch fix
 - Double Meteor fix in Kefka fight
-- Add the clear bytes to Red-D, Silver-D and White-D events (to avoid invisible obstacles on map)
+- Add the clear bytes to Red-D, Silver-D and White-D events (to avoid invisible obstacles on map after killing them)
 - Full heal at party menu after zozo events
 - Get rid of lag in shop menu
 - Add a battle dialogue when you trigger elixir counter vs Magimaster (and/or a NPC line about dispel utility)
 - Disintegration animation for enemies that get petrified
 - Banon's death reference during Thamasa events (we can keep playing, amirite?)
-- Move the relic tutorial scene after gogo recruitment to advice about commands customization in status menu
+- Throw menu stops scrolling after 21 lines
 
 Bro new world features candidates for porting:
 
@@ -120,14 +115,15 @@ Bro new world features candidates for porting:
 	If lifting status, select target with the status
 	If damaging/healing, selects near fatal target
 
+Bugfixes temporarily discarded:
+- bird bars (setzer position after bar-bar-bar palidor)
+- banon riding chocobo pose 
+- imperial camp (sabin aware of 
+
 Other ideas:
 - Mana battery power raised from 1 to 2
 - Status icons on status screen (next to the name) to show the innate buffs
 - Physical blitzes can crit
-
-Bugfixes temporarily discarded:
-- bird bars (setzer position after bar-bar-bar palidor)
-- banon riding chocobo pose
 
 Long-term goals:
 Colosseum overhaul
