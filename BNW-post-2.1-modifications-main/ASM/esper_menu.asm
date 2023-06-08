@@ -298,13 +298,13 @@ org $C320BA
 	STA $7E354A,X   ; Set scrollbar's
 	
 org $c35950	
-	LDA #$05        ; Top row: Golem's
+	LDA #$05        ; Top row: Carbuncle's
 	STA $5C         ; Set scroll limit
 
 org $c35923
-	LDA #$1300      ; V-Speed: 16 px
+	LDA #$1300      ; V-Speed: 19 px
 	STA $7E354A,X   ; Set scrollbar's
-
+	
 ; -----------------------------------------------------------------------------
 ; Synopsis: Enables batch spending of SP/EL instead of having to reopen the
 ;           esper submenu for every single expenditure
@@ -342,7 +342,7 @@ org $c35923
 !free_a = $C3F4AA     ; 7 bytes of free space in C3 required
 !warn_a = !free_a+7   ; 7 bytes available
 
-!free_b = $C3F612     ; 13 bytes of free space in C3 required
+!free_b = $C3F6D2     ; 13 bytes of free space in C3 required
 !warn_b = !free_b+14  ; 14 bytes available
 
 !index  = $4B         ; holds pointer index
