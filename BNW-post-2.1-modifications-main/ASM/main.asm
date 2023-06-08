@@ -6,8 +6,8 @@
 
 ;comment patches to deactivate them
 
-incsrc "shrinked_colosseum.asm"
 incsrc "new_intro.asm"
+incsrc "shrinked_colosseum.asm"
 incsrc "veldt-freebies.asm"
 incsrc "lore_curative.asm"
 incsrc "misc.asm"
@@ -32,3 +32,10 @@ incsrc "mastered.asm"
 incsrc "item_command.asm"
 incsrc "better_flags.asm"
 incsrc "location_names.asm"
+incsrc "events.asm"
+incsrc "font_color.asm"
+incsrc "colored_counters.asm"
+incsrc "noexp_overhaul.asm"
+;incsrc "rage_checklist.asm"
+;incsrc "scan_anytime.asm"
+;incsrc "mp_colors.asm"
