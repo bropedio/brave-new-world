@@ -554,6 +554,20 @@ dance:
 padbyte $ff
 pad $E6ffff
 warnpc $E70000
+
+;Bushido names
+
+org $CF3C40
+	db "Dispatch    "
+	db "Mindblow    "
+	db "Empowerer   "
+	db "Flurry      "
+	db "Dragon      "
+	db "Eclipse     "
+	db "Tempest     "
+	db "Cleave      "
+
+warnpc $CF3CFF
 	
 ;;-----------------------------------------------------
 ;;-----------------------------------------------------
