@@ -38,7 +38,7 @@ SouthFig:	db "South Figaro",$00
 Returners:	db "Returner's Hideout",$00
 Elder:		db "Elder's House",$00
 Duncan:		db "Duncan's House",$00
-MtKolts:    db "Mt Kolts",$00
+MtKolts:    db "Mt. Kolts",$00
 King:		db "King's Room",$00
 Moogle:		db "Moogle Cave",$00
 Narshe:		db "Narshe",$00
@@ -70,7 +70,7 @@ Colosseum:	db "Dragon's Neck Colosseum",$00
 Tomb:		db "Daryl's Tomb",$00
 Floating:	db "The Floating Continent",$00
 Esperville:	db "Esperville",$00
-MtZozo:		db "Mt Zozo",$00
+MtZozo:		db "Mt. Zozo",$00
 Factory:	db "Magitek Factory",$00
 Crescent:	db "Crescent Mountain",$00
 Beginner:	db "Beginner's Classroom",$00
