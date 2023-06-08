@@ -5,7 +5,7 @@ table "menu.tbl", ltr
 
 ;###################################################################
 ;
-;	Insert number before Lore
+;	Insert number before Bushidos
 ;
 ;###################################################################
 
@@ -66,6 +66,74 @@ C35357: JML $C35357		; Blank if not
 		
 warnpc $C4F460	
 		
-		
-		
-		
+; -----------------------------------------------------------------------------
+; Synopsis: Enables setting a max gauge speed for Cyan's Bushido ability.
+;     Base: BNW 2.2b15
+;   Author: Fëanor (optimized by Sir Newton Fig)
+;  Created: 2023-05-12
+;  Updated: 2023-06-06
+; -----------------------------------------------------------------------------
+
+; -----------------------------------------------------------------------------
+; Explanation
+; -----------------------------------------------------------------------------
+; It's possible to replace the original subroutine with the modified one by
+; reclaiming two bytes before and two bytes after it. This is how it looks
+; before reclaiming:
+;
+; [ Battle Event Command $03-$06: Character Animation ]
+;   ...
+; C1FFE2:
+;   RTS
+;
+; [ Battle Event Command $02: No Effect ]
+; C1FFE3:
+;   RTS            ; [reusable]
+;   RTS            ; [unused]
+;
+; CheckSel:
+;   JSL SwapGauge
+;   JMP $0B73
+;
+; BushidoGauge:
+;   INC $7B82
+;   LDA $7B82
+;   ADC $36
+;   STA $7B82
+;   RTS
+;   NOP            ; [unused]
+;   DB $FF         ; [unused]
+;
+; C1FFFA:
+;   JSR $BAAA
+;   JMP $914D
+; -----------------------------------------------------------------------------
+
+!max = #$07     ; $07 = max speed reached after unlocking sixth skill
+
+; update jumps to displaced subroutines
+org $C10CFA : JSR CheckSel
+org $C17D8A : JSR BushidoGauge
+
+; update Battle Event Command jump table (frees up 1 byte)
+org $C1FDC2 : DW $FFE2
+
+org $C3F444 : SwapGauge:
+
+org $C1FFE3
+CheckSel:
+    JSL SwapGauge
+    JMP $0B73
+
+; modified Bushido gauge subroutine
+BushidoGauge:
+    LDA !max    ; load max speed
+    CMP $36     ; compare to # of unlocked skills
+    BCC .end    ; branch if greater or equal
+    LDA $36     ; load # of unlocked skills
+    INC         ; add 1
+.end:
+    ADC $7B82   ; add to gauge
+    STA $7B82   ; store it
+    RTS
+warnpc $C1FFFA
