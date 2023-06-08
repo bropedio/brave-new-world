@@ -68,3 +68,21 @@ push_right:
 	lda #$20
 	tsb $1D4E
 	bra redraw
+
+;EncString:          ; We use this free space for the "Encounters" string
+;dw $3C0F            ; "Encounters" position
+;db $84,$A7,$9C      ; "Encounters"
+;db $A8,$AE,$A7
+;db $AD,$9E,$AB
+;db $AC,$00
+;
+;org $C34940
+;dw $3C25           	; "On" position
+;db $8E,$A7,$00      ; "On"
+;	
+;org $C34949
+;dw $3C35            ; "Off" position
+;db $8E,$9F,$9F,$00  ; "Off"
+;
+;org $C3499D
+;dw EncString		; "Encounters"
