@@ -2131,7 +2131,7 @@ There do exist [restore points], which fully heal your party in addition to lett
 Save often because, should you die in battle, it's back to the title screen with you - there are no more mulligans.
 
 [caption #602]
-There's an option in the config menu to disable exp. gains if you don't want to overlevel.<EOP>
+There's an option in the config menu to disable exp. gains if you don't want to overlevel. In return, GP gain will be doubled.<EOP>
 Please don't just leave it on all the time and then bitch to us about how hard the game is.
 
 [caption #603]
@@ -2162,7 +2162,7 @@ All enemies possess at least some stamina (depending on their max HP), but m.eva
 Many battles may seem overwhelming at first, but can be easily - and quickly - dealt with by altering your strategy.<EOP>
 Observe enemy behavior and learn whether it's better to attack directly or to disable them before they can hurt you.<EOP>
 Some foes, for example, will only become aggressive once they have taken damage or if they are alone.<EOP>
-Certain types of enemies will counter close-range physical attacks, even as a dying move.<EOP>
+Certain types of enemies will counter close-range physical attacks, even as a dying move. Enemy reactions will be shown in yellow.<EOP>
 Larger foes and bosses may counter ANY kind of damage, so be careful when attacking with a weakened character.<EOP>
 Finally, hitting an elemental weakness can sometimes have additional effects on enemies beyond the extra damage dealt.
 
@@ -2280,7 +2280,7 @@ Need esper info?
 <C> No
 
 [caption #627]
-Equipped espers may be summoned once per battle by pressing <$74> in the [Magic] menu.<EOP>
+Equipped espers may be summoned once per battle by pressing <$74> on the [Magic] menu.<EOP>
 Magic is learned from espers by spending [spell points], which characters earn from fighting battles with an esper equipped.<EOP>
 Characters also gain [esper points] (EP) when they earn spell points and exp. from the same battle.<EOP>
 Esper points earn [esper levels] (EL), which are used to grant permanent stat boosts from espers.<EOP>
@@ -4222,7 +4222,7 @@ Is she safe? Is she waiting? <E$18><OP$12>
 [caption #1189]
 <$75> Oh <E$0A>Maria <E$10><OP$12>Oh <E$0A>Maria<E$0E><OP$12>
    My beloved, <E$0D>do you hear<E$0B><OP$12>
-   My words whispered <E$0B>in you hear<E$0D><OP$12>
+   My words whispered <E$0B>in your hear<E$0D><OP$12>
    As if i were <E$13>by your side? <$75> <E$1D><OP$12>
 
 [caption #1190]
@@ -6120,7 +6120,7 @@ Cid: Men should never lust after power they lack the means to control_
 Gestahl: Enough. <D>We will speak further over dinner tonight.
 
 [caption #1730]
-Cid: There are still some soldiers who would prefer to keep fighting.<EOP>
+Cid: There are still 24 soldiers who would prefer to keep fighting.<EOP>
 Cid: Please, talk to as many of them as you can before dinner. Make them understand.
 
 [caption #1731]
@@ -7897,7 +7897,7 @@ Almighty Kefka is up there, using the power of the Warring Triad to strike down 
 Everything changed on that day_
 
 [caption #2231]
-Anyone who opposes Lord Kefka gets his or her town torched by the Light of Judgment.
+Anyone who opposes Lord Kefka gets their town torched by the Light of Judgment.
 
 [caption #2232]
 They say that the sea is red these days because Leviathan is angry_
@@ -8138,7 +8138,7 @@ I can tell_
 [Me either!]<D4>
 
 [caption #2299]
-<A0>: Thank you. You all helped me understand what it means_ <D>to love. 
+<A0>: Thank you. You all helped me understand what it means_ <D>to love.
 
 [caption #2300]
 Our mamas and papas are gone_
@@ -9329,7 +9329,7 @@ Did you not know you could get me earlier or do you just not like moogles? <D>Ku
 
 
 [caption #2623]
-
+<A12> can do much more than just [Mimic].<D> Customize their command list on the status page.
 
 [caption #2624]
 
@@ -9423,7 +9423,8 @@ Bob: Whaddaya say?
 
 [caption #2650]
 Ultros: Bwa ha ha! Ever made a commitment that you wanted to take back? Haven't we all!<EOP>
-Ultros: Not to worry, 'cause for the one-time cost of 25,000 GP, Uncle Ulty will turn your active party's [I do]s into [I don't]s!<EOP>
+Ultros: Not to worry, 'cause for the one-time cost of 25,000 GP, Uncle Ulty will turn your active party's
+[I do]s into [I don't]s!<EOP>
 Ultros: In other words, I'll reset everyone's ELs so you can build them with different espers.
 
 [caption #2651]
