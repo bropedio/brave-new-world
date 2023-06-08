@@ -9,27 +9,26 @@ hirom
 ;;-----------------------------------------------------;;
 ;;-----------------------------------------------------;;
 
-; Add unequip esper function on remove option
-; Handle "EMPTY" selection in Equip menu
-org $C3969F
-	JSR unequip_esper	; Unequip Esper
-	JSR $90b5			; Redo text, status
-	STZ $4D				; Cursor: "USE"
-	RTS
-
-; Unequip esper
-org $C326F5
-unequip_esper:
-	LDA $28				; Member slot
-	ASL A				; Double it
-	TAX					; Index it
-	LDY $6D,X			; Actor's address
-	LDA #$FF			; Chosen esper
-	STA $001E,Y			; Assign to actor
-	jsr $96a8			; Remove Gear
-	rts
-warnpc $C32706
-
+;; Add unequip esper function on remove option
+;; Handle "EMPTY" selection in Equip menu
+;org $C3969F
+;	JSR unequip_esper	; Unequip Esper
+;	JSR $90b5			; Redo text, status
+;	STZ $4D				; Cursor: "USE"
+;	RTS
+;
+;; Unequip esper
+;org $C326F5
+;unequip_esper:
+;	LDA $28				; Member slot
+;	ASL A				; Double it
+;	TAX					; Index it
+;	LDY $6D,X			; Actor's address
+;	LDA #$FF			; Chosen esper
+;	STA $001E,Y			; Assign to actor
+;	jsr $96a8			; Remove Gear
+;	rts
+;warnpc $C32706
 
 ; Changing HDMA table and rearrange text position
 
