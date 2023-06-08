@@ -181,23 +181,43 @@ org $C31C46
 org $D8E7F0 ; Extending palette
 MenuPalette:
 
-db $00,$00,$00,$00,$ce,$39,$ff,$7f,$00,$00,$00,$00,$08,$21,$ef,$3d
-db $00,$00,$00,$00,$ce,$39,$bf,$03,$00,$00,$00,$00,$ce,$39,$60,$6f	;1st row
+;   BCG  Shadow --- Colour
 
-db $00,$00,$00,$00,$ce,$39,$60,$6f,$00,$00,$ff,$7f,$00,$00,$ff,$7f
-db $00,$00,$00,$5c,$08,$21,$ef,$3d,$00,$00,$00,$00,$ce,$39,$60,$6F	;2nd row
+;1st row
+dw $0000,$0000,$39ce,$7fff		;White font
+dw $0000,$0000,$2108,$3def      ;
+dw $0000,$0000,$39ce,$03bf      ;Yellow font
+dw $0000,$0000,$39ce,$6f60	    ;Light blue font
 
-db $00,$00,$00,$00,$08,$21,$ef,$3d,$00,$00,$00,$00,$08,$21,$ef,$3d
-db $00,$00,$00,$00,$08,$21,$ef,$3d,$00,$00,$00,$00,$08,$21,$ef,$3d	;3rd row
+;2nd row                        ;
+dw $0000,$0000,$39ce,$6f60      ;
+dw $0000,$7fff,$0000,$7fff      ;
+dw $0000,$5c00,$2108,$3def      ;
+dw $0000,$0000,$39ce,$6f60	    ;
 
-db $00,$00,$00,$3c,$08,$21,$ef,$3d,$00,$00,$68,$38,$ce,$39,$ff,$7f
-db $00,$00,$68,$38,$ce,$39,$ff,$7f,$00,$00,$68,$38,$ce,$39,$ff,$7f	;4th row
+; 3rd row
+dw $0000,$0000,$2108,$3def		;Grey font
+dw $0000,$0000,$2108,$3def		;Grey font
+dw $0000,$0000,$2108,$3def		;Grey font
+dw $0000,$0000,$2108,$3def		;Grey font
 
-db $00,$00,$10,$42,$94,$52,$ff,$7f,$00,$00,$10,$42,$94,$52,$ff,$7f
-db $00,$00,$10,$42,$94,$52,$ff,$7f,$00,$00,$10,$42,$94,$52,$ff,$7f	;5th row
+; 4th row
 
+dw $0000,$3c00,$2108,$3def		;Grey font with blue shadow (Esper equipped from other actor)
+dw $0000,$3868,$39ce,$7fff		;Grey font with purple shadow
+dw $0000,$3868,$39ce,$7fff		;Grey font with purple shadow
+dw $0000,$3868,$39ce,$7fff		;Grey font with purple shadow
+
+; 5th row
+Grey:
+dw $0000,$4210,$5294,$7fff		;White font with grey shadow
+dw $0000,$4210,$5294,$7fff		;White font with grey shadow
+dw $0000,$0000,$39ce,$7fff		;White font with black shadow
+dw $0000,$4210,$5294,$7fff		;White font with grey shadow
+
+; 6th row
 Yellow:
-db $00,$00,$00,$00,$ce,$39,$bf,$03									;6th row
+dw $0000,$0000,$39ce,$03bf		;Yellow font (esper bonus points)
 
 Org $c36bee
 	rep #$20			; 16 bit A

@@ -60,21 +60,3 @@ org $D2BEBB
     
 warnpc $D2BFF3
 
-    db $EB,"Megalixir   "
-    db $EB,"Phoenix>Down"
-    db $EB,"Holy>Water  "
-    db $EB,"Antidote    "
-    db $EB,"Eyedrops    "
-    db $EB,"Snake>Oil   "
-    db $EB,"Remedy      "
-    db $EB,"Scrap       "
-    db $EB,"Tent        "
-    db $EB,"Green>Cherry"
-    db $EB,"Phoenix>Tear"
-    db $EB,"Bouncy>Ball "
-    db $EB,"Red>Bull    "
-    db $EB,"Slim>Jim    "
-    db $EB,"Warp>Whistle"
-    db $EB,"Dried>Meat  "
-    
-warnpc $D2BFF3
