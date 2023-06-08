@@ -4,7 +4,7 @@ hirom
 ;;-----------------------------------------------------
 ;;-----------------------------------------------------
 ;;
-;;						Status menu
+;;					Status menu
 ;;
 ;;-----------------------------------------------------
 ;;-----------------------------------------------------
@@ -172,64 +172,107 @@ org $C31C46
 	JSR $620B 			      ; Set to shift text
 	JSR Condense_Status_txt  ; Draw menu; portrait
 
+;change vwf font shadow from black to dark gray for better readability 
+;and make glyphs immune to color changing
+
+org $C3031C
+	jsl change_palette
+	
+org $C4B6C0
+change_palette:
+    cmp #$ED        ; Cmp if icon
+    BCS no_change   ; greater or equal?
+    cmp #$CF
+    BEQ change
+    cmp #$D7
+    BCC no_change
+change:    
+    LDA #$38
+    BRA color_change
+no_change:    
+    lda $29
+color_change:    
+    sta [$EB],y
+    rtl
+
+;change font's shadow
+
+org $C0814E
+    jsr changeshadow
+    nop
+    nop
+    nop
+    
+warnpc $C08154
+
+org $C0DE00
+changeshadow:
+	lda #$1084		; set dark gray color
+	sta $7E7204
+	rts
+
 ;---------------------------------------------------------------------;
 ;                                                                     ;
 ;       Hack that print stats difference in yellow colour             ;
 ;                                                                     ;
 ;---------------------------------------------------------------------;                                                                     ;
 
-org $D8E7F0 ; Extending palette
+org $D8E7D0 ; Extending palette
 MenuPalette:
-
 ;   BCG  Shadow --- Colour
+; 1st row
+dw $0000,$1084,$39CE,$7FFF		;user editable color 
+dw $0000,$0000,$2108,$3DEF		;gray font for unavailable choiches
+dw $0000,$0000,$39CE,$03BF		;yellow font
+dw $0000,$0000,$39CE,$6F60		;light blue font 
 
-;1st row
-dw $0000,$0000,$39ce,$7fff		;White font
-dw $0000,$0000,$2108,$3def      ;
-dw $0000,$0000,$39ce,$03bf      ;Yellow font
-dw $0000,$0000,$39ce,$6f60	    ;Light blue font
-
-;2nd row                        ;
-dw $0000,$0000,$39ce,$6f60      ;
-dw $0000,$7fff,$0000,$7fff      ;
-dw $0000,$5c00,$2108,$3def      ;
-dw $0000,$0000,$39ce,$6f60	    ;
+; 2nd row
+dw $0000,$0000,$39CE,$6F60		;light blue font
+dw $0000,$7FFF,$1084,$7FFF		;7FFF is replaced by user font in game. 3rd code is the VWF description shadow
+dw $0000,$0000,$39CE,$7FFF		;white font
+dw $0000,$0000,$39CE,$6F60		;ligth blue font
 
 ; 3rd row
-dw $0000,$0000,$2108,$3def		;Grey font
-dw $0000,$0000,$2108,$3def		;Grey font
-dw $0000,$0000,$2108,$3def		;Grey font
-dw $0000,$0000,$2108,$3def		;Grey font
+dw $0000,$0000,$2108,$3DEF		;gray font
+dw $0000,$0000,$2108,$3DEF		;gray font
+dw $0000,$0000,$2108,$3DEF		;gray font
+dw $0000,$0000,$2108,$3DEF		;gray font
 
 ; 4th row
 
-dw $0000,$3c00,$2108,$3def		;Grey font with blue shadow (Esper equipped from other actor)
-dw $0000,$3868,$39ce,$7fff		;Grey font with purple shadow
-dw $0000,$3868,$39ce,$7fff		;Grey font with purple shadow
-dw $0000,$3868,$39ce,$7fff		;Grey font with purple shadow
+dw $0000,$3C00,$2108,$3DEF		;gray font with blue shadow (Esper equipped from other actor)
+dw $0000,$3868,$39CE,$7FFF		;gray font with purple shadow
+dw $0000,$3868,$39CE,$7FFF		;gray font with purple shadow
+dw $0000,$3868,$39CE,$7FFF		;gray font with purple shadow
 
 ; 5th row
-Grey:
-dw $0000,$4210,$5294,$7fff		;White font with grey shadow
-dw $0000,$4210,$5294,$7fff		;White font with grey shadow
-dw $0000,$0000,$39ce,$7fff		;White font with black shadow
-dw $0000,$4210,$5294,$7fff		;White font with grey shadow
+
+dw $0000,$1084,$5294,$7FFF		;white font with gray shadow
+dw $0000,$1084,$5294,$7FFF		;white font with gray shadow
+dw $0000,$0000,$39CE,$7FFF		;white font with black shadow
+dw $0000,$1084,$5294,$7FFF		;white font with gray shadow
 
 ; 6th row
 Yellow:
-dw $0000,$0000,$39ce,$03bf		;Yellow font (esper bonus points)
+dw $0000,$0000,$39CE,$03BF		;yellow font (esper bonus points)
+dw $FFFF,$FFFF,$FFFF,$FFFF		;null
+dw $FFFF,$FFFF,$FFFF,$FFFF		;null
+dw $FFFF,$FFFF,$FFFF,$FFFF		;null
 
-Org $c36bee
+;7th row
+dw $0000,$0000,$39CE,$7FFF		;white font
+
+org $C36BEE
 	rep #$20			; 16 bit A
 	lda MenuPalette,x	; Load Palette Data
-	sta $7e3049,x		; Store in RAM
+	sta $7E3049,x		; Store in RAM
 	sep #$20			; 8 bit A
 	sta $2122			; Put LB in CGRAM
 	xba					; Switch to HB
 	sta $2122			; Put HB in CGRAM
 	inx					; Index +1
 	inx					; Index +1
-	cpx #$00a8			; Set 88 colors
+	cpx #$00C8			; Set 120 colors
 
 org $C4B500
 C4B500:
