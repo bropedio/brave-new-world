@@ -2,7 +2,7 @@ arch 65816
 hirom
 
 ;------------------------------------------------------------------
-;Dialogues, location names and DTE table
+;Dialogues and DTE table
 ;------------------------------------------------------------------
 
 org $C0DFA0
