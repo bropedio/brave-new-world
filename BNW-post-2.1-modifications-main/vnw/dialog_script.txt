@@ -2158,7 +2158,7 @@ All enemies possess at least some stamina (depending on their max HP), but m.eva
 Many battles may seem overwhelming at first, but can be easily - and quickly - dealt with by altering your strategy.<EOP>
 Observe enemy behavior and learn whether it's better to attack directly or to disable them before they can hurt you.<EOP>
 Some foes, for example, will only become aggressive once they have taken damage or if they are alone.<EOP>
-Certain types of enemies will counter close-range physical attacks, even as a dying move.<EOP>
+Certain types of enemies will counter close-range physical attacks, even as a dying move. Enemy reactions will be shown in yellow.<EOP>
 Larger foes and bosses may counter ANY kind of damage, so be careful when attacking with a weakened character.<EOP>
 Finally, hitting an elemental weakness can sometimes have additional effects on enemies beyond the extra damage dealt.
 
@@ -4209,7 +4209,7 @@ Is she safe? Is she waiting? <E$18><OP$12>
 [caption #1189]
 <$75> Oh <E$0A>Maria <E$10><OP$12>Oh <E$0A>Maria<E$0E><OP$12>
    My beloved, <E$0D>do you hear<E$0B><OP$12>
-   My words whispered <E$0B>in you hear<E$0D><OP$12>
+   My words whispered <E$0B>in your hear<E$0D><OP$12>
    As if i were <E$13>by your side? <$75> <E$1D><OP$12>
 
 [caption #1190]
@@ -6092,7 +6092,7 @@ Cid: Men should never lust after power they lack the means to control_
 Gestahl: Enough. <D>We will speak further over dinner tonight.
 
 [caption #1730]
-Cid: There are still some soldiers who would prefer to keep fighting.<EOP>
+Cid: There are still 24 soldiers who would prefer to keep fighting.<EOP>
 Cid: Please, talk to as many of them as you can before dinner. Make them understand.
 
 [caption #1731]
@@ -7911,7 +7911,9 @@ _and then I realize it'll never be the same again. <D>*Sigh*
 <A7>: All right everyone, make room for me!
 
 [caption #2245]
-_hidden room? Nope, none here that I know of. <D>You're probably thinking of the original game.
+Kefka created a wizard to guard this tower, based on a Magitek prototype the Empire was developing.<EOP>
+He gave it the ability to repair itself, but I wonder if he fixed the flaws in its defensive programming_<EOP>
+Either way, if you're thinking of facing him, you won't stand a chance without elemental magic
 
 [caption #2246]
 Kefka_ Kefka_
@@ -7928,8 +7930,7 @@ I got some treasure, but it'll cost ya, say_ 32,768 GP.
 [caption #2249]
 No use talking to them. They've sold their souls to Kefka. <D>Probably their minds, too.<EOP>
 They call themselves the [Cult of Kefka], and I hear they've got some mystical artifact locked up in this tower.<EOP>
-Good luck if you're going in after it, though - their leader is some kind of grand wizard.<EOP>
-Unless you're a master of elemental magic, you won't stand a chance.
+We tried to steal it, but the whole tower's warded, makes your weapons so heavy you can barely use them.
 
 [caption #2250]
    Master Kefka's treasure_
@@ -8249,7 +8250,7 @@ Gerad: Listen milady, it grieves me to disappoint such a beauty, but I've been [
 
 [caption #2345]
 <A5>: Well don't that just beat all_ poor guy doesn't even recognize his twin brother.<EOP>
-<A6>: _what? <D>No, you idiot, he wants us to follow him.<EOP>
+<A6>: _what? <D>No, he wants us to follow him.<EOP>
 <A5>: How can you tell?<EOP>
 <A6>: You're his brother. How can you NOT?
 
@@ -9289,7 +9290,7 @@ Kupo! Don't scare me like that!
 
 
 [caption #2623]
-
+<A12> can do much more than just [Mimic].<D> Customize their command list on the status page.
 
 [caption #2624]
 
@@ -10738,11 +10739,11 @@ Kefka: I, Kefka, will knock you all down!
 
 [caption #3036]
 
-          _is ********. <E$08><OP$12>
+          _is *******. <E$08><OP$12>
 
 [caption #3037]
 
-     Got it? It's ********. <E$08><OP$12>
+     Got it? It's *******. <E$08><OP$12>
 
 [caption #3038]
 <A6>: Ugh_ <E$08><OP$12>
