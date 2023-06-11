@@ -464,14 +464,11 @@ org $C00E82
 org $CACBAD
 	db $FD
 
-; centered "save" on save/load game screen
+; centered "Save" on save/load game screen
 
 org $C31600
-	dw #Savesave
-	
-org $C31A24	
-Savesave:
-	db $65,$79,"Save",$00
+	dw $7965
+	db "Save",$00
 
 ; fixed "pink gogo" bug
 
