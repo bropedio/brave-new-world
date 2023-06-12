@@ -75,12 +75,6 @@
 - Optimized dte table and edited 3 captions (about yellow counters, the 2x gp gain with exp off, a hint about the number of soldiers to speak before banquet) (Gens)
 - Summon available even for chars with X-Magic active (Fëanor)
 
-B17 (6/12)
-
-- Summons available with X-Magic
-
-- Reverted a pair of modifications, responsible of subtle bugs
-
 2.2 roadmap (ordered by priority):
 
 - Press A on a Rage to show details: Elemental weaknesses/resistance, Statuses immunities/innate
