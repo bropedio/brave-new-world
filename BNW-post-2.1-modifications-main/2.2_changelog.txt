@@ -1,4 +1,4 @@
-2.2 changelog (at b15 release 05/24/2023)
+2.2 changelog (at b17 release 06/12/2023)
 
 - Adds custom intro and title (Ryo_Hazuki)
 - Cleaner coliseum "select a challenger" screen (Ryo_Hazuki)
@@ -59,7 +59,6 @@
 - Selecting an esper twice remove it, selecting an esper equipped on another char makes you choose if you want to "transfer" it (Ryo_Hazuki)
 - Added summon names to description field (Gens)
 - Changed blind icon (Gens)
-- Centered "Save" in the load/save screen (Ryo_Hazuki)
 - Numbered Bushido screen (Ryo_Hazuki)
 - Item/hands battle menu will always arrange inventory to have respectively items/weapons-shields on top of the list (Ryo_Hazuki)
 - Enable esper batch spending (Fëanor)
@@ -72,15 +71,20 @@
 - Battle quote box show enemy "reactions" in yellow (Fëanor)
 - Double GP by default on Veldt and reward bonuses not showing at the end of a battle if exp gain is off (Fëanor)
 - Bushido gauge speed capped when reaching 6 (Fëanor)
-- Changed font's shadow to dark gray and category icons immunes to font color changing for better readability (Ryo_Hazuki)
 - A Moogle explains the commands customization feature after recruiting Gogo (Gens)
 - Optimized dte table and edited 3 captions (about yellow counters, the 2x gp gain with exp off, a hint about the number of soldiers to speak before banquet) (Gens)
+- Summon available even for chars with X-Magic active (Fëanor)
+
+B17 (6/12)
+
+- Summons available with X-Magic
+
+- Reverted a pair of modifications, responsible of subtle bugs
 
 2.2 roadmap (ordered by priority):
 
 - Press A on a Rage to show details: Elemental weaknesses/resistance, Statuses immunities/innate
 - Import Rage checklist (Assassin): a hack that shows in gray, rages unlocked into the Veldt but not yet "leaped"
-- Summon command active with X-Magic
 - Compress title screen graphic
 - Import Alphabetical Lore by Silent Enigma: useless for english version but useful for translations or future lores edits
 
@@ -118,7 +122,9 @@ Bro new world features candidates for porting:
 Bugfixes temporarily discarded:
 - bird bars (setzer position after bar-bar-bar palidor)
 - banon riding chocobo pose 
-- imperial camp (sabin aware of 
+- imperial camp (sabin aware of doma without speaking to Shadow)
+- Changed font's shadow to dark gray and category icons immunes to font color changing for better readability (Ryo_Hazuki)
+- Fix reflect palette corruption
 
 Other ideas:
 - Mana battery power raised from 1 to 2
