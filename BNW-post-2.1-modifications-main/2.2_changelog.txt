@@ -87,7 +87,6 @@
 - Show description in equip menu with no need to press Y (Ryo_Hazuki)
 - Align cursor position to text where needed into the menu (Ryo_Hazuki)
 - Add "CT - Mistery from the past" track to Ultima's sealed door
-- Fix mp colors corrupting reflect palette (Ryo_Hazuki) (very low priority, can stay as it is now)
 - Rods don't consume MP on non critical attacks
 - Phoenix glitch fix
 - Double Meteor fix in Kefka fight
