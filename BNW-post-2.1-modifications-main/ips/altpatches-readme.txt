@@ -7,7 +7,7 @@ Mantra      R		Chakra      L
 Sonic Boom  Y		Bum Rush    x
 
 -altportraits (Gens)
-Replace vanilla portraits with portraits ported from "Edgar's new look - Redrawn menu portraits" by Laurel aka LLama 
+Replace vanilla portraits with portraits ported from "Edgar's new look - Redrawn menu portraits" by Laurel aka LLama and Orgaz
 
 -altwindows (Gens)
 Changes window style 2>7 in config menu. Note: to set the default palette, press A while selecting "window".
@@ -26,7 +26,7 @@ Sustain steps: 60%/40%
 Dance status is no longer persistent under any circumstances. Instead, the Moogle Charm removes stumble rates entirely.
 
 -fast_anim (Sarah Shinespark)
-Replace Flare, Dark, Holy and Rasp animation with faster alternatives.
+Replace Sap, Break, Holy, Flare, Dark and Rasp animation with faster alternatives.
 
 -graphical_signs (Gens)
 replace inn and pub text signs with pictures (the graphic is, by accident, very similar to pixel remaster)
@@ -39,9 +39,6 @@ Adds multitap (up to 4 players) support. Overwrites "controller" option into the
 
 -new_game_plus (Bropedio)
 Randomizes the player's party whenever the option to select characters is present. Only a single party leader is selectable.
-
--notitle (Ryo_Hazuki)
-Remove the custom splash screen to restore compatibility with real hardware.
 
 -notext_noswitch (Sir Fig Newton)
 Removes all dialogue from the game except when a choice need to be made and contents of chests. (Not intended for an initial playtrough).
@@ -65,14 +62,16 @@ patches meant to work as a set of "draconian settings" (difficulty settings in d
 3) Makes run away from fights impossible (warp is still useful to leave dungeons)
 4) Nerf HP and MP ELs (grant +20 of the stat (if accompanied by another stat) or +40 of the stat (if alone))
 
--slower_slot_reels or slot_reels_fast-medium-slow (benthomson057)
+-slower_slot_reels or slot_reels_fast-medium-slow (Fëanor)
 Choose only one of these. They slow the slot spins of Setzer ability. The former slow all the spins equally, the latter slow progressively the second and the third spin.
 
--slow_motion_battle_backgrounds (benthomson057)
+-slow_motion_battle_backgrounds (Fëanor)
 This can be considered an "accessibility" patch. There are players that find disturbing the super fast background animations in Soul Train fight, Baren Falls, Magitek escape and IAF. This slow down them avoiding nausea and dizziness occurrences.
 
--remove_collisions_in_gogo_cave (benthomson057)
+-remove_collisions_in_gogo_cave (Fëanor)
 Another user-friendly patch by Ben. This removes the automatic collision>fall in Gogo's cave bridge section. You can still fall to the bottom floor speaking to the npc purposely
 
--tweaked_portraits
-Portraits in vanilla styles but colorful, more detailed and in many cases, matching their sprites (check the png for a preview)
+-legacy_portraits, abysswolf_portraits, fft_portraits(Gens)
+Portraits in vanilla styles but colorful, more detailed and in many cases, matching their sprites (check the png for a preview). Ripped from a patch built for ffvi pr.
+Portraits based on the original pixel art by abysswolf from deviantart.
+Portraits in Final Fantasy Tactics style taken, edited, from original pixel art by ffhacktics users.
