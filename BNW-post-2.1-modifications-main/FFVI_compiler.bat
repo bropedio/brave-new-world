@@ -17,9 +17,6 @@ copy %ORIGINAL_ROM% %EDITED_ROM% /y
 rem ----------------------------------------------------------------------------
 
 echo.
-echo Applying hacks...
-%ASAR% --pause-mode=on-error %PATCHES%\main.asm %EDITED_ROM%
-
 echo Applying ips...
 %FLIPS% --apply "misc.ips" %EDITED_ROM%
 %FLIPS% --apply "minimap.ips" %EDITED_ROM%
@@ -30,6 +27,9 @@ rem %FLIPS% --apply "msu-1.ips" %EDITED_ROM%
 echo Inserting strings...
 
 %ATLAS% %EDITED_ROM% battle_strings_english.txt
+
+echo Applying hacks...
+%ASAR% --pause-mode=on-error %PATCHES%\main.asm %EDITED_ROM%
 
 echo Compressing GFX
 rem %FFVIDECOMP% -m c -s 0x02686C %EDITED_ROM% < %GFX%\modified\02686C_Title_Program.bin
