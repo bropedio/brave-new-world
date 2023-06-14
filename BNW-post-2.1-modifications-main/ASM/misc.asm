@@ -464,12 +464,6 @@ org $C00E82
 org $CACBAD
 	db $FD
 
-; centered "Save" on save/load game screen
-
-org $C31600
-	dw $7965
-	db "Save",$00
-
 ; fixed "pink gogo" bug
 
 org $C456EA
@@ -497,4 +491,4 @@ org $C3A4B2      ; Scrap the old "merged inputs" behaviour that was located here
 
 ;Brave New World data
 org $C33BB8
-	db $d1,$78,"Brave New World 2.2 b16",$00
+	db $d1,$78,"Brave New World 2.2 b17",$00
