@@ -75,27 +75,30 @@
 - Optimized dte table and edited 3 captions (about yellow counters, the 2x gp gain with exp off, a hint about the number of soldiers to speak before banquet) (Gens)
 - Summon available even for chars with X-Magic active (Fëanor)
 
+b18 changelog (not yet released):
+- no lag in the shop menu (abyssonim)
+- descriptions automatically shown on the equip screen - no need to press Y (Ryo_Hazuki)
+- Import Rage checklist (Novalia Spirit): a hack that shows in gray, rages unlocked into the Veldt but not yet "leaped" (Fëanor)
+
 2.2 roadmap (ordered by priority):
 
-- Press A on a Rage to show details: Elemental weaknesses/resistance, Statuses immunities/innate
-- Import Rage checklist (Assassin): a hack that shows in gray, rages unlocked into the Veldt but not yet "leaped"
 - Compress title screen graphic
+- Press A on a Rage to show details: Elemental weaknesses/resistance, Statuses immunities/innate
+- Align cursor position to text where needed into the menu
 - Import Alphabetical Lore by Silent Enigma: useless for english version but useful for translations or future lores edits
 
 2.2 side-notes (a sort of wishlist, good ideas notes):
 
-- Show description in equip menu with no need to press Y (Ryo_Hazuki)
-- Align cursor position to text where needed into the menu (Ryo_Hazuki)
 - Add "CT - Mistery from the past" track to Ultima's sealed door
-- Rods don't consume MP on non critical attacks
-- Phoenix glitch fix
-- Double Meteor fix in Kefka fight
+- Center "Save" on save menu
 - Add the clear bytes to Red-D, Silver-D and White-D events (to avoid invisible obstacles on map after killing them)
-- Full heal at party menu after zozo events
-- Get rid of lag in shop menu
 - Add a battle dialogue when you trigger elixir counter vs Magimaster (and/or a NPC line about dispel utility)
 - Disintegration animation for enemies that get petrified
 - Banon's death reference during Thamasa events (we can keep playing, amirite?)
+- Rods don't consume MP on non critical attacks
+- Phoenix glitch fix
+- Double Meteor fix in Kefka fight
+- Full heal at party menu after zozo events
 - Throw menu stops scrolling after 21 lines
 
 Bro new world features candidates for porting:
@@ -113,10 +116,10 @@ Bro new world features candidates for porting:
 	If damaging/healing, selects near fatal target
 
 Bugfixes temporarily discarded:
-- bird bars (setzer position after bar-bar-bar palidor)
-- banon riding chocobo pose 
-- imperial camp (sabin aware of doma without speaking to Shadow)
-- Changed font's shadow to dark gray and category icons immunes to font color changing for better readability (Ryo_Hazuki)
+- Bird bars (setzer position after bar-bar-bar palidor)
+- Banon riding chocobo pose 
+- Imperial camp dialogue fix (sabin aware of doma without speaking to Shadow)
+- Category icons immunes to font color changing (Ryo_Hazuki)
 - Fix reflect palette corruption
 
 Other ideas:
