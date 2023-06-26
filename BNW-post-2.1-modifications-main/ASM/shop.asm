@@ -344,3 +344,74 @@ org $d86428+20 : db $00		;Ninja scroll water
 org $d8640a+20 : db $00		;Ninja scroll fire
 org $d86446+20 : db $00		;Ninja scroll bolt
 org $d86482+20 : db $00		;Ninja scroll smoke
+
+;;-----------------------------------------------------
+;;
+;;		Lag Bug
+;;
+;;-----------------------------------------------------
+
+org $C3F8AC
+lda #$10        ; reset/stop desc
+        tsb $45            ; set menu flags
+        lda $0D
+        bit #$40        ; holding Y?
+        bne shop_handle_y ; branch if not
+        jsr $0f39        ; queue text upload
+        ;jsr $1368
+        jsr $b8a6        ; handle d-pad
+        jsr check_stats
+        jsr $bc84        ; draw quantity owned
+        jsr $bca8        ; draw quantity worn
+        bra shop_handle_b
+;Handle hold Y
+shop_handle_y:
+        jsr $b8a6        ; handle d-pad
+        jsr check_stats
+        jsr $0f4d        ; queue text upload 2
+		jsr BG_Scroll
+        sep #$20        ; 8-bit A
+        lda #$04        ; bit 2
+        trb $45            ; set bit in menu flags A
+        jsr gear_desc
+not_press_y_this_frame:
+        rts
+;Fork: Handle B
+shop_handle_b:
+        stz $3c
+        stz $3e
+        lda #$04
+        tsb $45
+		LDA $09        ; No-autofire keys
+		BIT #$80       ; Pushing B?
+		BEQ shop_handle_a     ; Branch if not
+		JSR $0EA9      ; Sound: Cursor
+		JMP $B760      ; Exit submenu
+;Fork: Handle A
+shop_handle_a:
+		LDA $08        ; No-autofire keys
+		BIT #$80       ; Pushing A?
+        beq not_pushing_a
+		JSR $B82F      ; Set buy limit
+		JSR $B7E6      ; Test GP, stock
+not_pushing_a:
+        rts
+		
+		
+		
+warnpc $C3F8FF
+
+ORG $C3B4C8
+BG_Scroll:
+	rep #$20        ; 16-bit A
+	lda #$0100        ; BG2 scroll position
+    sta $3b            ; BG2 Y position
+    sta $3d            ; BG3 X position
+	rts
+warnpc $C3B4E6
+
+org $C3F93F
+check_stats:
+
+org $C3FAAD
+gear_desc:
