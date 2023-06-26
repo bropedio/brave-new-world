@@ -84,7 +84,7 @@ PaletteMP:
   RTL
 warnpc $C0DEA0+1
 
-org $C0DEA0
+org $C0DE5A
   dw $1463			 ; Dark Grey
   dw $7DE2			 ; Blue
   
@@ -95,7 +95,7 @@ BlueForMPHeal:
   TDC            ; set accumulator to 0
   TAX            ; set X to 0
 .SetX
-  LDA $C0DEA0,X  ; Blue mp healing palette
+  LDA $C0DE5A,X  ; Blue mp healing palette
   STA $7FF8,X    ; write over reflect barrier palette
   STA $7DF8,X    ; write over reflect barrier palette
   INX 
