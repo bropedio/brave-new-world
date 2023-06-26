@@ -491,4 +491,4 @@ org $C3A4B2      ; Scrap the old "merged inputs" behaviour that was located here
 
 ;Brave New World data
 org $C33BB8
-	db $d1,$78,"Brave New World 2.2 b17",$00
+	db $d1,$78,"Brave New World 2.2 b18",$00
