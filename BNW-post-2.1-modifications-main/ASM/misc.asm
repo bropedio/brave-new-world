@@ -401,14 +401,6 @@ org $c391a9
 org $CF95C0
 db $15
 
-;Deleted Intangir from formation 338 2nd slot to avoid transfering its weaknesses to Intangir Z
-
-org $CF75D1 
-db $FF
-
-org $CF75D7
-db $00
-
 ;Wounded
 org $C3371B
 	db " KO    "
