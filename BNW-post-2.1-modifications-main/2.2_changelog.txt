@@ -1,4 +1,4 @@
-2.2 changelog (at b17 release 06/12/2023)
+2.2 changelog (at b18 release 06/28/2023)
 
 - Adds custom intro and title (Ryo_Hazuki)
 - Cleaner coliseum "select a challenger" screen (Ryo_Hazuki)
@@ -60,7 +60,6 @@
 - Added summon names to description field (Gens)
 - Changed blind icon (Gens)
 - Numbered Bushido screen (Ryo_Hazuki)
-- Item/hands battle menu will always arrange inventory to have respectively items/weapons-shields on top of the list (Ryo_Hazuki)
 - Enable esper batch spending (Fëanor)
 - Prevent using slim jim from field menu (Gens)
 - Blocked controller 2 Blitz input (Sir Newton Fig)
@@ -74,21 +73,27 @@
 - A Moogle explains the commands customization feature after recruiting Gogo (Gens)
 - Optimized dte table and edited 3 captions (about yellow counters, the 2x gp gain with exp off, a hint about the number of soldiers to speak before banquet) (Gens)
 - Summon available even for chars with X-Magic active (Fëanor)
+- Rage checklist (Original hack by Novalia Spirit, ported to Bnw by Fëanor) 
+- Aligned to the center "New game" and "Save" (Gens) 
+- Fixed visual bugs when changing rows in Intangir Z fight and it works mechanically as intended (Fëanor) 
+- No lag in the shop menu (fix by abyssonym ported to Bnw by Ryo_Hazuki) 
+- Decoupled mp color digits to fix reflect palette corruptions and Crusader bug (fix by Silent Enigma ported to bnw by Ryo_Hazuki) 
+- "Native" dance shown in yellow (Fëanor)
 
-b18 changelog (not yet released):
+b19 (not yet released):
 
-- Rage checklist (Original hack by Novalia Spirit, ported to Bnw by Fëanor)
-- Decoupled mp color digits to fix reflect palette corruptions and Crusader bug (fix by Silent Enigma ported to bnw by Ryo_Hazuki)
-- Glyphs immune to font color changing (Ryo_Hazuki)
-- Aligned hand cursor to text where needed (Ryo_Hazuki)
+- Item/hands battle menu will always arrange inventory to have respectively items/weapons-shields on top of the list (Ryo_Hazuki)
 - Descriptions on the equip menu without pressing Y (Ryo_Hazuki)
-- No lag in the shop menu (fix by abyssonym ported to Bnw by Ryo_Hazuki)
-- Aligned to the center "New game" and "Save" (Gens)
-- Fixed visual bugs when changing rows in Intangir Z fight and it works mechanically as intended (Fëanor)
+- Aligned hand cursor to text where needed (Ryo_Hazuki)
+- Glyphs immune to font color changing (Ryo_Hazuki)
+bugfixes:
+- evade and m.evade line visible in status menu called by party selection menu
+- restored compatibility with new game plus (bropedio's party randomizer)
 
 2.2 roadmap (ordered by priority):
 
 - Press A on a Rage to show details: Elemental weaknesses/resistance, Statuses immunities/innate
+- Scan anytime (HP/MP accessible via X, Status via Y, weaknesses via scan)
 - Compress title screen graphic
 - Import Alphabetical Lore by Silent Enigma: useless for english version but useful for translations or future lores edits
 
@@ -103,9 +108,13 @@ b18 changelog (not yet released):
 - Double Meteor fix in Kefka fight
 - Throw menu stops scrolling after 21 lines
 
+Bugfixes temporarily discarded:
+- Bird bars (setzer position after bar-bar-bar palidor)
+- Banon riding chocobo pose 
+- Imperial camp dialogue fix (sabin aware of doma without speaking to Shadow)
+
 "Bro new world" features candidates for porting:
 
-- Scan anytime (HP/MP accessible via X, Status via Y, weaknesses via scan)
 - If "Fight" will yield a desperation attack, the text is yellow
 - Status tick rate not affected by speed/haste/slow
 - Defend work against piercing (ignore defense) attacks
@@ -117,13 +126,8 @@ b18 changelog (not yet released):
 	If lifting status, select target with the status
 	If damaging/healing, selects near fatal target
 
-Bugfixes temporarily discarded:
-- Bird bars (setzer position after bar-bar-bar palidor)
-- Banon riding chocobo pose 
-- Imperial camp dialogue fix (sabin aware of doma without speaking to Shadow)
-
 Other ideas:
-- Innate buffs recap on the status screen (next to the name) 
+- Status icons on status screen (next to the name) to show the innate buffs
 - Rods don't consume MP on non critical attacks
 - Physical blitzes can crit
 - Mana battery power raised from 1 to 2
