@@ -1,4 +1,4 @@
-2.2 changelog (at b18 release 06/28/2023)
+2.2 changelog (at b18 release 06/30/2023)
 
 - Adds custom intro and title (Ryo_Hazuki)
 - Cleaner coliseum "select a challenger" screen (Ryo_Hazuki)
@@ -79,10 +79,10 @@
 - No lag in the shop menu (fix by abyssonym ported to Bnw by Ryo_Hazuki) 
 - Decoupled mp color digits to fix reflect palette corruptions and Crusader bug (fix by Silent Enigma ported to bnw by Ryo_Hazuki) 
 - "Native" dance shown in yellow (Fëanor)
+- Item/hands battle menu will always arrange inventory to have respectively items/weapons-shields on top of the list (Ryo_Hazuki)
 
 b19 (not yet released):
 
-- Item/hands battle menu will always arrange inventory to have respectively items/weapons-shields on top of the list (Ryo_Hazuki)
 - Descriptions on the equip menu without pressing Y (Ryo_Hazuki)
 - Aligned hand cursor to text where needed (Ryo_Hazuki)
 - Glyphs immune to font color changing (Ryo_Hazuki)
