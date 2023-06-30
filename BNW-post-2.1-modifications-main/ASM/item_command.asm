@@ -39,7 +39,8 @@ org $C20000						; Begin of Battle
 	jmp c23992					; jump to clear rearrange id before begin battle
 org $c23992		
 c23992:		
-	stz $0100					;Clear Rearrange ID
+	stz $0100					
+	stz $0101					;Clear Rearrange ID
 	jmp $000C
 
 
