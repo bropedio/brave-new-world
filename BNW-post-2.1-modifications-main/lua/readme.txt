@@ -17,3 +17,5 @@ Instructions:
 
 -- ========= BNW Rage Battle Display ========= --
 --  Each rage description will be automatically shown in the upper left part of the screen, while scrolling the battle menu.
+
+If you want to use them together, just open another Lua script Window.
