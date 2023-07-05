@@ -16,4 +16,4 @@ Instructions:
 --  * Switch bestiary pages with Y. Scroll with any d-pad direction. Close with B.
 
 -- ========= BNW Rage Battle Display ========= --
-*Each rage description will be automatically shown in the upper left part of the screen, while scrolling the battle menu.
+--  Each rage description will be automatically shown in the upper left part of the screen, while scrolling the battle menu.
