@@ -1,6 +1,7 @@
 @echo off
 rem ----------------------------------------------------------------------------
 set ORIGINAL_ROM="rom\bnw2.1.sfc"
+set VANILLA_ROM="rom\Final Fantasy III (USA) (Rev 1).sfc"
 set EDITED_ROM="bnw.sfc"
 set PATCHES="asm"
 set SCRIPTS="scripts"
@@ -25,11 +26,14 @@ echo Applying ips...
 rem %FLIPS% --apply "msu-1.ips" %EDITED_ROM%
 
 echo Inserting strings...
-
 %ATLAS% %EDITED_ROM% battle_strings_english.txt
 
 echo Applying hacks...
 %ASAR% --pause-mode=on-error %PATCHES%\main.asm %EDITED_ROM%
+
+echo Creating patch...
+%FLIPS% --create --ips %VANILLA_ROM% %EDITED_ROM% "[n]BNW 2.2 B18.3.ips"
+rem %FLIPS% --create --ips %VANILLA_ROM% %EDITED_ROM% "[n]BNW 2.2 B18.3 (to play on real hardware).ips"
 
 echo Compressing GFX
 rem %FFVIDECOMP% -m c -s 0x02686C %EDITED_ROM% < %GFX%\modified\02686C_Title_Program.bin
