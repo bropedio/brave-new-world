@@ -83,12 +83,12 @@
 
 b19 (not yet released):
 
+- Compressed Map data to free up rom space
 - Descriptions on the equip menu without pressing Y (Ryo_Hazuki)
 - Aligned hand cursor to text where needed (Ryo_Hazuki)
 - Glyphs immune to font color changing (Ryo_Hazuki)
 bugfixes:
 - evade and m.evade line visible in status menu called by party selection menu
-- restored compatibility with new game plus (bropedio's party randomizer)
 
 2.2 roadmap (ordered by priority):
 
