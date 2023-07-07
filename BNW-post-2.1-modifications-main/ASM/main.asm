@@ -6,9 +6,10 @@
 
 ;comment patches to deactivate them
 
+incsrc "reserved_freespace.asm"
 incsrc "new_intro.asm"
 incsrc "shrinked_colosseum.asm"
-incsrc "veldt-freebies.asm"
+incsrc "veldt_freebies.asm"
 incsrc "lore_curative.asm"
 incsrc "misc.asm"
 incsrc "shop.asm"
@@ -41,3 +42,4 @@ incsrc "intangir_fix.asm"
 incsrc "mp_colors.asm"
 incsrc "native_dance.asm"
 incsrc "item_command.asm"
+;incsrc "scan_anytime.asm"
