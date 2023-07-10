@@ -127,9 +127,8 @@ Condense_Status_txt:
 	STA $4364       ; Set src HB
 	LDA #$C3        ; ...
 	STA $4367       ; Set indir HB
-	LDA #$20        ; Channel: 5
-	TSB $43         ; Queue HDMA-5
-	JSR $5D05       ; Draw menu; portrait
+	LDA #$40        ; Channel: 6
+	TSB $43         ; Queue HDMA-6
 	RTS
 HDMA_Table:
 	db $70,$00,$00  ; Nothing
@@ -170,7 +169,18 @@ org $C3A897
 org $C31C46
 	JSR $352F  			      ; Reset/Stop stuff
 	JSR $620B 			      ; Set to shift text
-	JSR Condense_Status_txt  ; Draw menu; portrait
+	JSR $26F5
+
+org $C326F5
+	JSR Condense_Status_txt		; Draw menu; portrait
+	JSR $5D05					; Draw menu; portrait
+	RTS
+
+org $c3632A
+	jsr Condense_Status_txt
+	jsr $620b
+	nop
+	
 
 ;change vwf font shadow from black to dark gray for better readability 
 ;and make glyphs immune to color changing
