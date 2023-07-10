@@ -270,6 +270,7 @@ dw $FFFF,$FFFF,$FFFF,$FFFF		;null
 dw $FFFF,$FFFF,$FFFF,$FFFF		;null
 
 ;7th row
+White:
 dw $0000,$0000,$39CE,$7FFF		;white font
 
 org $C36BEE
@@ -284,7 +285,7 @@ org $C36BEE
 	inx					; Index +1
 	cpx #$00C8			; Set 120 colors
 
-org $C4B500
+org $C4B4F0
 C4B500:
 	phx
 	ldx $00
@@ -296,6 +297,26 @@ pick_color:
 	bne pick_color
 	plx
 	rtl
+
+glyphs:
+	phx
+	ldx $00
+pick_white_color:
+	LDA White,x
+	sta $7E3109,x
+	inx
+	cpx #$0008
+	bne pick_white_color
+	plx
+	lda $9f
+    sta $27
+	rtl	
+	
+; Load white palette exiting from save
+
+org $C32554
+	JSL glyphs			; jump and load white palette
+	
 	
 ; Define labels
 	
