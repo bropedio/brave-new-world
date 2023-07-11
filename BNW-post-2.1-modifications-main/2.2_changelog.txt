@@ -83,12 +83,15 @@
 
 b19 (not yet released):
 
-- Compressed Map data to free up rom space
+- Glyphs immune to font color changing (Ryo_Hazuki) ✓
 - Descriptions on the equip menu without pressing Y (Ryo_Hazuki)
 - Aligned hand cursor to text where needed (Ryo_Hazuki)
-- Glyphs immune to font color changing (Ryo_Hazuki)
+- Compressed Map data to free up rom space (Sir Newton Fig)
 bugfixes:
-- evade and m.evade line visible in status menu called by party selection menu
+- evade and m.evade line visible in status menu called by party selection menu ✓
+code optimizations:
+- freespace reserved for alt patches indicated by $EE ✓
+- moved double counterattack code to C4 to free up space in C3 ✓
 
 2.2 roadmap (ordered by priority):
 
