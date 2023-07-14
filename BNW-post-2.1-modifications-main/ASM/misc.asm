@@ -481,6 +481,14 @@ org $C3A4B2      ; Scrap the old "merged inputs" behaviour that was located here
   STA $04        ; Blitz inputs (?), allowing P2 to screw up P1's Blitzes, and
   BRA $02        ; vice versa. This just makes $04 a copy of the current inputs.
 
+; 255 attack bug fix
+
+org $C198C5
+    STZ $7B67
+    LDA #$01
+    STA $629E
+warnpc $C198CD
+
 ;Brave New World data
 org $C33BB8
-	db $d1,$78,"Brave New World 2.2 b18",$00
+	db $d1,$78,"Brave New World 2.2 b19",$00
