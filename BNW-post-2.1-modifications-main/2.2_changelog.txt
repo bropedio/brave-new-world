@@ -88,7 +88,8 @@ b19 (not yet released):
 - aligned hand cursor to text where needed (Ryo_Hazuki)
 
 bugfixes:
-- evade and m.evade line visible in status menu called by party selection menu ✓
+- evade and m.evade line visible in status menu called by party selection menu ✓ (Ryo_Hazuki)
+- fixed the display glitch after 255 "named" attack are shown in battle ✓ (Fëanor)
 
 code optimizations:
 - freespace reserved for alt patches indicated by $EE (Fëanor) ✓
