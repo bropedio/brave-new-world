@@ -99,6 +99,7 @@ code optimizations:
 2.2 roadmap (ordered by priority):
 
 - Press A on a Rage to show details: Elemental weaknesses/resistance, Statuses immunities/innate
+- fix ghost ring wearer healed double by Cure Magic instead of being hurt when raging a living enemy
 - Scan anytime (HP/MP accessible via X, Status via Y, weaknesses via scan)
 - Compress title screen graphic
 - Import Alphabetical Lore by Silent Enigma: useless for english version but useful for translations or future lores edits
