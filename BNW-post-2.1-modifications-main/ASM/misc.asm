@@ -489,6 +489,32 @@ org $C198C5
     STA $629E
 warnpc $C198CD
 
+;Preserves the Undead status set by the Ghost Ring when raging a non-undead monster
+;Author: Fëanor
+
+!free = $C25E63     ; requires 11 bytes
+!warn = !free+15    ; provides 15 bytes
+
+; -----------------------------------------------------------------------------
+; Init Monster/Rage Data [C2/2DC1-C2/2E39]
+;   ...
+;   STA $3BCC,Y
+org $C22E31
+    JSR Splice
+    NOP
+warnpc $C22E35
+;   STA $3C94,Y
+;   ...
+; -----------------------------------------------------------------------------
+
+org !free
+Splice:
+    LDA $3C94,Y     ; load current metamorph info & special flags
+    AND #$8000      ; preserve only the undead flag
+    ORA $CF0011,X   ; OR with monster's metamorph info & special flags
+    RTS
+warnpc !warn
+
 ;Brave New World data
 org $C33BB8
 	db $d1,$78,"Brave New World 2.2 b19",$00
