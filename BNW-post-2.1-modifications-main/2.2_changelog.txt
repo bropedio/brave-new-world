@@ -91,6 +91,7 @@ bugfixes:
 - evade and m.evade line visible in status menu called by party selection menu ✓ (Ryo_Hazuki)
 - fixed the display glitch after 255 "named" attack are shown in battle ✓ (Fëanor)
 - ghost ring fix : preserves the Undead status when raging a non-undead monster ✓ (Fëanor)
+- Press X to leave the menu everywhere ✓ (Fëanor)
 
 code optimizations:
 - freespace reserved for alt patches indicated by $EE (Fëanor) ✓
@@ -100,7 +101,6 @@ code optimizations:
 2.2 roadmap (ordered by priority):
 
 - Press A on a Rage to show details: Elemental weaknesses/resistance, Statuses immunities/innate
-- Press X to leave the menu everywhere
 - Scan anytime (HP/MP accessible via X, Status via Y, weaknesses via scan)
 - Compress title screen graphic
 - Import Alphabetical Lore by Silent Enigma: useless for english version but useful for translations or future lores edits
