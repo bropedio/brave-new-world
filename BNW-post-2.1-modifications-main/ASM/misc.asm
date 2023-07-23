@@ -515,6 +515,43 @@ Splice:
     RTS
 warnpc !warn
 
+; Pressing X allows exiting the main menu from anywhere.
+; Author: Fëanor
+
+!free = $C3F6B0
+!warn = $C3F6CB
+
+; -----------------------------------------------------------------------------
+; Menu State Loop
+; -----------------------------------------------------------------------------
+; C3/01BA:
+;   JSR $1412
+org $C301BD
+    JSR MenuLoopSplice
+;   CMP #$FF
+;   BEQ $01D8
+;   ...
+;   STZ $43
+;   RTS
+; -----------------------------------------------------------------------------
+
+org !free
+MenuLoopSplice:     ; [27 bytes]
+    TDC             ; [displaced]
+    LDA $0200       ; load menu type
+    BNE +           ; branch if ^ not main menu
+    LDA $06         ; load buttons pressed this frame
+    AND #$40        ; check if X button is pressed
+    BEQ +           ; branch if not ^
+    STZ $0205       ; clear item used out-of-battle
+    JSR $0EA9       ; play cursor sound effect (cancel)
+    JSR $1DD2       ; update field equipment effects
+    LDA #$FF        ; setup menu exit
+    RTS
+  + LDA $26         ; [displaced]
+    RTS
+warnpc !warn
+
 ;Brave New World data
 org $C33BB8
 	db $d1,$78,"Brave New World 2.2 b19",$00
