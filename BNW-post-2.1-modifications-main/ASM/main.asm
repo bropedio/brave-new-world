@@ -6,6 +6,7 @@
 
 ;comment patches to deactivate them
 
+incsrc "descriptions.asm"
 incsrc "reserved_freespace.asm"
 incsrc "new_intro.asm"
 incsrc "shrinked_colosseum.asm"
@@ -23,7 +24,6 @@ incsrc "esper_transfer.asm"
 incsrc "item.asm"
 incsrc "scripts.asm"
 incsrc "wallchange.asm"
-incsrc "descriptions.asm"
 incsrc "ragedance_descriptions.asm"
 incsrc "party.asm"
 incsrc "ailments_icons.asm"
@@ -43,4 +43,5 @@ incsrc "mp_colors.asm"
 incsrc "native_dance.asm"
 incsrc "item_command.asm"
 incsrc "double-counter.asm"
+incsrc "sap_regen_rerise.asm"
 ;incsrc "scan_anytime.asm"
