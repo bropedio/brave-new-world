@@ -447,7 +447,7 @@ HpMpDiff:
 .MP
 	STX $EB                 ; store on $EB for draw routine
 	SEP #$20                ; 8-bit A
-	JSR $0490				; draw 4 digits (16 bit)	
+	JSR $049A				; draw 5 digits (16 bit)	
 	LDA #$01				; load $01 in A
 	STA $F1					; make $F0 flag true
 	PLY						; take Y (probably unnecessary)
