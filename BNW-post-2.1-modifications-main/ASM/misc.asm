@@ -3,6 +3,14 @@ hirom
 
 table "menu.tbl", ltr ; Tabella per le stringhe di testo
 
+; Battle throw limit
+
+org $c186e4
+	cmp #$15		; scroll limit
+	
+org $c18739
+	ldx #$0220
+
 ;;--------------------------------------------------
 ;;Item box dimension
 ;;	First value: Start print position X assis
