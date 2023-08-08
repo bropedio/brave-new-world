@@ -7,7 +7,7 @@ padbyte $EE
 
 ;idle time reducer
 
-org $C0DAF9 : pad $C0DB00 ; 8 bytes
+org $C0DAF9 : pad $C0DB01 ; 8 bytes
 
 ; notext_noswitch
 
