@@ -1,4 +1,4 @@
-2.2 changelog (at b18 release 06/30/2023)
+2.2 changelog (at b19 release 08/08/2023)
 
 - Adds custom intro and title (Ryo_Hazuki)
 - Cleaner coliseum "select a challenger" screen (Ryo_Hazuki)
@@ -80,27 +80,33 @@
 - Decoupled mp color digits to fix reflect palette corruptions and Crusader bug (fix by Silent Enigma ported to bnw by Ryo_Hazuki) 
 - "Native" dance shown in yellow (Fëanor)
 - Item/hands battle menu will always arrange inventory to have respectively items/weapons-shields on top of the list (Ryo_Hazuki)
+- Glyphs immune to font color changing (Ryo_Hazuki) 
+- Press X to leave the menu everywhere  (Fëanor) 
+- Descriptions on the equip menu without pressing Y (Ryo_Hazuki) 
+- Colosseum reversible trades highlighted in yellow (Fëanor)
+- Throw menu stops at line 21st (Ryo_Hazuki)
 
-b19 (not yet released): 
+b19: 
   
 - glyphs immune to font color changing (Ryo_Hazuki) 
 - press X to leave the menu everywhere  (Fëanor) 
 - descriptions on the equip menu without pressing Y (Ryo_Hazuki) 
-- throw menu stops at line 21st (Ryo_Hazuki)
 - colosseum reversible trades highlighted in yellow (Fëanor)
+- throw menu stops at line 21st
   
  bugfixes: 
 - evade and m.evade line visible in status menu called by party selection menu  (Ryo_Hazuki) 
 - fixed the display glitch after 255 "named" attack are shown in battle (Fëanor) 
 - ghost ring fix : preserves the Undead status when raging a non-undead monster (Fëanor)
-
+  
  code optimizations: 
 - freespace reserved for alt patches indicated by $EE (Fëanor)  
 - moved double counterattack fix to C4 to free up space in C3 
-- moved summons descriptions to C4 to free up fwf tiles for future menu improvements
+- moved summons descriptions to CB to free up fwf tiles for future menu improvements 
 
 2.2 roadmap (ordered by priority):
 
+- Rich status menu showing inherent statuses, ailment immunities and elemental properties
 - Press A on a Rage to show details: Elemental weaknesses/resistance, Statuses immunities/innate
 - Scan anytime (HP/MP accessible via X, Status via Y, weaknesses via scan)
 - Compress title screen graphic
@@ -115,12 +121,12 @@ b19 (not yet released):
 - Banon's death reference during Thamasa events (we can keep playing, amirite?)
 - Phoenix glitch fix
 - Double Meteor fix in Kefka fight
-- Throw menu stops scrolling after 21 lines
 
 Bugfixes temporarily discarded:
 - Bird bars (setzer position after bar-bar-bar palidor)
 - Banon riding chocobo pose 
 - Imperial camp dialogue fix (sabin aware of doma without speaking to Shadow)
+- Gau taking steps when special are blocked by party members
 
 "Bro new world" features candidates for porting:
 
@@ -136,7 +142,6 @@ Bugfixes temporarily discarded:
 	If damaging/healing, selects near fatal target
 
 Other ideas:
-- Status icons on status screen (next to the name) to show the innate buffs
 - Rods don't consume MP on non critical attacks
 - Physical blitzes can crit
 - Mana battery power raised from 1 to 2
