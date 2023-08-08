@@ -81,23 +81,24 @@
 - "Native" dance shown in yellow (Fëanor)
 - Item/hands battle menu will always arrange inventory to have respectively items/weapons-shields on top of the list (Ryo_Hazuki)
 
-`b19 (not yet released): 
+b19 (not yet released): 
   
- - glyphs immune to font color changing (Ryo_Hazuki) ✓
- - Press X to leave the menu everywhere ✓ (Fëanor) 
- - descriptions on the equip menu without pressing Y (Ryo_Hazuki) 
- - aligned hand cursor to text where needed (Ryo_Hazuki) 
+- glyphs immune to font color changing (Ryo_Hazuki) 
+- press X to leave the menu everywhere  (Fëanor) 
+- descriptions on the equip menu without pressing Y (Ryo_Hazuki) 
+- throw menu stops at line 21st (Ryo_Hazuki)
+- colosseum reversible trades highlighted in yellow (Fëanor)
   
  bugfixes: 
- - evade and m.evade line visible in status menu called by party selection menu ✓ (Ryo_Hazuki) 
- - fixed the display glitch after 255 "named" attack are shown in battle ✓ (Fëanor) 
- - ghost ring fix : preserves the Undead status when raging a non-undead monster ✓ (Fëanor)
- - 4 digits HP bonus on the status menu now shows the upper arrow (Ryo_Hazuki) 
-  
+- evade and m.evade line visible in status menu called by party selection menu  (Ryo_Hazuki) 
+- fixed the display glitch after 255 "named" attack are shown in battle (Fëanor) 
+- ghost ring fix : preserves the Undead status when raging a non-undead monster (Fëanor)
+
  code optimizations: 
- - freespace reserved for alt patches indicated by $EE (Fëanor) ✓ 
- - moved double counterattack fix to C4 to free up space in C3 ✓ 
- - compressed Map data to free up rom space (Sir Newton Fig)`
+- freespace reserved for alt patches indicated by $EE (Fëanor)  
+- moved double counterattack fix to C4 to free up space in C3 
+- moved summons descriptions to C4 to free up fwf tiles for future menu improvements
+
 2.2 roadmap (ordered by priority):
 
 - Press A on a Rage to show details: Elemental weaknesses/resistance, Statuses immunities/innate
