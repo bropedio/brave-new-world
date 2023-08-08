@@ -5,6 +5,10 @@ hirom
 
 padbyte $EE
 
+;idle time reducer
+
+org $C0DAF9 : pad $C0DB00 ; 8 bytes
+
 ; notext_noswitch
 
 org $C0FF18 : pad $C0FF8E ; 118 bytes
