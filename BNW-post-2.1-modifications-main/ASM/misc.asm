@@ -3,14 +3,6 @@ hirom
 
 table "menu.tbl", ltr ; Tabella per le stringhe di testo
 
-; Battle throw limit
-
-org $c186e4
-	cmp #$15		; scroll limit
-	
-org $c18739
-	ldx #$0220
-
 ;;--------------------------------------------------
 ;;Item box dimension
 ;;	First value: Start print position X assis
@@ -426,6 +418,12 @@ org $C3218B
 org $C18336 : CMP #$08    ; lore menu length 12 (4 shown on first page + 8 scrolling)
 org $C1838F : LDA #$08    ; lore menu scrollbar flash
 org $C18393 : LDX #$0500  ; scrollbar reaching the end of the menu correctly
+
+; Throw Battle Menu
+
+org $C186E4 : CMP #$11    ; throw menu length 21 (4 shown on first page + 17 scrolling)
+org $C18735 : LDA #$11    ; throw menu scrollbar flash
+org $C18739 : LDX #$0220  ; 
 
 ;Adding Muddle to Siren Song
 
