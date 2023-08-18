@@ -840,10 +840,6 @@ org $ED7A70
 ; Summons descriptions
 ;----------------------------------------------
 
-org $C48270
-  Padbyte $00
-  Pad $C487FF
-
 org $C38777
   LDX #EsperDescPointers
 
@@ -853,7 +849,7 @@ org $C38780
 org $C358B9
   JSL InitEsperDataSlice
 
-!freeXL = $CB52FC     ; big ol' chunk of freespace :D
+!freeXL = $CB52FC
 
 org !freeXL
 
