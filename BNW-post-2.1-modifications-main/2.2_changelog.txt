@@ -86,6 +86,9 @@
 - Colosseum reversible trades highlighted in yellow (Fëanor)
 - Throw menu stops at line 21st (Ryo_Hazuki)
 
+b20 (not yet released)
+- Wrexsoul ends possession with near fatal
+
 2.2 roadmap (ordered by priority):
 
 - Rich status menu showing inherent statuses, ailment immunities and elemental properties
@@ -122,11 +125,18 @@ Bugfixes temporarily discarded:
 	If setting/toggling status, selects target without the status
 	If lifting status, select target with the status
 	If damaging/healing, selects near fatal target
+- Enemy script changes shown in message boxes (eg. "Disabled)
+- Doom Gaze fixed over Solitary Island and Phoenix Cave, gating them
+- Speed up enemies in Kefka@Narshe and Moogles@Narshe
+- Healing Espers use "Curative ally targeting" submenu in battle
+- Fix sprite priority bug after covering
+- Gau leaping ends battle (???)
 
 Other ideas:
 - Rods don't consume MP on non critical attacks
 - Physical blitzes can crit
 - Mana battery power raised from 1 to 2
+- Remove 1 fight in IAF and/or Mine Cart
 
 Long-term goals (3.0?):
 Colosseum overhaul
