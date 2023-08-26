@@ -114,7 +114,8 @@ Print_EL_Value:
 	ADC #$00B4
 	RTS
 	
-
+padbyte $FF
+pad $C38777				; erase the rest of the old routine
 ;	adc #$00C0						; ADC to LV value to print EL value
 
 

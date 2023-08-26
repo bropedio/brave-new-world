@@ -20,8 +20,7 @@ endmacro
 org $C3874C				; display properties for weapons
   JSR OffensiveProps2
   RTS
-padbyte $FF
-pad $C38777				; erase the rest of the old routine
+
 
 ;;######################################################################################################;;
 ;;                                                                                                      ;;
