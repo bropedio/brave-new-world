@@ -285,9 +285,6 @@ org $C39995
 	nop					; Nop necessary due to avoid bug from branches
 	RTS
 warnpc $C3999A
-	
-
-; Padding $EE bytes instead of $FF free bytes
 
 org $c3651A
 refresh_bg3:
@@ -296,7 +293,7 @@ refresh_bg3:
 	sta $26
 	RTS
 	
-padbyte $EE
+padbyte $FF
 pad $C3652C
 warnpc $C3652D
 
