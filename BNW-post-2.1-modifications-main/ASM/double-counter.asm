@@ -161,7 +161,7 @@ Command05:
 warnpc $C21C80
 
 ; ##########################################
-; C3 Helpers (new code)
+; C4 Helpers (new code)
 
 org $C235E9
   JSL AttkBackup
