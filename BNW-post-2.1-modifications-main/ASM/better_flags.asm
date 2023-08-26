@@ -7,8 +7,15 @@ table "menu.tbl", ltr
 !numProps = #$0014		; how many properties to check for (should match size of tables at the bottom)
 !maxProps = #$0005		; how many properties are we willing to display?
 !overwriteRow = $C0DC6E
-!Continue = $C3F651
-!HealingWeapons = $C3F66D
+!Continue = $C4B931
+!HealingWeapons = $C4B94D
+
+macro FakeShortC3(addr)
+	phk						; push 
+	per $0006				; push return
+	pea $96EE				; push address
+	jml $c3<addr>			; jump to address
+endmacro
 
 org $C3874C				; display properties for weapons
   JSR OffensiveProps2
@@ -229,8 +236,13 @@ org $c389b5
 ; Once all properties have been checked, or !maxProps have been output
 ; (whichever comes first), it stops.
 
-org $C3F620
+org $C3F6CB
 OffensiveProps2:
+	JSL OffensiveProps2_long
+	RTS
+	
+org $C4B900
+OffensiveProps2_long:
   PHX
   LDA #$20             ; "user's color" palette (white)
   STA $29              ; set palette
@@ -313,7 +325,7 @@ OffensiveProps2:
 + STA $EB              ; write LBs for tilemap destination
   PHY
   LDY $00
-  JSR $030C            ; output item flag string to tilemap
+  %FakeShortC3(030C)   ; output item flag string to tilemap
   PLY
   INY
 .next
@@ -327,7 +339,7 @@ OffensiveProps2:
   PLA                  ; retrieve previous A (preserve HB)
   SEP #$20             ; 8-bit A
   PLX
-  RTS
+  RTL
 
 ;;################################################################################################;;  
 ;;                        												  						  ;;
