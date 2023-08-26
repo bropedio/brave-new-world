@@ -32,8 +32,8 @@ echo Applying hacks...
 %ASAR% --pause-mode=on-error %PATCHES%\main.asm %EDITED_ROM%
 
 echo Creating patch...
-%FLIPS% --create --ips %VANILLA_ROM% %EDITED_ROM% "[n]BNW 2.2 B18.3.ips"
-rem %FLIPS% --create --ips %VANILLA_ROM% %EDITED_ROM% "[n]BNW 2.2 B18.3 (to play on real hardware).ips"
+%FLIPS% --create --ips %VANILLA_ROM% %EDITED_ROM% "[n]BNW 2.2 B20.ips"
+rem %FLIPS% --create --ips %VANILLA_ROM% %EDITED_ROM% "[n]BNW 2.2 B20 (to play on real hardware).ips"
 
 echo Compressing GFX
 rem %FFVIDECOMP% -m c -s 0x02686C %EDITED_ROM% < %GFX%\modified\02686C_Title_Program.bin
