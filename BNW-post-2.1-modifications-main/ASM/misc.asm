@@ -423,7 +423,7 @@ org $C18393 : LDX #$0500  ; scrollbar reaching the end of the menu correctly
 
 org $C186E4 : CMP #$11    ; throw menu length 21 (4 shown on first page + 17 scrolling)
 org $C18735 : LDA #$11    ; throw menu scrollbar flash
-org $C18739 : LDX #$0220  ; 
+org $C18739 : LDX #$0220  ; scrollbar reaching the end of the menu correctly
 
 ;Adding Muddle to Siren Song
 
@@ -560,4 +560,4 @@ warnpc !warn
 
 ;Brave New World data
 org $C33BB8
-	db $d1,$78,"Brave New World 2.2 b19",$00
+	db $d1,$78,"Brave New World 2.2 b20",$00
