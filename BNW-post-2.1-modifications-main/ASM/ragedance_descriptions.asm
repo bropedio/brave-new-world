@@ -56,7 +56,7 @@ RageDescHelp:
   LDX #RageDescs   ; pointer offsets
   JSR PrepDescs
   LDX #$9EC9       ; 7E/9EC9
-  STX $2181        ; Set WRAM LBs
+  STX $2181        ; set WRAM LBs
   TDC              ; clear A
   LDA $4B          ; list slot
   TAX              ; index it
@@ -601,3 +601,30 @@ DanceDescs:
   db "Mirage: 3/16, Ice Rabbit: 1/16",$00
 
 warnpc $C4B9D1
+
+;.wind_song
+;  db "T: 75% Sun Bath, 25% Cockatrice",$01
+;  db "S: 60% Razor Leaf, 40% Wind Slash",$00
+;.forest_suite
+;  db "T: 75% Razor Leaf, 25% Raccoon",$01
+;  db "S: 60% Harvester, 40% Elf Fire",$00
+;.desert_aria
+;  db "T: 75% Mirage, 25% Meerkat",$01
+;  db "S: 60% Sun Bath, 40% Sand Storm",$00
+;.love_sonata
+;  db "T: 75% Elf Fire, 25% Tapir",$01
+;  db "S: 60% Bedevil, 40% Moonlight",$00
+;.earth_blues
+;  db "T: 75% Avalanche, 25% Wild Boars",$01
+;  db "S: 60% Landslide, 40% Sun Bath",$00
+;.water_rondo
+;  db "T: 75% El Nino, 25% Toxic Frog",$01
+;  db "S: 60% Plasma, 40% Surge",$00
+;.dusk_requiem
+;  db "T: 75% Moonlight, 25% Wombat",$01
+;  db "S: 60% Snare, 40% Cave In",$00
+;.snowman_jazz
+;  db "T: 75% Blizzard, 25% Ice Rabbit",$01
+;  db "S: 60% Surge, 40% Mirage",$00
+;  
+;warnpc $C4B9D1
