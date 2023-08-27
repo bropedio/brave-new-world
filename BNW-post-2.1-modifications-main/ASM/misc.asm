@@ -527,6 +527,8 @@ warnpc !warn
 !free = $C3F6B0
 !warn = $C3F6CB
 
+org $C0C5D8 : LDA $08  ; load pressed buttons (no-autofire keys)
+
 ; -----------------------------------------------------------------------------
 ; Menu State Loop
 ; -----------------------------------------------------------------------------
@@ -557,8 +559,6 @@ MenuLoopSplice:     ; [27 bytes]
   + LDA $26         ; [displaced]
     RTS
 warnpc !warn
-
-org $C0C5D8 : LDA $08  ; load pressed buttons (no-autofire keys)
 
 ;Brave New World data
 org $C33BB8
