@@ -182,7 +182,7 @@ C39908:  LDA #$7F        ; C3/1BF3
          STA $E0         ; Set init command
          JMP $2022       ; Handle L and R
  
-padbyte $EE
+padbyte $FF
 pad $C39921
 warnpc $C39921
 
@@ -275,9 +275,17 @@ C396AE:	 lda $001f,y
 		 bpl C396AE
          RTS
 		 
-padbyte $EE
+padbyte $FF
 pad $C396BD		 
 warnpc $C396BE
+
+org $C396C4
+	BRA C396AE
+
+; 6E: Open Equip menu after removing all gear
+org $C31C26
+	JSR $1BBD      ; Init variables
+    JSR C396A8      ; Remove gear
 
 ; 57: bottom
 org $C39995 
