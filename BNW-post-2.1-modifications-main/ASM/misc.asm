@@ -546,7 +546,7 @@ MenuLoopSplice:     ; [27 bytes]
     TDC             ; [displaced]
     LDA $0200       ; load menu type
     BNE +           ; branch if ^ not main menu
-    LDA $06         ; load buttons pressed this frame
+    LDA $08         ; load pressed buttons (no-autofire keys)
     AND #$40        ; check if X button is pressed
     BEQ +           ; branch if not ^
     STZ $0205       ; clear item used out-of-battle
@@ -558,6 +558,8 @@ MenuLoopSplice:     ; [27 bytes]
     RTS
 warnpc !warn
 
+org $C0C5D8 : LDA $08  ; load pressed buttons (no-autofire keys)
+
 ;Brave New World data
 org $C33BB8
-	db $d1,$78,"Brave New World 2.2 b20",$00
+	db $d1,$78,"Brave New World 2.2 b19",$00
