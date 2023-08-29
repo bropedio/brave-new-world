@@ -26,7 +26,7 @@ org $C254A1
 C254A1:
 	STX $0110					; save X ($00FF)
 loop256:		
-	JSL RearrangeBMenu			; go to bring item id and rearrange menu
+	JSL Colosseum_or_not		; go to bring item id and rearrange menu
 	NOP		
 	NOP		
 	JSR $54CD					;Copy info of item held in A to a 5-byte buffer, 
@@ -283,6 +283,9 @@ item_id:
 switch_item:
 	STA $602D,y					; save equipped item in temporary
 	inc $64DB					; (?)
+	LDA $3A97					; $FF?
+	BNE not						; Branch if not - not in Colosseum Battle
+
 transfer_equip:
 	PHA							; Save A
 	PHX							; 	^  X
@@ -310,10 +313,23 @@ transfer_equip:
 	PLY	                		; Restore Y
 	PLX	                		; 	^     X
 	PLA	                		; 	^     A
+not:
 	RTL
 
+;Check if in Colosseum 
 
-	
+Colosseum_or_not:
+	LDA $3A97				; $FF?
+	CMP #$00FF
+	BNE .not				; Branch if not - not in Colosseum Battle
+	lda $1969,x				; load quantity item
+    sta $2e75  				; save
+	lda $1869,x				; load item ID
+	RTL						; Return to original
+.not
+	JMP RearrangeBMenu		; Jump and rearrange battle menu
+
+warnpc $C4B6E0	
 	
 ; Pressing B in weapon sub menu
 
@@ -324,7 +340,7 @@ item_arrange:
 								;possessed items.
 	RTL
 
-warnpc $c25161
+warnpc $c25162
 
 
 ; Press A in weapon sub menu
