@@ -63,7 +63,6 @@
 - Enable esper batch spending (Fëanor)
 - Prevent using slim jim from field menu (Gens)
 - Blocked controller 2 Blitz input (Sir Newton Fig)
-- More walkable beach tiles for faster fish catching (Fëanor)
 - Fixed pink gogo sprite in Cyan's dream (Gens)
 - Fixed ST Cure removing poison from chars wearing a poison denying relic (CDude)
 - Figaro Guards bugfix (DrakeyC)
@@ -118,11 +117,12 @@ Events
 	Sabin: "...what do you see in that guy?"
 - Restore Shadow cutscene during Soul train fight
 
-Bugfixes temporarily discarded:
+Bugfixes/features temporarily discarded:
 - Bird bars (setzer position after bar-bar-bar palidor)
 - Banon riding chocobo pose 
 - Imperial camp dialogue fix (sabin aware of doma without speaking to Shadow)
 - Gau taking steps when special are blocked by party members
+- More walkable beach tiles for faster fish catching in solitary island
 
 "Bro new world" features candidates for porting:
 - If "Fight" will yield a desperation attack, the text is yellow
