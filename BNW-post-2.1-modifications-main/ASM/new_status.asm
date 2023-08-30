@@ -242,13 +242,13 @@ color_change:
 C4B6D5:
 	lda #$2c							; Blue text
 	sta $29                             ;
-	ldx #Info                       ; Elements pointer
+	ldx #Info                       	; statuses pointer
 	ldy #$0006                          ; Pointers q.ty
 	jsr C369BA                          ; Prepare print
 	
 	lda #$28							; Grey text
 	sta $29                             ;
-	ldx #elements                       ; Elements pointer
+	ldx #statuses                       ; Statuses pointer
 	ldy #$0038                          ; Pointers q.ty
 	jsr C369BA                          ; Prepare print
 	RTL                                 ; Go Back
@@ -258,26 +258,26 @@ Info:
 	dw #Blocks
 	dw #Bonus
 
-elements:
-	dw #blind
+statuses:
 	dw #poison
-	dw #imp
-	dw #petrify
-	dw #death
-	dw #mute
-	dw #berserk
-	dw #muddle
 	dw #sleep
+	dw #blind
+	dw #berserk
+	dw #mute
+	dw #imp
+	dw #muddle
+	dw #death
 	dw #stop
+	dw #petrify
 	dw #slow
 	dw #sap
 
 	dw #brsrk_auto
-	dw #regen
-	dw #haste
-	dw #shell
 	dw #safe
+	dw #shell
 	dw #reflect
+	dw #haste
+	dw #regen
 
 	dw #counter
 	dw #cover
@@ -303,19 +303,19 @@ mute:       dw $3C79 : db $30,$27,$33,$00
 imp:        dw $3C7F : db $56,$29,$00
 
 muddle:     dw $3CB1 : db $30,$31,$32,$33,$00
-slow:		dw $3CB9 : db $2A,$4c,$4D,$00
+death:      dw $3CB9 : db $46,$47,$48,$00
 stop:       dw $3CBF : db $40,$41,$00
 
 petrify:    dw $3CF1 : db $2c,$2d,$2e,$2f,$00
-death:      dw $3CF9 : db $46,$47,$48,$00
+slow:		dw $3CF9 : db $2A,$4c,$4D,$00
 sap:		dw $3CFF : db $28,$29,$00
 
 brsrk_auto: dw $3DB1 : db $34,$35,$36,$37,$00
-safe:       dw $3db9 : db $28,$45,$00
-regen:      dw $3dBF : db $20,$21,$22,$00
+safe:       dw $3DB9 : db $28,$45,$00
+shell:      dw $3DBF : db $53,$54,$55,$00
 reflect:    dw $3DF1 : db $20,$25,$26,$52,$00
-shell:      dw $3dF9 : db $53,$54,$55,$00				
-haste:      dw $3DFF : db $42,$43,$44,$00
+haste:      dw $3DF9 : db $42,$43,$44,$00
+regen:      dw $3DFF : db $20,$21,$22,$00
 
 atk:        dw $3e71 : db $38,$39,$3A,$00
 mag:        dw $3e7B : db $3B,$3C,$3D,$00
@@ -327,7 +327,6 @@ plus_HP_1:  dw $3eF5 : db $CA,$00
 plus_HP_2:  dw $3eF7 : db $3F,$00
 plus_MP_1:  dw $3eFF : db $CA,$00
 plus_MP_2:	dw $3F01 : db $3F,$00		
-
 
 
 	; Draw multiple strings using consecutive pointers
