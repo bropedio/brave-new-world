@@ -562,4 +562,4 @@ warnpc !warn
 
 ;Brave New World data
 org $C33BB8
-	db $d1,$78,"Brave New World 2.2 b19",$00
+	db $d1,$78,"Brave New World 2.2 b20",$00
