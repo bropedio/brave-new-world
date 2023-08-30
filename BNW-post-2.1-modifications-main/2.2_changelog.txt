@@ -86,6 +86,9 @@
 - Colosseum reversible trades highlighted in yellow (Fëanor)
 - Throw menu stops at line 21st (Ryo_Hazuki)
 
+b20 (not yet released)
+- Colosseum fights don't auto-arrange inventory anymore
+
 2.2 roadmap (ordered by priority):
 
 - Wrexsoul comes out if possessed char is in "near fatal" condition
@@ -113,6 +116,7 @@ Events
 	Locke: "Right."
 	(Leaves in the right direction)
 	Sabin: "...what do you see in that guy?"
+- Restore Shadow cutscene during Soul train fight
 
 Bugfixes temporarily discarded:
 - Bird bars (setzer position after bar-bar-bar palidor)
