@@ -86,7 +86,8 @@
 - Throw menu stops at line 21st (Ryo_Hazuki)
 
 b20 (not yet released)
-- Colosseum fights don't auto-arrange inventory anymore
+- Colosseum fights don't auto-arrange inventory anymore (Ryo_Hazuki)
+- restored "more walkable beach tiles" in solitary island for faster fish_catching (Fëanor)
 
 2.2 roadmap (ordered by priority):
 
@@ -102,19 +103,19 @@ b20 (not yet released)
 - Disintegration animation for enemies that get petrified
 
 Events
-- Add "CT - Mistery from the past" track to Ultima's sealed door
-- Add the clear bytes to Red-D, Silver-D and White-D events (to avoid invisible obstacles on map after killing them)
-- Add a battle dialogue when you trigger elixir counter vs Magimaster (and/or a NPC line about dispel utility)
-- Banon's death reference at the end of Thamasa events 
-	Terra: Where's Banon?
-	Edgar: <head down>He... didn't make it out.
-	Sabin: At least we get to keep playing though, amirite?
 - When Lockes leaves the party in Returners Hideout
 	(Locke leaves in the wrong direction)
 	Edgar: "Uh, Locke..."
 	Locke: "Right."
 	(Leaves in the right direction)
 	Sabin: "...what do you see in that guy?"
+- Add "CT - Mistery from the past" track to Ultima's sealed door
+- Add the clear bytes to Red-D, Silver-D and White-D events (as it happens already for Blue-D, to avoid invisible obstacles on map after killing them)
+- Add a battle dialogue when you trigger elixir counter vs Magimaster (and/or a NPC line about dispel utility)
+- Banon's death reference at the end of Thamasa events 
+	Terra: Where's Banon?
+	Edgar: <head down>He... didn't make it out.
+	Sabin: At least we get to keep playing though, amirite?
 - Restore Shadow cutscene during Soul train fight
 
 Bugfixes/features temporarily discarded:
@@ -122,10 +123,8 @@ Bugfixes/features temporarily discarded:
 - Banon riding chocobo pose 
 - Imperial camp dialogue fix (sabin aware of doma without speaking to Shadow)
 - Gau taking steps when special are blocked by party members
-- More walkable beach tiles for faster fish catching in solitary island
 
 "Bro new world" features candidates for porting:
-- If "Fight" will yield a desperation attack, the text is yellow
 - Status tick rate not affected by speed/haste/slow
 - Defend work against piercing (ignore defense) attacks
 - Dog Block and Golem preempt check for cover
