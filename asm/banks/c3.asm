@@ -224,6 +224,16 @@ org $C33411 : dw $3E25
 
 
 ; #########################################################################
+; Navigation Data for Status Menu ($C336FF)
+
+; Update cursor positions for Status Menu Redesign
+org $C33713
+  dw $7090                ; command 1 (cursor)
+  dw $7C90                ; command 2 (cursor)
+  dw $8890                ; command 3 (cursor)
+  dw $9490                ; command 4 (cursor)
+
+; #########################################################################
 ; Text Pointers for Main Menu ($C33723)
 
 org $C3372D : dw ReviewTxt ; New "Review" menu option (was "Relic")
@@ -654,6 +664,15 @@ org $C35CE2
               db $00   : db " EL Bonus:    "
 
 ; #########################################################################
+; Draw Status Menu
+
+; Add another window to draw
+org $C35D26 : JSR NewWindow ; create new (middle) window
+
+; Reduce number of status menu labels by one
+org $C35D63 : LDY #$000A ; 5 strings
+
+; #########################################################################
 ; Gogo's Command Select Menu
 ; BNW Hardcodes Gogo's available commands
 ; TODO: Convert this to simple data
@@ -797,11 +816,28 @@ warnpc $C35F50+1
 
 ; #########################################################################
 ; Yellow Streak Fix (Gogo's Menu)
+; Modified by Status Menu Redesign
 
-org $C35f50 : LDX #$620A ; nudge mask around Gogo portrait
+org $C35F50 : LDX #$60CA ; nudge mask around Gogo portrait at new coords
 
 ; #########################################################################
 ; Draw Status Screen
+
+; -------------------------------------------------------------------------
+; Handle window position and size
+
+org $C35F79
+  dd $051C5D4B            ; lower window size/position
+  dd $07085BAD            ; command window size/position
+  dd $091C588B            ; top window size/position
+
+; -------------------------------------------------------------------------
+; Position status menu stat information
+
+org $C35FD5 : LDX #$7C61     ; Vigor position
+org $C35FE1 : LDX #$7D61     ; Speed position
+org $C35FED : LDX #$7DE1     ; Stamina position
+org $C35FF9 : LDX #$7CE1     ; Magic position
 
 ; -------------------------------------------------------------------------
 ; Skip over useless code, create freespace used for Battle Power helper
@@ -820,23 +856,53 @@ Skip:
   JSR $052E      ; [vanilla] unchanged, left for context
 
 ; -------------------------------------------------------------------------
-; Modify the status screen to display EP and esper level to the player
-; Change total exp display to exp to next level
+; Position status menu stat information
+; (Status menu redesign)
+
+org $C36013 : LDX #$7F61     ; Attack position
+org $C3601F : LDX #$7FE1     ; Defense position
+org $C3602B : LDX #$8861     ; Evade position
+org $C36037 : LDX #$7FFF     ; Mag.Def position
+org $C36043 : LDX #$887F     ; Mblock position
+org $C36049 : LDY #$78D9     ; Actor name position
+
+org $C36055
+  JSR $F3BF       ; draw EL label
+  JSR ELStuff     ; draw next EL labels
+
+; -------------------------------------------------------------------------
+; Update stat text positions and sizes for Status Menu Redesign
+
 org $C36068
-  JSR $60A0         ; get experience needed to level
-  JSR $0582         ; convert to digit tiles
-  LDX #$7CD7        ; tilemap position
-  JSR $04A3         ; write experience needed to status screen
-  JSR EL_Status     ; draw "Total EP" label
-  JSR Calc_EP_Status ; $F1: needed ep, Carry: show ep
-  BCC .done         ; branch if hiding EP numbers
-  JSR $0582         ; convert $F1 into text digits
-  LDX #$7DD7        ; tilemap position for EP number
-  JSR $04A3         ; draw EP needed
-.done
-  STZ $47           ; [displaced] turn ailments off
-  JSR $11B0         ; [displaced] hide ailment icons
-  JMP $625B         ; [displaced] display status
+  LDX $67         ; Actor's address
+  LDA $0011,X     ; Experience LB
+  STA $F1         ; Memorize it
+  LDA $0012,X     ; Experience MB
+  STA $F2         ; Memorize it
+  LDA $0013,X     ; Experience HB
+  STA $F3         ; Memorize it
+  JSR $0582       ; Turn into text
+  LDX #$7ADB      ; Text position (* new position)
+  JSR $04AC       ; Draw 7 digits (* shorter)
+  JSR $60A0       ; Get needed exp
+  JSR $0582       ; Turn into text
+  LDX #$7B5B      ; Text position (* new position)
+  JSR $04AC       ; Draw 7 digits (* shorter)
+  STZ $47         ; Ailments: Off
+  JSR $11B0       ; Hide ail. icons
+  JMP $625B       ; Display status
+warnpc $C36096+1
+
+
+; -------------------------------------------------------------------------
+; Position status menu stat information
+
+org $C36096 : dw $3965       ; Level (makes room for EL)
+org $C36098 : dw $39A3       ; HP                  
+org $C3609A : dw $39AD       ; Max HP
+org $C3609C : dw $39E3       ; MP
+org $C3609E : dw $39ED       ; Max MP
+
 
 ; #########################################################################
 ; Status Screen Commands
@@ -844,18 +910,18 @@ org $C36068
 ; Rewritten as part of Assassin's "Brushless Sketch" patch to make room
 ; for a helper function. This new helper exposes $C36172 (command upgrades)
 ; to the C2 menu command routine(s).
-
-org $C36096 : db $25,$3A ; make room for EL in Character display
+;
+; Further tweaked by Status Menu Redesign
 
 org $C36102
 StatusCmdOpt:
-  LDY #$7BF1
+  LDY #$7CF1  ; tilemap ptr (cmd 1)
   JSR $4598
-  LDY #$7C71
+  LDY #$7D71  ; tilemap ptr (cmd 2)
   JSR $459E
-  LDY #$7CF1
+  LDY #$7DF1  ; tilemap ptr (cmd 3)
   JSR $45A5
-  LDY #$7D71
+  LDY #$7E71  ; tilemap ptr (cmd 4)
   JSR $45AD
   RTS
 
@@ -878,14 +944,68 @@ org $C3619A : db $0B ; Runic
 org $C3619F : db $1B ; Shock
 
 ; #########################################################################
-; Menu Label Changes (part 1)
-;
-; Percent symbols (%) overwritten with spaces by dn's "No Percents" patch
+; Status Menu Portrait placement (shift upward)
 
-org $C36482 : db $FF ; replace '%' with ' '
-org $C36486 : db $FF ; replace '%' with ' '
-org $C364BB : db $FF ; replace '%' with ' '
-org $C364C5 : db $FF ; replace '%' with ' '
+org $C36200 : JSR PortraitPlace
+
+
+; ##################################################
+; Display status effects in Status menu
+; Change location of status effects text/icons
+
+org $C3625B
+  LDY #$38E7              ; Text position
+  LDX #$0C78              ; Icon position
+
+; #########################################################################
+; Status Menu Text Data
+; Change some stat names, remove ".." before each stat
+; Percent symbols (%) removed previously by dn's "No Percents" patch
+
+org $C36437
+  dw StatusMenu_vigor
+  dw StatusMenu_stam
+  dw StatusMenu_magic
+  dw StatusMenu_evade
+  dw StatusMenu_mevade
+org $C36455
+  dw StatusMenu_lvl
+  dw StatusMenu_hp
+  dw StatusMenu_mp
+  dw StatusMenu_slash1
+  dw StatusMenu_slash2
+  dw StatusMenu_prcnt1
+  dw StatusMenu_prcnt2
+  dw StatusMenu_speed
+  dw StatusMenu_attack
+  dw StatusMenu_def
+  dw StatusMenu_mdef
+  dw StatusMenu_exp
+  dw StatusMenu_lvlup
+
+org $C3646F
+StatusMenu:
+.slash1  dw $39AB : db "/",$00
+.slash2  dw $39EB : db "/",$00
+.prcnt1  dw $7F83 : db $00
+.prcnt2  dw $8883 : db $00
+.lvl     dw $395D : db "LV",$00
+.hp      dw $399D : db "HP",$00
+.mp      dw $39DD : db "MP",$00
+.exp     dw $7ACD : db "Exp.",$00
+.lvlup   dw $7B4D : db "Next LV",$00
+.vigor   dw $7C4D : db "Vigor",$00
+.magic   dw $7CCD : db "Magic",$00
+.speed   dw $7D4D : db "Speed",$00
+.stam    dw $7DCD : db "Stamina",$00
+.attack  dw $7F4D : db "Attack",$00
+.def     dw $7FCD : db "Defense",$00
+.mdef    dw $7FEB : db "M.Defense",$00
+.evade   dw $884D : db "Evade",$00
+.mevade  dw $886B : db "M.Evade",$00
+warnpc $C3652D+1
+
+; TODO: Remove this unused code ASAP
 org $C36511 : dw $7C4D : db "Exp to lv. up:",$00 ; status menu exp text
 
 ; #########################################################################
@@ -903,6 +1023,17 @@ org $C37FD0 : JMP ItemNameFork ; hook for colosseum item row
 ; BNW - Remove Inventory Count
 
 org $C382FB : db $4C
+
+; #########################################################################
+; Item Menu Stat Text Data (Gear)
+
+; -------------------------------------------------------------------------
+; Reorder stats
+
+org $C386AA : LDA #$8445    ; Vigor modifier
+org $C386C1 : LDA #$8545    ; Speed modifier
+org $C386D6 : LDA #$85C5    ; Stamina modifier
+org $C386F0 : LDA #$84C5    ; Magic modifier
 
 ; #########################################################################
 ; [fork] Draw Offensive Properties
@@ -1004,10 +1135,18 @@ org $C38D69
   dw EleWeak
 
 ; -------------------------------------------------------------------------
+; Stat label text data
 ; Percent symbols (%) overwritten with spaces by dn's "No Percents" patch
+; Stats reordered and names tweaked by Status Menu Redesign
 
-org $C38D9B : db $FF ; replace '%' with ' '
-org $C38DA5 : db $FF ; replace '%' with ' '
+org $C38D77 : dw $842F                  ; Vigor label position
+org $C38D7F : dw $85AF                  ; Stamina label position
+org $C38D89 : dw $84AF : db "Magic",$00
+org $C38D9B : db $FF                    ; replace '%' with ' '
+org $C38D9F : db "M.Evade",$00
+org $C38DCB : dw $852F                  ; Speed label position
+org $C38DD5 : db "Attack",$00
+org $C38DE9 : db "M.Def.",$00
 org $C38E26 : dw $822F : db "Bushido",$00 ; rename "SwdTech" gear attribute
 
 ; #########################################################################
@@ -1065,6 +1204,7 @@ org $C38FB4 : NOP #12 ; remove handling for "Empty" text
 ; #########################################################################
 ; Draw Equip Menu
 ; Largely rewritten by Tristan for the "Unified Equip Menu"
+; Some text positions modified by Status Menu Design
 
 org $C39032
 
@@ -1153,15 +1293,15 @@ DoStats:
   JSR $04C0         ; Draw 3 digits
   LDA $3004         ; Speed
   JSR $04E0         ; Turn into text
-  LDX #$7D37        ; Text position
+  LDX #$7DB7        ; Text position
   JSR $04C0         ; Draw 3 digits
   LDA $3002         ; Stamina
   JSR $04E0         ; Turn into text
-  LDX #$7DB7        ; Text position
+  LDX #$7E37        ; Text position
   JSR $04C0         ; Draw 3 digits
   LDA $3000         ; Mag.Pwr
   JSR $04E0         ; Turn into text
-  LDX #$7E37        ; Text position
+  LDX #$7D37        ; Text position
   JSR $04C0         ; Draw 3 digits
   JSR DefineBatPwr  ; Define Bat.Pwr (BNW: Include Gauntlet)
   LDX $F1           ; Load it
@@ -1261,6 +1401,14 @@ org $C3926B : JSR LoadGear      ; Load actor data
 
 ; #########################################################################
 ; Sustain Relic and Sustain Equip Menus
+
+; Reorder stats
+org $C3927D : LDX #$7CBF    ; New vigor position
+org $C3928F : LDX #$7DBF    ; New speed position
+org $C392A1 : LDX #$7E3F    ; New stamina position
+org $C392B3 : LDX #$7D3F    ; New magic position
+
+
 
 ; -------------------------------------------------------------------------
 ; Hook into new routine to include Gauntlet in Battle Power calculation
@@ -2032,11 +2180,19 @@ org $C3A33C : dw $7917 : db "EQUIP",$00 : dw $792F : db "REMOVE",$00
 
 ; #########################################################################
 ; Menu Label Changes (part 2)
-;
-; Percent symbols (%) overwritten with spaces by dn's "No Percents" patch
 
-org $C3A395 : db $FF ; replace '%' with ' '
-org $C3A39F : db $FF ; replace '%' with ' '
+; -------------------------------------------------------------------------
+; Percent symbols (%) overwritten with spaces by dn's "No Percents" patch
+; Stats renamed and reordered as part of Status Menu Redesign
+
+org $C3A371 : dw $7CA9                  ; Vigor label position
+org $C3A379 : dw $7E29                  ; Stamina label position
+org $C3A383 : dw $7D29 : db "Magic",$00
+org $C3A395 : db $FF                    ; replace '%' with ' '
+org $C3A399 : db "M.Evade",$00
+org $C3A3C5 : dw $7DA9                  ; Speed label position
+org $C3A3CF : db "Attack",$00
+org $C3A3E3 : db "M.Def.",$00
 
 ; #########################################################################
 ; Button Settings
@@ -2468,13 +2624,17 @@ string_bet:
 ; ------------------------------------------------------------------------
 ; EL/EP/Spell bank text data and helpers
 ; Many new label and text positions and tiles
+; Updated by Status Menu Redesign
+
 org $C3F277
 EPUpTxt:
-  dw $7D4D : db "EP to lv. up:",$00
+  dw $7B6B : db "Next EL",$00  ; Next EL label
+             db ". up:",$00    ; TODO: Remove this fragment ASAP
 EPUpClr:
-  dw $7D4D : db "             ",$00 ; 13 blanks for Gogo+
+  dw $7B6B : db "       ",$00  ; Next EL label clear (blanks for Gogo)
+             db "     ",$00    ; TODO: Remove this fragment ASAP
 EPClear:
-  dw $7DDD : db "     ",$00         ;  5 blanks for Gogo+ EP
+  dw $7B7B : db "     ",$00    ;  5 blanks for Gogo+ EP
 
 ; TODO: Lots of duplicated code here
 ; Many "EL" text positions, plus extra $FF buffer for indexing purposes
@@ -2483,7 +2643,7 @@ EPClear:
   dw $3CAB : db "EL",$00,$FF,$FF,$FF
   dw $3E2B : db "EL",$00,$FF,$FF,$FF
   dw $423B : db "EL",$00,$FF,$FF,$FF
-  dw $3A2B : db "EL",$00,$FF,$FF,$FF
+  dw $396B : db "EL",$00,$FF,$FF,$FF
   dw $3A7B : db "EL",$00,$FF,$FF,$FF
 
 ; TODO: Lots of duplicated code here
@@ -2493,12 +2653,13 @@ EPClear:
   dw $3CAB : db "     ",$00
   dw $3E2B : db "     ",$00
   dw $423B : db "     ",$00
-  dw $3A2B : db "     ",$00
+  dw $396B : db "     ",$00
   dw $3A7B : db "     ",$00
 UnspentTxt:
   db "Unspent EL:",$00
 
-Calc_EP_Status:
+; TODO: This label no longer used
+Calc_EP_Status:     ; ($C3F31B)
   LDA $1E8A         ; event byte
   AND #$08          ; "met Ramuh"
   BEQ .no_ep        ; branch if not ^
@@ -2510,7 +2671,7 @@ Calc_EP_Status:
   LDY #EPClear      ; pointer for spaces to blank out EP value
   JSR $02F9         ; draw ^
   LDY #EPUpClr      ; pointer for spaces to blank out "EP to lv. up"
-  JSR $02F9         ; draw ^
+  JSR ClearEPLabel  ; draw ^
   CLC               ; clear carry (hide EP needed)
   RTS
 .yes_ep
@@ -2518,7 +2679,7 @@ Calc_EP_Status:
   LDA #$2C          ; color: gray-blue
   STA $29           ; set text palette
   LDY #EPUpTxt      ; pointer for "EP to lv. up" text display
-  JSR $02F9         ; draw ^
+  JSR DrawEPLabel   ; draw ^
   TDC               ; zero A/B
   LDA #$20          ; color: white
   STA $29           ; set text palette
@@ -2541,7 +2702,7 @@ Calc_EP_Status:
   LDA EP_Chart,X    ; EP needed for next level
   SEC               ; set carry
   SBC $F1           ; EP needed - total EP
-  STA $F1           ; store ^
+  STA $F3           ; store ^ (* modified by Status Menu Redesign)
   SEP #$20          ; 8-bit A
   SEC               ; set carry (show EP needed)
   RTS
@@ -2605,6 +2766,7 @@ EL_Skill:
   PHA               ; store ^
   BRA Stat_Skill_Ent ; draw "EL" label
 
+; TODO: This routine label no longer used
 EL_Status:
   LDA #$24          ; color: blue
   STA $29           ; set text palette
@@ -3484,6 +3646,70 @@ GearWindow:  : dw $718B : db $1C,$06
 GearActors:  : dw $750B : db $1C,$06
 GearNameBox: : dw $708B : db $1C,$02
 GearDesc:    : dw $738B : db $1C,$04
+
+; ------------------------------------------------------------------------
+; Status Menu Redesign helpers
+
+org $C3FC20
+
+NewWindow:
+  JSR $6A4B               ; vanilla code
+  STZ $37                 ; shift BG1 down slightly
+  LDY #NewWindowSpec      ; middle window size/position
+  JMP $0341               ; draw it
+
+NewWindowSpec:
+  dd $061C5B4B            ; change this to the right pos/size
+
+PortraitPlace:
+  LDA $26
+  AND #$00FF
+  CMP #$000B
+  BEQ .high
+  CMP #$000C
+  BEQ .high
+  CMP #$0042
+  BEQ .high
+  LDA #$0038
+  RTS
+.high
+  LDA #$0011
+  RTS
+
+ELStuff:
+  JSR $F31B               ; get EP and EP to next Lvl (in F1-F4)
+  BCC .exit
+  JSR $052E               ; convert 16-bit number into text (from F3-F4)
+  LDX #$7B7B              ; next EL number coords
+  JSR $049A               ; draw 5 digits
+  REP #$20                ; 16-bit A
+  LDA $F1                 ; total EP
+  STA $F3                 ; move to source for drawing
+  SEP #$20                ; 8-bit A
+  JSR $052E               ; convert 16-bit number into text (from F3-F4)
+  LDX #$7AFB              ; next EL number coords
+  JSR $049A               ; draw 5 digits
+.exit
+  RTS
+
+DrawEPLabel:
+  JSR $02F9               ; draw text at pointer
+  LDY #EPLabel            ; pointer to EP Label text
+  JMP $02F9               ; draw text at pointer
+
+ClearEPLabel:
+  JSR $02F9               ; draw text at pointer
+  LDY #EmptyEPLabel       ; pointer to EP Label text
+  JSR $02F9               ; draw text at pointer
+  LDY #EmptyEPText        ; pointer to EP Label text
+  JMP $02F9               ; draw text at pointer
+
+EPLabel:
+  dw $7AEB : db "EP",$00     ; EP label
+EmptyEPLabel:
+  dw $7AEB : db "  ",$00     ; EP label
+EmptyEPText:
+  dw $7AFB : db "     ",$00  ; EP label
 
 ; ------------------------------------------------------------------------
 ; Rage and Dance description helpers
