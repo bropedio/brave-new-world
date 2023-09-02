@@ -430,9 +430,9 @@ org $C20A6A : LDA #$23 ; update spell ID for SOS Shell
 org $C20A78 : LDA #$22 ; update spell ID for SOS Safe
 
 ; ########################################################################
-; Switch between Morph and Revert (freespace)
+; Switch between Morph and Revert (freespace after)
 
-org $C20AE5 : RTS ; bypass all morph gauge handling
+org $C20AE3 : JMP ToggleMorphByte ; skip morph gauge handling
 
 ; ------------------------------------------------------------------------
 ; Helper for reflect removal via hit/miss
@@ -837,6 +837,25 @@ Noiseblaster:
   STA $11AB           ; set ^ in attack status-2
   STZ $11A2           ; remove "Physical"
   RTS
+
+; -------------------------------------------------------------------------
+; Morph Helper
+; It appears that a piece of the morph reversion code
+; that was removed with the morph gauge/counter
+; caused unusual behavior when a previously morphed
+; Terra moves between tiers of the final battle.
+
+ToggleMorphByte:
+  PLP              ; restore carry flag (if just reverted)
+  PLX              ; restore actor's index
+  TXA              ; copy index into A
+  BCC .morphed     ; branch if just morphed
+  LDA #$FF         ; null
+.morphed
+  STA $3EE2        ; set morphed actor to null or X
+  RTS
+warnpc $C2123B+1
+
 
 ; #########################################################################
 ; True Knight and Love Token
