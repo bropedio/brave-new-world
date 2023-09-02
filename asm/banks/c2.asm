@@ -993,6 +993,8 @@ org $C2172C
 SlotCmd:
   BRA .skip      ; skip check for Jokerdoom
 org $C21734 : .skip
+org $C21738 : BRA $07    ; skip textbox for Lagomorph
+
 
 ; #########################################################################
 ; Dance (command)

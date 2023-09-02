@@ -7,7 +7,6 @@ hirom
 ; This master file includes all bugfixes and patches for RC33
 ; of Brave New World 2.0.
 
-incsrc lagomorph-msg.asm
 incsrc morph-tier-fix.asm
 incsrc hidon-always.asm
 incsrc rich-man-hang.asm
