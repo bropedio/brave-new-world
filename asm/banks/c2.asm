@@ -1006,8 +1006,11 @@ org $C2179D : JSR DanceChance ; use stamina to get dance chance
 ;
 ; Modified by dn's "Blind Jump Fix" patch to make "Blind" affect Jump
 ; command. Further modified by Synchysi so ensure row is ignored still.
+; Special effects re-enabled by Bropedio's "Jump Better" patch
+; Always jump with right hand if present
 
-org $C2180B : JSL C3_BlindJump : NOP ; helper routine in C3
+org $C21805 : CLC : NOP #2             ; point to right hand
+org $C2180B : JSL C3_BlindJump2 : NOP
 
 ; -------------------------------------------------------------------------
 ; Change the odds of additional bounces from the Dragon Horn effect.

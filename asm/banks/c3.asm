@@ -3199,8 +3199,9 @@ warnpc $C3F721+1
 ; TODO: Dunno why we've left 2 unused bytes in between here
 
 org $C3F723
-C3_BlindJump:
+C3_BlindJump:       ; TODO: This Label (and STZ) is no longer used
   STZ $11A9         ; omit special effect (if any)
+C3_BlindJump2:
   LDA $3EE4,x       ; status byte 1
   LSR               ; C: "Blind"
   LDA #$20          ; "Cannot Miss"
