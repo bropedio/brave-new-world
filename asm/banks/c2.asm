@@ -1997,8 +1997,27 @@ org $C233E5                         ; overwrites unused Imp Critical code
 padbyte $EA : pad $C233F2
 
 org $C23414 : .none
-org $C2343C : JSR CounterMiss : NOP ; Set counter variables early TODO [overwritten]
-org $C23447 : NOP #7                ; remove back-attack damage increment
+
+; -------------------------------------------------------------------------
+; Shift vanilla code before status evasion check
+; to make room for Parry/Counter and N.Cross helpers
+; Back-attack damage increment is removed
+
+org $C2343C
+  JSL NorthCrossMiss   ; handle North Cross targeting
+  JSR ParryCounter     ; initialize counterattacks even when miss
+  REP #$20             ; 16-bit A
+  LDY #$12             ; entity iterator
+.loop
+  LDA $3018,Y          ; entity mask
+  TRB $A4              ; remove from targets
+  BEQ .next            ; branch if missed
+warnpc $C2344F
+org $C2346C
+.next
+  DEY #2               ; next entity
+  BPL .loop            ; loop through all entities
+
 
 ; -------------------------------------------------------------------------
 ; Run extra special effect if Mugging
@@ -2839,16 +2858,17 @@ org $C2413E : LDY #$08 ; add 1 more pair of targeting bytes
 org $C24145 : STA !blast,Y ; store Mind Blast targets in new RAM location
 
 ; #########################################################################
-; North Cross Effect ($29)
+; North Cross Effect ($29) (Now entered elsewhere -- this is helper)
 ; One or two targets will be picked randomly
 
 org $C2414D
-  REP #$20        ; Set 16-bit A
-  LDA $A4         ; targets
-  PHA             ; store ^
-  JSR $522A       ; randomly pick an entity from among the targets
-  JMP NCross2     ; jump to second half of routine
-
+PostCheckHelp:           ; replace 11 bytes
+  JSR $522A              ; pick a random target
+  STA $E8                ; save for now
+  LDA $A4                ; remaining targets
+  JSR $522A              ; pick another target
+  RTL
+warnpc $C24158+1
 
 ; #########################################################################
 ; Dice Effect
@@ -2980,6 +3000,7 @@ org $C242EB : dw SetIgnDef ; Defense Ignoring weapon
 org $C242EF : dw MPCrit    ; MP Criticals additional hook
 org $C24315 : dw BlowFish  ; Effect $1A - Blow Fish
 org $C2432B : dw GroundDmg ; Effect $25 - Quake
+org $C24333 : dw $3E8A     ; Clear once-per-strike N.Cross hook
 org $C24341 : dw $3E8A     ; Remove random targeting from Suplex effect
 org $C24367 : dw Shock     ; Shock formula
 org $C24383 : dw CoinToss  ; Effect $51 ($C33FB7 now unused)
@@ -4050,17 +4071,21 @@ SetTarget:
   STY $C0        ; save target index in scratch RAM
   JSR $220D      ; [displaced] miss determination
   RTS
-CounterMiss:
+ParryCounter:
   LDY $C0        ; get target index
   LDA $3018,Y    ; target bitmask
   BIT $3A5A      ; "Miss" tile flag set
   BEQ .done      ; branch if not ^
   JSR $35E3      ; else, initialize counter variables
 .done
-  REP #$20       ; [displaced] 16-bit A
+  RTS
+
+; TODO: Remove this leftover code fragment
+  db $20
   LDY #$12       ; [displaced] prep entity loop
   RTS
 
+; -------------------------------------------------------------------------
 org $C25E49 : AfterMorph:
 
 org $C25E4C
@@ -4601,15 +4626,12 @@ condenseSpellLists:
   JMP $532C           ; [displaced] modify commands
 
 ; --------------------------------------------------------------------------
+; Was a North Cross helper, but was removed in later update
+; TODO: Remove this unnecessary padding
 
 org $C2661B
-NCross2:
-  STA $A4          ; Save new target
-  PLA              ; Get original targets again
-  JSR $522A        ; Pick one at random
-  TSB $A4          ; Save new target(s)
-  SEP #$20         ; Set 8-bit A
-  RTS
+padbyte $FF
+pad $C26626              ; clear 11 bytes
 
 ; --------------------------------------------------------------------------
 ; Ghost Ring helper

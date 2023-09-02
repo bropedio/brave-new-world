@@ -573,6 +573,32 @@ StatusFinHelp:         ; 33 bytes
   RTL
 
 ; -------------------------------------------------------------------------
+; Helper for North Cross targeting
+; (runs immediately before status phase)
+
+org $C0D940
+NorthCrossMiss:
+  PHP
+  LDA $11A9              ; special effect
+  CMP #$52               ; "N.Cross" special index
+  BNE .exit              ; exit if not "N.Cross"
+  REP #$20               ; 16-bit A
+  LDA !miss              ; get "missed" targets
+  STA !fail              ; use "failed" message
+  LDA $A4                ; remaining targets
+  TSB !miss              ; set all as missed
+  PHX                    ; store X
+  JSL PostCheckHelp      ; will change X
+  PLX                    ; restore X
+  ORA $E8                ; combine both targets
+  STA $A4                ; set as new targets
+  TRB !miss              ; remove from "missed" targets
+.exit
+  PLP
+  RTL
+
+
+; -------------------------------------------------------------------------
 ; Helpers for Palidor Redux (in C2)
 
 org $C0D990
