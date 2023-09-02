@@ -7,7 +7,6 @@ hirom
 ; This master file includes all bugfixes and patches for RC33
 ; of Brave New World 2.0.
 
-incsrc stray-fix.asm
 incsrc mug-better.asm               ; requires "inform-miss-3", "xkill-anim"
 incsrc jump-better.asm              ; requires "mug-better"
 incsrc parry-counter-cross.asm      ; requires "inform-miss-3"

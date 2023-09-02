@@ -1466,6 +1466,12 @@ ToolSkeanSpells:
   SBC Tool_Data_2,X        ; else, get spell number TODO: Just LDA
 org $C22716 : .skip
 
+; -------------------------------------------------------------------------
+; Allow targeting dead and live allies with 0x4E special
+
+org $C22775 : JMP TargetDead  ; check for 4E special
+
+
 ; #########################################################################
 ; Load Character Equipment Properties
 
@@ -3319,6 +3325,26 @@ org $C25138
 Scan:
   JSL ScanWeakness
   JSL ScanStatus
+  RTS
+padbyte $FF
+pad $C25141
+warnpc $C25141+1
+
+; -------------------------------------------------------------------------
+; Freespace used by "Stray Targeting" patch
+; If special effect 0x4E is set on attack, allow targeting both dead
+; and living allies at the same time.
+
+org $C25141
+TargetDead:       ; When we get here, A = 11A2 & #80
+  PHP             ; store C flag (used later)
+  LDX #$9C        ; load 0x4E * 2 (current X does not need saving)
+  CPX $11A9       ; compare to attack's special effect
+  BNE .end        ; if not set, finish
+  ORA #$08        ; else, add target dead flag
+.end
+  TSB $BA         ; finish setting BA bits
+  PLP             ; restore C flag
   RTS
 padbyte $FF
 pad $C25161
