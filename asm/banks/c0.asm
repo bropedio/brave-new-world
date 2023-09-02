@@ -573,6 +573,48 @@ StatusFinHelp:         ; 33 bytes
   RTL
 
 ; -------------------------------------------------------------------------
+; Helpers for Palidor Redux (in C2)
+
+org $C0D990
+
+WaitTimer:
+  LDA $3204,X            ; load 3204,X and 3205,X
+  BPL .flying            ; branch if entity is riding Palidor
+  LDA $3AC8,X            ; ATB timer incrementor
+  LSR                    ; divided by two
+  RTL
+.flying
+  LDA #$00C8             ; use fixed ATB increment while flying
+  RTL
+
+BetterPaliFlags:
+  BMI .done              ; if not landing, return
+  ORA #$80               ; "has landed since boarding Palidor"
+  STA $3205,X            ; set "has landed" bit
+  LDA $3AA0,X            ; get battle flow byte
+  BPL .done              ; skip setting flag if no extra turn
+  ORA #$08               ; set bit 3 to preserve ATB
+  STA $3AA0,X            ; update battle flow byte
+.done
+  RTL
+
+ClearWaitQ:
+  LDY $3A64              ; current wait queue index
+.loop
+  TXA                    ; put this rider's index in A
+  CMP $3720,Y            ; is this rider in wait queue here?
+  BNE .next              ; if not, branch
+  LDA #$FF               ; null
+  STA $3720,Y            ; set this wait queue entry to null
+.next
+  INY                    ; get next wait queue index
+  CPY $3A65              ; is this lower than the next unfilled entry?
+  BCC .loop              ; continue loop if so
+  LDA $3205,X            ; vanilla code
+  AND #$7F               ; vanilla code
+  RTL
+
+; -------------------------------------------------------------------------
 ; Helper for X Fight Retargeting Fix (in C2)
 
 org $C0D9D0

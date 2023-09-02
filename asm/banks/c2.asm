@@ -11,6 +11,49 @@ hirom
 
 org $C20081 : JSR StatusFinish ; finish removing statuses from dead
 
+
+; #########################################################################
+; Conventional Turn Postprocessing ($C200F9)
+
+; -------------------------------------------------------------------------
+; Before starting Palidor Landing turn, set bit to freeze
+; ATB in position. This will ensure uncontrollable characters
+; like Umaro or Gau get to take action right away.
+
+org $C2019B : JSL BetterPaliFlags : NOP
+
+; -------------------------------------------------------------------------
+; Shift some branches in post-turn handling. Notably, the
+; Palidor caster no longer has their wait timer reset, and
+; it's no longer assumed that the caster will be riding.
+
+org $C201AA
+  LDA $3205,X          ; some update flags
+  BPL .palidor         ; branch if riding Palidor
+  LDA $32CC,X          ; entity's action queue entry point
+  INC
+  BNE .valid           ; branch if not null (queue unfinished)
+  LDA #$FF             ; null wait time
+  STA $322C,X          ; set wait time
+  STZ $3AB5,X          ; zero wait timer gauge
+  LDA $3AA0,X          ; some character data
+  BIT #$08             ; is ATB gauge stopped
+  BNE .counter         ; branch if so
+.palidor
+  INC $3219,X          ; is ATB gauge at max
+  BNE .counter         ; branch if not
+  DEC $3219,X          ; return ATB to 255
+.counter
+  LDA #$80             ; "Currently processing queue"
+  TRB $B0              ; unset ^ bit
+  JMP $0267            ; execute animation queue
+  NOP #2               ; 2 free bytes
+.valid
+  STX $3406            ; entity is first in line for action queue
+  RTS                  ; this RTS is a branch destination
+warnpc $C201D9+1
+
+
 ; #########################################################################
 ; Part of Attack Prep
 
@@ -314,6 +357,17 @@ org $C20847
   NOP            ; [padding]
 
 ; ########################################################################
+; End of Each Turn Processing ($C2083F)
+
+; ------------------------------------------------------------------------
+; In some end-of-turn handling, pass Umaro through the same
+; handling as Ragers/Dancers, rather than skipping him altogether.
+; This ensures he takes his reserve turn after landing.
+
+org $C20928 : BEQ Uncontrolled
+org $C20986 : Uncontrolled:
+
+; ########################################################################
 ; Condemned Counter Initialization
 ; Timer starting value reduced due to nATB slowing things down
 
@@ -443,6 +497,21 @@ Tick_Calc:
   RTS
 
 warnpc $C20B4A+1
+
+; ########################################################################
+; Palidor Postprocess ($C20B4A)
+
+; ------------------------------------------------------------------------
+; Clear Wait Queue for riders, so any pending command inputs
+; don't have their wait times added to Palidor's, which would
+; cause them to get out of sync with the other riders.
+
+org $C20B72 : JSL ClearWaitQ : NOP
+
+; ------------------------------------------------------------------------
+; Shorten Palidor wait time to match Jump
+
+org $C20B7D : LDA #$70
 
 ; ########################################################################
 ; Damage Mod, Elemental Mod, Undead Reverse (per-target)
@@ -722,9 +791,37 @@ org $C2114B : .bypass_morph
 org $C21190 : .exit
 
 ; -------------------------------------------------------------------------
+; Align wait time increments for all Palidor riders, so
+; everyone lands at the same time.
+
+org $C21195 : JSL WaitTimer
+
+; -------------------------------------------------------------------------
 ; Update ATB, check for "ATB Autofill"
 
 org $C211C3 : JSR CheckCantrip ; C: whether ATB filled/overflowed
+
+; -------------------------------------------------------------------------
+; When ATB fills, if the "freeze ATB/allow wait timer" flag
+; is set already, don't clear current wait timers. This prevents
+; Palidor riders from getting out of sync wait times if their ATB
+; fills while in the air.
+
+org $C211D4
+GetATurn:
+  LDA #$08             ; "ATB frozen, wait timer enabled"
+  BIT $3AA0,X          ; is ^ set already (not normal)
+  BNE .get_turn        ; if so, skip wait timer reset & auto-attack queue [?]
+  JSR $11B4            ; else, set the bit "ATB frozen, wait timer enabled"
+  LSR
+  LSR                  ; move $02 into carry ("entity controllable")
+  STZ $3AB5,X          ; zero the wait timer
+  LDA #$FF             ; "null"
+  STA $322C,X          ; null the wait threshold
+  BCC QueueWait        ; queue waiting if uncontrollable
+.get_turn
+
+org $C2120E : QueueWait:
 
 ; #########################################################################
 ; Decrease Morph Timer (freespace)
@@ -2034,6 +2131,16 @@ NewLife:
   JMP StoreDamage ; use end of Step Mine effect to store damage and RTS
 
 ; #########################################################################
+; Palidor per-target Effect
+;
+; Set Palidor targets to "Hide" in per-target hook. This
+; keeps them from being targeted, keeps their ATB functioning
+; correctly, and prevents running from battle while in the air.
+
+org $C23936
+  JSR PaliHide
+
+; #########################################################################
 ; Discord Effect (now freespace)
 
 org $C23978
@@ -2695,7 +2802,33 @@ OldImpNerf:
   BIT #$20       ; "Imp"
   BEQ .exit      ; branch if not ^
   LSR $11B1      ; damage / 2 (hibyte)
-org $C241F9 : .exit
+org $C241F9 : .exit ; TODO: This points to nowhere
+
+; #########################################################################
+; Rewrite Palidor once-per-strike handler. Now, remove dead targets.
+
+org $C241F6
+PalidorStrike:
+  TYX                  ; save Y
+  LDY #$12             ; use Y for loop through entities
+.loop
+  PEA $80C0            ; "Petrify", "Sleep"
+  PEA $2210            ; "Stop", "Hide", "Freeze"
+  JSR $5864            ; clear carry if any are set (also sets 8-bit A)
+  BCS .next            ; branch if valid target
+  REP #$20             ; 16-bit A
+  LDA $3018,Y          ; unique bit
+  TRB $A2              ; remove from targets
+  TRB $A4              ; remove from targets
+.next
+  DEY #2               ; get next entity index
+  BPL .loop            ; loop through all entities
+  TXY                  ; restore Y
+  RTS
+PaliHide:              ; 6 bytes
+  JSR $464C            ; sets "Palidor target" bit in $3204,Y (vanilla)
+  JMP $1F00            ; sets "hide" status on target
+warnpc $C2421B+1
 
 ; #########################################################################
 ; Spiraler (per-strike special effect)
