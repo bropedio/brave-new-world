@@ -1053,6 +1053,16 @@ org $CB6698 : db $4B,$08,$0B
 org $CB73DA : db $B2,$E2,$51,$01   ; JSR $CB51E2
 
 ; ------------------------------------------------------------------------
+; Upon speaking to Leeroy in Thamasa, Hidon will
+; now reappear 100% of the time (rather than 12.5%).
+; Point all 50% branches to "Hidon Reappears"
+
+org $CB73FE
+  db $BD : dl $01740A
+  db $BD : dl $01740A
+  db $BD : dl $01740A
+
+; ------------------------------------------------------------------------
 ; Removes a dialogue branch that no longer exists
 ; 7 bytes of free space after this return.
 
