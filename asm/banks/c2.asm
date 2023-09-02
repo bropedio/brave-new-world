@@ -257,7 +257,7 @@ MuddleCmds:
   db $2D  ; GP Rain, Health, Shock, MagiTek
 
 ZombieCmds:
-  db $41  ; Fight, Capture
+  db $01  ; Fight (Mug removed since it's not guaranteed to deal damage)
   db $00  ; none
   db $41  ; Rage, Jump
   db $20  ; MagiTek
@@ -1948,6 +1948,16 @@ warnpc $C230BC+1
 ; Entity Executes One Hit
 
 ; -------------------------------------------------------------------------
+; Skip handling that sets "Steal" special effect for "Mug".
+; We now have special handling to check for "Mug" in $B5.
+; Now, this code resets the backup command to "Fight", so
+; only the first strike of a dual-wield attack will mug.
+
+org $C231AE
+  LDA #$00              ; "Fight" command ID
+  STA $3413             ; replace backup command with "Fight"
+
+; -------------------------------------------------------------------------
 ; In vanilla, the offering causes the Fight command to strike
 ; 4 times, randomized after the first. In BNW, X-Fight no longer
 ; randomizes, but the "don't retarget if targets are dead/invalid"
@@ -1986,6 +1996,10 @@ padbyte $EA : pad $C233F2
 org $C23414 : .none
 org $C2343C : JSR CounterMiss : NOP ; Set counter variables early TODO [overwritten]
 org $C23447 : NOP #7                ; remove back-attack damage increment
+
+; -------------------------------------------------------------------------
+; Run extra special effect if Mugging
+org $C2345C : JSL MugHelper : NOP #2
 
 ; #########################################################################
 ; Runic Function
@@ -2098,7 +2112,24 @@ org $C2382D : .no_miss       ; [label] set some flags, then exit
 ; #########################################################################
 ; X-Kill Effect
 
+org $C2388C : XKillAbort:        ; used for branching
 org $C23891 : JSL SetKill : NOP  ; test and set death immune miss (informative miss)
+
+; -------------------------------------------------------------------------
+; Skip slice auto-kill effect if mugging (or jumping)
+; Hopefully, Mug/Jump will never reach this point, due to
+; handling in the Zantetsuken special effect
+
+org $C238AB
+  LDA $B5               ; command ID
+  CMP #$16              ; "Jump" ID
+  BEQ XKillAbort        ; abort if "Jump"
+  CMP #$06              ; "Mug" ID
+  BEQ XKillAbort        ; abort if "Mug"
+  NOP
+warnpc $C238B6+1
+
+; -------------------------------------------------------------------------
 org $C238D2 : JSR DisableCounter ; disable counters for X-Kill/Cleave
 
 ; #########################################################################
@@ -2109,15 +2140,19 @@ org $C238FD : ManRTS: ; [label] reusable RTS
 ; #########################################################################
 ; Hawk Eye Effect
 ; Increases the incrementer for "randomly thrown" weapons to 2
+; Disable "HawkEye" Special Effect when Mugging (and Throwing)
 
-org $C23905
-  INC $BC         ; +50% more dmg (now +100%)
-  LDA $3EF9,Y     ; target status-4
-  BPL .throw      ; finish up if no "Float"
-  LDA $B5         ; command ID
-  CMP #$00        ; is it "Fight" [TODO: CMP not necessary]
-  BNE ManRTS      ; exit if not ^ (Jump/Steal)
-
+org $C238FE
+HawkEye:
+  LDA $B5            ; command ID
+  CMP #$00           ; "Fight" ID
+  BNE ManRTS         ; exit if not "Fight" ("Mug"/"Throw")
+  JSR $4B53          ; 50% chance of carry set
+  BCC ManRTS         ; exit 50% of the time
+  INC $BC
+  INC $BC            ; dmg x2
+  LDA $3EF9,Y        ; target status4
+  BPL .throw         ; skip x3 dmg if not floating
 org $C23916 : .throw ; [label] set "Throw" animation for "Critical"
 
 ; #########################################################################
@@ -2567,6 +2602,30 @@ org $C23E1D : dw $388C       ; no per-target mind blast hook (now inline)
 org $C23E43 : dw $388C       ; no per-target evil toot hook (now inline)
 org $C23E4B : dw $388C       ; no per-target stunner hook (now inline)
 org $C23E79 : dw Chainsaw2   ; Effect $56 (was Debilitator, now Chainsaw)
+
+; #########################################################################
+; Switchblade (ThiefKnife) Effect
+;
+; Move command exit check before random JSR, and skip setting
+; "Steal" special effect -- it is handled by new explicit check
+; for "Mug" command.
+
+org $C23E8B
+SwitchBlade:
+  LDA $B5               ; subtract command ID, maybe w/ carry
+  JSR $4B53             ; 50% chance of carry set
+  ROL                   ; combine Carry and Command ID
+  BNE .nope             ; exit if carry set or not "Fight"
+  LDA #$06              ; "Mug" command ID
+  STA $B5               ; set as command
+  RTS
+.nope
+  STZ $11A9             ; remove switchblade effect
+  RTS
+LongSpecial:            ; 4 bytes
+  JSR $387E             ; long access to special effect routine
+  RTL
+warnpc $C23EA0+1
 
 ; #########################################################################
 ; Step Mine (unchanged)
@@ -4651,12 +4710,15 @@ Zantetsuken:
   JSR $4B5A     ; random(0..256)
   CMP #$40      ; C: 75% chance
 
+; Bypass instant-death for Cleave if not "Fight" command (ie "Mug"/"Jump")
+
 Undead_Killer:
   BCS .exit     ; exit if no proc
   LDA $3AA1,Y   ; target special state flags
-  BIT #$04      ; "Immune to Instant Death"
+  AND #$04      ; "Immune to Instant Death"
+  ORA $B5       ; or any non-Fight command
   BNE .crit     ; do critical damage if ^
-  NOP #3        ; TODO: Remove this padding
+  NOP           ; TODO: Remove this padding
   JMP $38A6     ; execute cleave-kill.
 .crit
   LDA $BC       ; attack incremented damage (Critical Hit?) [TODO: confirm]

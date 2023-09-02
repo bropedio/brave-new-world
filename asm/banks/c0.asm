@@ -736,6 +736,42 @@ SpreadRandom:        ; 24 bytes
 .done
   RTL
 
+; -------------------------------------------------------------------------
+; Helper for "Mug Better" patch
+;
+; Delay check for added "Steal" until special effect routine 
+; so other weapon special effects are preserved.
+
+org $C0DF6B
+MugHelper:
+  PHP                   ; store M/X flags
+  SEP #$20              ; 8-bit A
+  JSL LongSpecial       ; process original special effect
+  LDA $B5               ; command id
+  CMP #$06              ; "Mug" command ID
+  BNE .exit             ; exit if not
+  LDA $11A9             ; weapon special effect
+  PHA                   ; store on stack
+  LDA #$A4              ; steal effect (id $52)
+  STA $11A9             ; set steal as temporary special effect
+  JSL LongSpecial       ; run Steal function (for Mug attempt)
+  PLA                   ; pull weapon special effect off stack
+  STA $11A9             ; restore original special effect byte
+  CMP #$02              ; "SwitchBlade" special
+  BEQ .exit             ; attack always hits for SwitchBlade proc
+  LDA $3401             ; steal result message
+  CMP #$03              ; was steal successful?
+  BCS .exit             ; branch if ^
+  STA $3A48             ; flag target as missed
+  LDA #$20              ; "Flash Screen" animation flag
+  TRB $A0               ; remove "Flash" from animation flags
+.exit
+  PLP                   ; restore M/X flags
+  LDA $3A48             ; missed flag (vanilla code)
+  RTL
+warnpc $C0DFA0+1
+
+
 ; #########################################################################
 ; XOR Shift RNG Algorithm (replaces RNG Table)
 ; NOTE: The rest of RNG table is cleared out - 192 bytes free!
