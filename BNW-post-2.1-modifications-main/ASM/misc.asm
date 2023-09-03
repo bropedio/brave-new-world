@@ -279,16 +279,16 @@ org $c38e4a
     db $c5,$7a,$ff,$ff,$ff,$00    ;Set blank tile over the numbers
 
 
-;------------------------------------------------------------------
-;Cinematic&Title Program&GFX
-;------------------------------------------------------------------
-check bankcross off
-org $C2686C
-	incbin "../asm/C2686C_Cinematic_Program.bin"		;Cinematic Program
-	
-org $D8f000
-	incbin "../asm/D8F000_Cinematic_Title_Isle_GFX.bin"	;Cinematic, Title, Isle GFX & Tilemap Properties
-check bankcross on
+;;------------------------------------------------------------------
+;;Cinematic&Title Program&GFX
+;;------------------------------------------------------------------
+;check bankcross off
+;org $C2686C
+;	incbin "../asm/C2686C_Cinematic_Program.bin"		;Cinematic Program
+;	
+;org $D8f000
+;	incbin "../asm/D8F000_Cinematic_Title_Isle_GFX.bin"	;Cinematic, Title, Isle GFX & Tilemap Properties
+;check bankcross on
 
 ;------------------------------------------------------------------
 ;New consumable icon
