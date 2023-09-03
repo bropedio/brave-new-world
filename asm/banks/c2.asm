@@ -302,6 +302,14 @@ warnpc $C204F6+1
 ; Morph random behavior (now freespace)
 
 org $C20557
+
+; ------------------------------------------------------------------------
+; Helper for Umaro Charge attack change
+UmaroRow:
+  TSB $11A2       ; set ignore defense (vanilla)
+  TRB $B3         ; clear "ignore row" flag
+  RTS
+
 padbyte $FF ; had been used as an item command helper, now unused
 pad $C20560
 
@@ -992,8 +1000,12 @@ org $C21624 : LDA #$03 ; reduce Offering hits from 4 to 2
 
 ; #########################################################################
 ; Umaro's Attacks (Charge, Throw, Storm)
+;
+; Add the "respect row" flag for Umaro's charge/tackle
+; attack (for balance purposes).
 
 org $C2167F : JSR Tackle ; hook to set Tackle battle power to 255
+org $C21684 : JSR UmaroRow ; add "respect row" flag
 org $C216D6 : LDA #$12 ; "Always Crit"/"Ignore Dmg Inc" if throwing Mog
 
 ; Sets the battle power of Umaro's Rage attack to 255 + gauntlet bonus
