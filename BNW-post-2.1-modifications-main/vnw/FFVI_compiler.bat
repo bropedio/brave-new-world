@@ -5,6 +5,7 @@ set EDITED_ROM="vnw.sfc"
 
 rem ----------------------------------------------------------------------------
 set ASAR="asar.exe"
+set FLIPS="flips.exe"
 
 rem ----------------------------------------------------------------------------
 copy %ORIGINAL_ROM% %EDITED_ROM% /y
@@ -16,3 +17,6 @@ echo Applying hacks...
 %ASAR% --pause-mode=on-error names.asm %EDITED_ROM%
 %ASAR% --pause-mode=on-error descriptions.asm %EDITED_ROM%
 %ASAR% --pause-mode=on-error locations.asm %EDITED_ROM%
+
+echo Creating patch...
+%FLIPS% --create --ips %ORIGINAL_ROM% %EDITED_ROM% "[n]Vanilla New World 2.2.ips"
