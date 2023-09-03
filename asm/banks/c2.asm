@@ -979,6 +979,12 @@ org $C213A1 : JMP BossDeath
 org $C2140C : JSR XMagHelp ; hook to skip counterattacks if X-Magic pending
 
 ; #########################################################################
+; Add Entities to Battlefield ($C21471)
+; Set pending statuses when entity enters battle
+
+org $C21492 : JSR EnterBattleState
+
+; #########################################################################
 ; Fight (command)
 
 org $C215D1 : NOP #2   ; Enable desperation attacks at any time (nATB)
@@ -1353,6 +1359,16 @@ org $C223B2 : StamEvdChk: ; [label] carry is set if stamina evades
 ; Always set "Wait" mode variable (nATB)
 
 org $C2247A : STZ $3A8F : NOP #4
+
+; ------------------------------------------------------------------------
+; Delay setting death status at battle start
+
+org $C224A4 : JSR DoubleStatusSet
+
+; -------------------------------------------------------------------------
+; Skip redundant immunity routine
+
+org $C224B8 : NOP #3
 
 ; #########################################################################
 ; Initialize Characters
@@ -4616,6 +4632,48 @@ ReturnReserve:      ; 10 bytes
   RTS
 
 ; -------------------------------------------------------------------------
+; Setting "Death" or "Petrify" status will strip
+; characters of other statuses. Typically, this
+; happens mid-battle, so any permanent equipment
+; statuses will be preserved due to the character
+; having gained "immunity" to them. However, at
+; battle start, characters don't yet have immunity,
+; so if a character is dead to start, setting that
+; status will strip them of their equipment statuses
+; before immunity gets set.
+;
+; This patch inserts a two-phase approach to setting
+; initial character statuses. First, all statuses
+; except "Death" and "Petrify" are set. Then, the
+; status immunity routine is run. Finally, the status
+; routine is called once again, with any "Death" or
+; "Petrify" statuses marked to be set.
+
+org $C2656A
+DoubleStatusSet:         ; 38 bytes
+  LDY #$06               ; prepare character loop
+.loop_1
+  LDA $3DD4,Y            ; status-to-set 1
+  PHA                    ; store it
+  AND #$3F               ; omit Death/Zombie
+  STA $3DD4,Y            ; update status-to-set 1 
+  DEY #2                 ; point to next entity
+  BPL .loop_1            ; loop through all 10
+  JSR $4391              ; update statuses (phase 1)
+  JSR $26C9              ; set status immunities
+  LDY #$00               ; prepare reverse loop
+.loop_2
+  PLA                    ; get initial status-to-set 1
+  AND #$C0               ; isolate Death/Zombie
+  STA $3DD4,Y            ; update status-to-set 1
+  INY #2                 ; point to next entity
+  CPY #$08               ; past character range
+  BCC .loop_2            ; process all 4 characters
+  JMP $4391              ; update statuses (phase 2)
+warnpc $C2659D+1
+
+
+; -------------------------------------------------------------------------
 ; Rage on-clear status removal helper
 
 org $C2659D
@@ -5651,6 +5709,43 @@ SkipDogBlock:
   RTS
 .exit
   JMP $4B53           ; carry: 50% chance of dog block
+
+; -------------------------------------------------------------------------
+; When battle initializes, any enemy that is hidden
+; or otherwise inactive will have its immunities set,
+; but not its statuses. When the enemy enters the
+; battle later (via scripting), it will be immune
+; to any statuses that are meant to be innate (eg.
+; Float, Safe, Shell).
+;
+; This patch adds special handling to apply any
+; pending "status-to-set" when an entity enters
+; the battlefield in this way, without respecting
+; immunities. These bytes will have been set at
+; battle initialization, but never processed until
+; the enemy enters battle. The downside is that
+; the statuses will not have their regular on-set
+; routines called, so the following statuses are
+; specifically omitted from being set in this way:
+;
+; Zombie, Muddle, Clear, Imp, Petrify, Death, Sleep
+; Condemned, Morph, Stop, Reflect, Freeze
+
+org $C2FB60
+EnterBattleState:        ; 29 bytes
+  PHP                    ; store flags (8-bit)
+  REP #$20               ; 16-bit A
+  LDA $3DE8,X            ; status-to-set 3-4
+  AND #$F56F             ; remove problematic statuses
+  ORA $3EF8,X            ; combine with status 3-4
+  STA $3EF8,X            ; update status 3-4
+  LDA $3DD4,X            ; status-to-set 1-2
+  AND #$5E0D             ; remove problematic statuses
+  ORA $3EE4,X            ; combine with status 1-2
+  STA $3EE4,X            ; update status 1-2
+  PLP                    ; restore flags (8-bit)
+  RTS                    ; exit with status 1 in A
+warnpc $C2FB7F+1
 
 ; -------------------------------------------------------------------------
 ; Poison status on-clear helper to reset damage incrementor
