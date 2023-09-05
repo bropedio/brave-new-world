@@ -603,7 +603,10 @@ org $C20CB0 : JMP NewVariance ; hook for new vigor/stam-based variance
 OldVariance:                  ; [label] for jump back
 org $C20CBA : AfterVar:       ; [label] for after old variance handling
 org $C20CC9 : BNE IgnoreDef   ; Defense ignoring now still modified by Morph
-org $C20CE0 : LDA #$81        ; Set Golem's Defense to 128
+org $C20CE0 : LDA #$C1        ; Set Golem's Defense to 192 (TODO: Can remove)
+                              ; ^ this is vanilla value, re-rebalanced to account
+                              ; ^ for more frequent Golem appearance due to
+                              ; ^ "Doggy Miss" patch
 
 ; ------------------------------------------------------------------------
 ; Forces magic attacks to take defending targets into consideration
@@ -1268,8 +1271,15 @@ org $C22282
   BPL .golem          ; branch if no ^
   JSR SkipDogBlock    ; C: 50% chance dog block (if no cover)
 
-org $C22291 : .go_dodge
-org $C22293 : .golem
+org $C22291
+.go_dodge
+  BRA .dodge2         ; dodge, but skip M-Tel/Vanish/Zombie check
+                      ; ^ this ensures Interceptor animation is used
+org $C22293
+.golem
+org $C2229F
+  BRA .dodge2         ; dodge, but skip M-Tel/Vanish/Zombie check
+                      ; ^ this ensures Golem animation/effect is used
 
 org $C222A8           ; replace the old L? spells handling
   NOP
@@ -1280,6 +1290,8 @@ org $C222A8           ; replace the old L? spells handling
 
 org $C222B3 : .hit_miss
 org $C222B5 : .dodge
+org $C222BC : .dodge2
+org $C222C3 : CPX #$06 ; test if golem or dog block (see $C223BF changes)
 org $C222D1 : .miss
 
 org $C222EC
@@ -1363,6 +1375,58 @@ warnpc $C223B3
 ; End of vanilla Stamina Evasion check
 
 org $C223B2 : StamEvdChk: ; [label] carry is set if stamina evades
+
+; #########################################################################
+; Miss animation selection routine (rewritten for "Doggy Miss" patch)
+;
+; After reaching the miss routine (due to Dog Block or
+; Golem), vanilla selects a miss animation at random from
+; the combination of all available equipment and Interceptor
+; or Golem. If an equipment block is selected, the miss
+; proceeds as though it had been caused by regular evasion.
+;
+; The end result of this (in vanilla) is that Interceptor will appear
+; less frequently when Shadow's equipment enables various
+; block animations: dagger parry, sword parry, shield, and cape.
+; If all 4 equipment animations are available, the chance of
+; Interceptor appearing is reduced from 50% to 10%, though he
+; will still trigger misses 50% of the time.
+;
+; Now, the Doggy and Golem checks precede randomized animation selection
+
+org $C223BF
+ChooseAnimation:       ; 46 bytes
+  PHY                  ; store Y
+  TDC                  ; clear A/B
+  LDA $FE              ; Dog/Golem
+  BEQ .normal          ; branch if neither
+  CMP #$40             ; "Dog Block"
+  BNE .golem           ; if not dog, it's golem
+  STY $3A83            ; save dog blockee
+  BRA .set_miss        ; set miss animation
+.golem
+  STY $3A82            ; save golem blockee
+  BRA .set_miss        ; set miss animation
+.normal
+  LDA $11A2            ; attack flags 1
+  LSR                  ; carry: Physical
+  BCS .get_anim        ; branch if ^
+  INY                  ; next equipment byte
+.get_anim
+  LDA $3CE4,Y          ; phys/magic block animations
+  JSR $522A            ; select random animation (A could be zero)
+.set_miss
+  JSR $51F0            ; get bit number in X (if zero A, carry clear)
+  BCC .exit            ; exit if the animation pool (A) was empty
+  INX                  ; add one (1-based)
+  TYA                  ; target index
+  LSR                  ; get target slot
+  TAY                  ; use as index
+  STX $AA,Y            ; save target animation
+.exit
+  PLY                  ; restore Y
+  RTS
+warnpc $C223ED+1
 
 ; #########################################################################
 ; Initialize Many Things at Battle Start
