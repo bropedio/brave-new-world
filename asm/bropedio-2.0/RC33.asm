@@ -7,7 +7,6 @@ hirom
 ; This master file includes all bugfixes and patches for RC33
 ; of Brave New World 2.0.
 
-incsrc mimic-mimic.asm
 incsrc petrify-morph-immunes.asm
 incsrc poison-ticks.asm
 incsrc version.asm

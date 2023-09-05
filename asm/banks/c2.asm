@@ -16,6 +16,11 @@ org $C20081 : JSR StatusFinish ; finish removing statuses from dead
 ; Conventional Turn Postprocessing ($C200F9)
 
 ; -------------------------------------------------------------------------
+; When queuing up Mimic command, set flag
+
+org $C20115 : JSR TrackMimic
+
+; -------------------------------------------------------------------------
 ; Before starting Palidor Landing turn, set bit to freeze
 ; ATB in position. This will ensure uncontrollable characters
 ; like Umaro or Gau get to take action right away.
@@ -53,6 +58,10 @@ org $C201AA
   RTS                  ; this RTS is a branch destination
 warnpc $C201D9+1
 
+; #########################################################################
+; Set executed command in Mimic Variables ($C2021E)
+
+org $C20224 : JSR ResetMimic ; prevent mimic loops
 
 ; #########################################################################
 ; Part of Attack Prep
@@ -5821,7 +5830,33 @@ EnterBattleState:        ; 29 bytes
   STA $3EE4,X            ; update status 1-2
   PLP                    ; restore flags (8-bit)
   RTS                    ; exit with status 1 in A
-warnpc $C2FB7F+1
+
+; -------------------------------------------------------------------------
+; Helpers for preventing Mimicry loops
+;
+; Gogo should not be able to Mimic himself, creating endless
+; chains of repeat attacks. While typically not a useful
+; strategy, these repeat mimics can be abused when combined
+; with Palidor, who can be summoned repeatedly without delay.
+
+TrackMimic:
+  STA !mimic      ; set "mimic" flag
+  JMP $01D9       ; continue to mimic handling
+ResetMimic:
+  LDA !mimic      ; was this turn a mimic 
+  BNE .reset      ; branch if so
+  LDA $3A7C       ; just-executed command
+  RTS
+.reset
+  STZ !mimic      ; clear mimic variable
+  STZ $3F20       ; zero last command
+  STZ $3F22       ; zero last targets
+  LDA #$12        ; default command placeholder
+  STA $3F24       ; remove "gembox" command
+  STA $3F28       ; remove "jump" command
+  ASL             ; ensure A is > #$1E
+  RTS
+warnpc $C2FB9F+1
 
 ; -------------------------------------------------------------------------
 ; Poison status on-clear helper to reset damage incrementor
