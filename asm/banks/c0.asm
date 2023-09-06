@@ -573,6 +573,23 @@ StatusFinHelp:         ; 33 bytes
   RTL
 
 ; -------------------------------------------------------------------------
+; Helper for Poison Tick Adjustments (from C2)
+
+org $C0D930
+TickLogic:
+  STA $BD         ; set damage increment
+  BEQ .incr       ; initialize tick to 100%
+  CPY #$08        ; monster range
+  BCC .incr       ; branch if player target
+  ASL             ; double tick for monsters
+  INC             ; +50% more damage
+  RTL
+.incr
+  INC #2          ; add 100% more damage
+  RTL
+warnpc $C0D93E+1
+
+; -------------------------------------------------------------------------
 ; Helper for North Cross targeting
 ; (runs immediately before status phase)
 

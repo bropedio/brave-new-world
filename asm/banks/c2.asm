@@ -3555,7 +3555,21 @@ org $C24F47
 ; #########################################################################
 ; Periodic Damage & Healing Calculation
 
-org $C25041 : NOP ; cumulative poison incrementor set to +1, not +2
+; -------------------------------------------------------------------------
+; Allow more cumulative poison damage
+
+org $C2503C
+PoisonTicks:
+  LDA $3E24,Y     ; poison incrementor
+  JSL TickLogic   ; compute next tick
+  CMP #$20        ; above max increment (31)
+  BCC .valid      ; branch if not ^
+  LDA #$1F        ; use max increment 31
+.valid
+  STA $3E24,Y     ; save new increment value
+warnpc $C2504C+1
+
+; -------------------------------------------------------------------------
 org $C2505B : JSR Tick_Calc : NOP #2 ; Re-written formulas for periodic effects
 
 ; #########################################################################
