@@ -2803,6 +2803,12 @@ Aero:
 ; -------------------------------------------------------------------------
 ; Shock Command Effect (moved here)
 ; ((3 * ((Level * stamina) + current HP)) / 4) & [Attacker takes 1/8th MHP damage.]
+;
+; Show damage numbers when Shock causes self-damage
+; Rather than directly modifying attacker's HP, instead
+; add damage value to the attacker's "Damage Taken" bytes.
+; Then allow the regular damage handling process both the
+; damage reduction, death (if necessary) and visual dmg numbers.
 
 org $C23EDD
 Shock:
@@ -2822,16 +2828,16 @@ Shock:
   LSR
   LSR
   LSR            ; MaxHP / 8
-  PHA            ; store on stack
-  LDA $3BF4,Y    ; attacker CurrentHP
-  SEC            ; set carry
-  SBC $01,S      ; Current HP - (Max HP / 8)
-  STA $3BF4,Y    ; update CurrentHP ^
-  BCS .exit      ; branch if not dead
-  JSR $1390      ; attacker takes lethal damage
+  STA $33D0,Y    ; store in damage taken for target
+  LDA $3AA1,Y    ; get attacker flags
+  BIT #$0020     ; "back row"
+  BEQ .exit      ; exit if not ^
+  LSR $11B0      ; else, halve damage
 .exit
-  PLA            ; clear stack
   RTS
+warnpc $C23F10
+padbyte $FF
+pad $C23F0F
 
 ; -------------------------------------------------------------------------
 ; Helper for Net spellproc targeting exception
