@@ -4925,11 +4925,17 @@ condenseSpellLists:
 
 ; --------------------------------------------------------------------------
 ; Was a North Cross helper, but was removed in later update
-; TODO: Remove this unnecessary padding
+; Now helper for EP Gain bug
 
 org $C2661B
-padbyte $FF
-pad $C26626              ; clear 11 bytes
+FixItUp:
+  BIT #$0008      ; "espers acquired" event bit
+  BEQ .exit       ; exit if not ^
+  JMP Calc_EP     ; $E8 = gained EP
+.exit
+  RTS
+padbyte $FF       ; TODO: Remove this unnecessary padding
+pad $C26626
 
 ; --------------------------------------------------------------------------
 ; Ghost Ring helper
@@ -5421,9 +5427,9 @@ Show_EL:
 
 Show_EP:
   JSR $5FD4         ; [displaced]
-  LDA $F1           ; espers have been acquired
-  BEQ .exit         ; exit if not ^
-  JSR Calc_EP       ; $E8 = gained EP
+  STZ $E8           ; clear out scratch RAM
+  LDA $F1           ; espers have been acquired byte
+  JSR FixItUp       ; calculate EP if ^
   LDA $E8           ; ^
   BEQ .exit         ; exit if none ^
   LDA $2F35         ; XP gained

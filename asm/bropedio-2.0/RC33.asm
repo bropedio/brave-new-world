@@ -7,7 +7,6 @@ hirom
 ; This master file includes all bugfixes and patches for RC33
 ; of Brave New World 2.0.
 
-incsrc ep-gain-bug.asm              ; requires "parry-counter-cross"
 incsrc ancient-basement.asm
 
 ; New/Updated in RC33
