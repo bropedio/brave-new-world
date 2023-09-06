@@ -3191,6 +3191,19 @@ org $C24367 : dw Shock     ; Shock formula
 org $C24383 : dw CoinToss  ; Effect $51 ($C33FB7 now unused)
 
 ; #########################################################################
+; Update statuses after each turn (C24391)
+
+; -------------------------------------------------------------------------
+; Handle Petrify and Morph immunities
+
+org $C243C6
+  JSR Vulnerables1 ; clear block
+  AND $F4
+
+org $C243E0 : JSR Vulnerables2 ; clear block
+
+
+; #########################################################################
 ; Determine Statuses to Set/Clear when Attack Hits (4406)
 
 ; -------------------------------------------------------------------------
@@ -3316,12 +3329,21 @@ org $C244F9 : JSR SmartToot
 ; Largely rewritten by Assassin's "Overcast Fix" patch, which ensures
 ; "Zombie" and "Near Fatal" immunities are not ignored by "Overcast"
 ; effect.
+;
+; Remove hacky vanilla code that enforces special
+; status immunities for petrified characters by
+; resetting "Petrify" status every turn. Instead,
+; add more intelligent "immunity" byte routines.
+; These routines now enforce Petrify immunities that
+; include "Imp", "Death", Zombie". The same routines
+; are also used to enforce "Imp" immunity for Morphed
+; characters.
 
 org $C24517
 OvercastFix:
   LDA $3EF8,Y        ; status-3/4 [moved earlier]
   STA $FA            ; backup
-  LDA $331C,Y        ; blocked-1/2
+  JSR Vulnerables1   ; consider petrify/morph immunities
   PHA                ; store ^
   AND $3DD4,Y        ; non-blocked statuses-to-set-1/2
   STA $FC            ; save ^
@@ -3338,8 +3360,8 @@ OvercastFix:
   TSB $F4            ; set "Doom" to-clear
   LDA $3EE4,Y        ; status-1/2
   STA $F8            ; save ^
-  AND #$0040         ; isolate "Petrify"
-  TSB $FC            ; reset "Petrify" if possessed
+  BRA $03            ; remove petrify force-set TODO: Remove this BRA
+  NOP #3             ; remove petrify force-set TODO: Remove this NOP
   LDA $3C1C,Y        ; MaxHP
   LSR #3             ; MaxHP / 8
   CMP $3BF4,Y        ; compare to CurrHP
@@ -3357,7 +3379,7 @@ OvercastFix:
   STA $FC            ; update status-to-set-1/2
   PHA                ; store ^
   LDA $3DE8,Y        ; status-to-set-3/4
-  AND $3330,Y        ; exclude blocked-3/4
+  JSR Vulnerables2   ; handle petrify/morph immunities
   STA $FE            ; save ^
   PHA                ; store ^
   LDA $32DF,Y        ; hit by attack
@@ -3443,6 +3465,7 @@ org $C2469B : NoStatusHook: ; [label] RTS for empty status clear/set hooks
 ; Status on-clear and on-set jump tables
 
 org $C246DE : dw NoStatusHook ; "Reflect" on-set - removed
+org $C246E6 : dw ClearImp     ; "Morph" on-set - clear "Imp"
 org $C246F4 : dw Poison       ; "Poison" on-clear - reset increment
 org $C24710 : dw ClearQueue   ; "Dance" on-clear - clear queue
 org $C24720 : dw RageClear    ; "Rage" on-clear - hook for status removal
@@ -3673,10 +3696,11 @@ DisableCommands:
   TAX                ; index to command data
   LDA $3EE4,Y        ; character status-1
   BIT #$20           ; "Imp"
-  BRA .skip_imp      ; branch if not ^ TODO: Remove unused code below this BRA
-  LDA $CFFE00,X      ; command data
-  BIT #$04           ; "Allowed while Imp"
-  BEQ .disable       ; branch if not ^
+  BEQ .skip_imp      ; branch if not ^
+  CPX #$0006         ; "Morph" command
+  BEQ .disable       ; branch if ^ (disable Morph when Imped)
+  BRA .skip_imp      ; skip unused code
+  db $19             ; previous branch to .disable sublabel TODO: remove ASAP
 .skip_imp
   TXA                ; command ID *2
   ROR                ; restore command ID (LSR would be fine)
@@ -4441,6 +4465,27 @@ ImpNerf:
   ROR $11B0         ; half damage (low byte)
 .skip
   JMP $14AD         ; continue to hitting back check
+  db $FF,$FF        ; TODO: remove this padding
+
+; --------------------------------------------------------------------------
+; Helpers for Petrify/Morph immunities
+
+Vulnerables2:
+  AND $3330,Y     ; mask fixed status vulnerables (3-4)
+  STA $E8         ; store vulnerable status-to-set
+  LDA #$9BFF      ; Dance,Regen,Slow,Haste,Stop,Shell,Safe,Reflect
+                  ; Rage,Frozen,Morph,Spell,Float
+FinishPet:
+  PHA             ; store petrify immunities
+  LDA $3EE3,Y     ; status bytes 1-2
+  ASL #2          ; Carry: "Petrify"
+  PLA             ; restore petrify immunities
+  BCC .done       ; branch if no "Petrify"
+  TRB $E8         ; remove vulnerables
+.done
+  LDA $E8         ; real vulnerables
+  RTS
+warnpc $C261D6+1
 
 ; --------------------------------------------------------------------------
 
@@ -4755,8 +4800,14 @@ DoubleStatusSet:         ; 38 bytes
   CPY #$08               ; past character range
   BCC .loop_2            ; process all 4 characters
   JMP $4391              ; update statuses (phase 2)
-warnpc $C2659D+1
+warnpc $C26590+1
 
+org $C26590
+ClearImp:
+  LDA #$0020      ; Imp
+  JSR $4598       ; mark to be cleared
+  JMP $4678       ; continue with normal morph handling
+warnpc $C2659D+1
 
 ; -------------------------------------------------------------------------
 ; Rage on-clear status removal helper
@@ -5857,6 +5908,23 @@ ResetMimic:
   ASL             ; ensure A is > #$1E
   RTS
 warnpc $C2FB9F+1
+
+; -------------------------------------------------------------------------
+; Helper for Petrify immunity changes
+
+org $C2FBA0
+Vulnerables1:
+  LDA $331C,Y     ; fixed status vulnerables (1-2)
+  STA $E8         ; store them
+  LDA $3EF8,Y     ; status bytes 3-4
+  BIT #$0800      ; "Morph"
+  BEQ .check_pet  ; branch if no ^
+  LDA #$0020      ; "Imp"
+  TRB $E8         ; remove vulnerable ^
+.check_pet
+  LDA #$FEB7      ; Dark,Poison,Clear,Wounded,Image,Mute
+  JMP FinishPet   ; Berserk,Muddle,Sap,Sleep,Imp,Death,Zombie
+warnpc $C2FBB8+1
 
 ; -------------------------------------------------------------------------
 ; Poison status on-clear helper to reset damage incrementor
