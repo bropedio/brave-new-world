@@ -4,7 +4,6 @@ hirom
 ; Brave New World 2.1 - Beta
 ; July 5, 2021
 
-incsrc item-save-2.asm
 incsrc mug-worser.asm
 incsrc scan-restored.asm
 incsrc runic-stance.asm      ; uses space from scan-restored

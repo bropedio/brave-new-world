@@ -436,9 +436,8 @@ ATBMultipliers:
 
 ; ########################################################################
 ; Remove Entity from Wait Queue
-; TODO: Note that the JMP below is a bug that is corrected in 2.1
 
-org $C20A2B : JMP ReturnReserve ; return items to inventory on queue wipe
+org $C20A2B : JSR ReturnReserve ; return items to inventory on queue wipe
 
 ; ########################################################################
 ; SOS Equipment Activations
