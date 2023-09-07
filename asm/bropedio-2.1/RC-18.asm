@@ -4,7 +4,6 @@ hirom
 ; Brave New World 2.1 - Beta
 ; July 5, 2021
 
-incsrc checksum.asm
 incsrc elemental-status-null.asm
 incsrc esper-bonus-swap.asm
 incsrc golem-restrictions.asm
