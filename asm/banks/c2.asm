@@ -1657,11 +1657,10 @@ InitializeATBTimers:
 warnpc $C22602+1
 
 ; #########################################################################
-; Death and Poison Immunity Setup/Handling
-;
-; Modified by dn's "Stop Block" hack to give Stop immunity with Death
+; Permanent Immunity (via Equipment) Setup
+; Allow Stop immunity via equipment
 
-org $c2265b : JSR StopBlock ; Add hook to give stop immunity
+org $C226A0 : AND #$FE78 ; allow "Stop" immunity (EE -> FE)
 
 ; #########################################################################
 ; Load Command and Subcommand Data

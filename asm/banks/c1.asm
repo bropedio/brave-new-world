@@ -346,6 +346,7 @@ SetStatus:          ; 54 bytes
   LDA $3EF8,X       ; current status 3
   EOR #$FF          ; unset statuses 3
   AND $3C6D,X       ; equipment statuses that aren't set
+  AND #$EF          ; equipment statuses other than "Stop" that aren't set
   ORA $3DE8,X       ; combine with status-to-set 3
   STA $3DE8,X       ; update status-to-set 3
   RTL
