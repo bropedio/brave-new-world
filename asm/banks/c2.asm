@@ -551,8 +551,7 @@ org $C20BD3
   STA $EE          ; save copy of elemental byte (used in C0 routine)
   AND $3BCC,Y      ; check absorbs
   BEQ .step2       ; if no absorb, continue elemental check
-  LDA $F2
-  EOR #$01
+  JSL Absorb       ; remove pending statuses and get toggled heal flag
   STA $F2          ; toggle heal flag
   BRA .atma_chk    ; finish elemental check
 .step2
@@ -575,8 +574,7 @@ org $C20BD3
   CMP #$00         ; is modifier count zero (immune)?
   BNE .step_3      ; if not, continue
 .null
-  STZ $F0
-  STZ $F1          ; zero damage
+  JSL Nulled       ; zero dmg and remove pending status changes
   BRA .apply_dmg   ; skip past Atma Weapon check
 .step_3
   LSR              ; A = modifier count / 2

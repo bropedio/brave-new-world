@@ -614,6 +614,32 @@ NorthCrossMiss:
   PLP
   RTL
 
+; -------------------------------------------------------------------------
+; Helpers for Elemental Status Null patch
+
+Nulled:
+  JSR RemoveStatuses  ; if null dmg, remove statuses
+  STZ $F0             ; zero dmg lobyte [moved]
+  STZ $F1             ; zero dmg hibyte [moved]
+  RTL
+Absorb:
+  JSR RemoveStatuses  ; if absorb dmg, remove statuses
+  LDA $F2             ; attack flags [moved]
+  EOR #$01            ; toggle "Heal" [moved]
+  RTL
+RemoveStatuses:
+  PHP                 ; store flags 
+  TDC                 ; zero A/B
+  REP #$20            ; 16-bit A
+  STA $3DD4,Y         ; clear status-to-set 1, 2
+  STA $3DE8,Y         ; clear status-to-set 3, 4
+  LDA $3018,Y         ; unique bit for target
+  TRB !null           ; remove "null" message (if set)
+  TRB !fail           ; remove "fail" message (if set)
+  PLP                 ; restore flags
+  RTS
+warnpc $C0D990+1
+
 
 ; -------------------------------------------------------------------------
 ; Helpers for Palidor Redux (in C2)
