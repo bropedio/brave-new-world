@@ -2661,22 +2661,33 @@ StatusMiss:
   JSL StatusHelp
 .exit
   RTS             ; if Carry set, attack misses
-warnpc $C23C05
+warnpc $C23C04+1
 
 ; #########################################################################
 ; Rippler Effect (now freespace)
 
+; -------------------------------------------------------------------------
+; Upon losing a colosseum battle, the wagered item should be
+; returned to the players inventory. The vanilla implementation
+; only incentivizes saving and resetting repeatedly.
+
 org $C23C04
-StopBlock:
-  PHA             ; save A
-  LDA $3330,X     ; vulnerable status-3
-  AND #$EF        ; remove "Stop"
-  STA $3330,X     ; update vulnerable status-3
+RiggedColosseum:
+  LDA $3A97         ; $FF if colosseum, $00 otherwise
+  BEQ .rts          ; exit if not colosseum
+  STA $0205         ; clear wager item (so not billed)
+.rts
+  RTS
+warnpc $C23C12+1
+
+; -------------------------------------------------------------------------
+; TODO: Remove this unused code snippet
   PLA             ; restore A
   ORA #$80        ; [displaced]
   XBA             ; [displaced]
   RTS 
 
+; -------------------------------------------------------------------------
 org $C23C22
 ShadowChk:
   LDA $1E94       ; one event byte
@@ -3570,9 +3581,14 @@ FieldItemReturn:
 
 ; #########################################################################
 ; Special Checks for End-of-Battle
-;
+
+; -------------------------------------------------------------------------
 ; Allows partial party engulfs to still transport the party to Gogo's Cave
 org $C24816 : NOP #5
+
+; -------------------------------------------------------------------------
+; Return wagered item after colosseum loss
+org $C24827 : JSR RiggedColosseum
 
 ; #########################################################################
 ; End-of-Battle (or tier switch) Handling

@@ -4,7 +4,6 @@ hirom
 ; Brave New World 2.1 - Beta
 ; July 5, 2021
 
-incsrc rigged-colosseum.asm
 incsrc statuscrap.asm
 incsrc tank-defend-bonus.asm
 incsrc violet.asm
