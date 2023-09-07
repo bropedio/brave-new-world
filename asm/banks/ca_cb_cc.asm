@@ -337,6 +337,10 @@ org $CB0AAE
   db $BC,$0A,$01       ; Branches to assigned Shadow caption
 
 ; ------------------------------------------------------------------------
+; Violet Dies (assumes "Dead Boy" sprite converted to "Dead Girl"
+org $CB12C8 : db $2D,$83 ; When pulling Violet from bed, switch to "dead" earlier
+
+; ------------------------------------------------------------------------
 ; Overwrite a completely pointless 1-byte jump to flag Cyan as having
 ; joined the party once recruited in Sabin's scenario. This wasn't done
 ; in vanilla for some reason.

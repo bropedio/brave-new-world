@@ -3,6 +3,23 @@ hirom
 ; C4 Bank
 
 ; #########################################################################
+; Cyan's Dream
+;
+; Change Cyan's child's sprite from male to female,
+; so "Hunter" can become "Violet"
+
+org $C432A6 : db $27 ; Replace boy sprite with girl
+org $C432B8 : db $27 ; Replace boy sprite with girl
+org $C432EE : db $27 ; Replace boy sprite with girl
+org $C43312 : db $27 ; Replace boy sprite with girl
+org $C43336 : db $27 ; Replace boy sprite with girl
+
+; #########################################################################
+; Violet boards Phantom Train
+
+org $C4348C : db $27 ; Replace boy sprite with girl
+
+; #########################################################################
 ; Tile Graphics for new Status Text tiles (Sap/Regen/Rerise)
 
 org $C481C0
