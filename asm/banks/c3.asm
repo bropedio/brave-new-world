@@ -1396,6 +1396,14 @@ DrawRel2:
 warnpc $C391C4+1
 
 ; ------------------------------------------------------------------------
+; Update status based on gear
+;
+; Skip removing statuses when gear is equipped.
+; Status will be removed at start of battle,
+; instead.
+org $C391CB : NOP #3 
+
+; ------------------------------------------------------------------------
 ; Point to new "Load Actor Data" routine [Unified Equip Menu]
 
 org $C3926B : JSR LoadGear      ; Load actor data
