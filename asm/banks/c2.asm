@@ -1237,6 +1237,7 @@ warnpc $C21977
 ; Code Pointers for Commands
 
 org $C219ED : dw PreDanceCmd ; changed to add Moogle Charm hook
+org $C21A15 : dw FullScan ; new scan command location
 
 ; #########################################################################
 ; AI Command Scripts
@@ -3665,12 +3666,27 @@ warnpc $C2504C+1
 org $C2505B : JSR Tick_Calc : NOP #2 ; Re-written formulas for periodic effects
 
 ; #########################################################################
-; Scan Command
+; Scan Command ($C250DD)
+; TODO: Shift around so previous Scan command address can be restored
 
 ; -------------------------------------------------------------------------
-; Branches past HP/MP display for scan (now freespace)
+; Helpers for scan command parts
 
-org $C250F2 : BRA Scan
+org $C250DD
+LongMsgArg:
+  STA $2F35           ; save param for message
+LongMsg:
+  PHA                 ; store A
+  PHP                 ; store flags
+  SEP #$20            ; 8-bit A
+  LDA #$04            ; "Message" animation type
+  JSR $6411           ; process message animation
+  PLP                 ; restore flags
+  PLA                 ; restore A
+  RTL
+warnpc $C250F4+1
+
+org $C250F2 : BRA $44 ; TODO: Remove this unused code fragment
 
 ; -------------------------------------------------------------------------
 ; Some portion of previous routine is now overwritten as freespace
@@ -3701,21 +3717,34 @@ GetTargeting:
 ; TODO: Ops below are leftover from old code. Remove them
   STA $0002,X
   RTS
-warnpc $C25121
+warnpc $C25120+1
 
 ; -------------------------------------------------------------------------
 ; Modified by dn's "Scan Status" patch to add support for Status messages.
 ; The "Scan Weakness" code is now displaced into C4 along with the new
 ; "Scan Status" code.
+;
+; Rewritten for "Scan Restored" patch, which brings back HP/MP display and
+; condenses the routine for space savings
 
-org $C25138
-Scan:
-  JSL ScanWeakness
+org $C25120
+FullScan:
+  PHP                 ; store flags
+  LDX $B6             ; get target of original casting
+  LDA #$FF            ; null (end of script marker)
+  STA $2D72           ; set end-of-script flag
+  LDA #$02            ; "Display Battle Msg" command ID
+  STA $2D6E           ; set battle command ID
+  STZ $2F37           ; clear message parameter
+  STZ $2F3A           ; clear message parameter
+  JSL ScanHPMP
+  JSL ScanWeak
   JSL ScanStatus
+  PLP
   RTS
+warnpc $C25141+1
 padbyte $FF
 pad $C25141
-warnpc $C25141+1
 
 ; -------------------------------------------------------------------------
 ; Freespace used by "Stray Targeting" patch

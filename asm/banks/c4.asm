@@ -650,91 +650,101 @@ CastTarget:
 ; Includes helpers for dn's "Scan Status" hack. Note that the battle
 ; messages added for status effects are applied separately, via the ips
 ; patch `[d]bnw_scan_status.ips`
+;
+; Scan helpers completely rewritten as part of "Scan Restored" patch,
+; largely to save space.
 
 org $C4F1D0
-ScanWeakness:
-  LDA #$15         ; "Weak to Fire"
-  STA $2D6F        ; set ^ message ID
-  LDA $3BE0,X      ; weaknesses byte
-  BEQ .no_weakness ; branch if empty
-  STA $EE          ; else, save in scratch
-  LDA $3BE1,X      ; resisted elements
-  ORA $3BCC,X      ; absorbed elements
-  ORA $3BCD,X      ; immune elements
-  TRB $EE          ; remove all from weaknesses
-  LDA #$01         ; "Fire"
-.elem_loop
-  BIT $EE          ; check weaknesses
-  BEQ .next_elem   ; branch if not weak
-  PHA              ; store element bit
-  LDA #$04         ; "message" animation type
-  PHK              ; push $C4 onto stack
-  PER .per_a-1     ; ensure JML below returns
-  PEA $00CA        ; use RTL at $C200CB
-  JML $C26411      ; queue message animation
-.per_a
-  PLA              ; restore element bit
-.next_elem
-  INC $2D6F        ; point to next message
-  ASL              ; advance bit to next element
-  BCC .elem_loop   ; loop till done
+ScanHPMP:
+  PHP                 ; store flags
+  LDA #$30            ; "HP .../..." message ID
+  STA $2D6F           ; set message ID
+  LDA $3C95,X         ; enemy flags
+  ASL                 ; isolate "boss" bit in N
+  BMI .exit           ; branch if ^
+  REP #$20            ; 16-bit A
+  LDA $3C1C,X         ; max HP
+  STA $2F38           ; save in msg data
+  LDA $3BF4,X         ; current HP 
+  JSL LongMsgArg      ; set arg, execute msg
+  INC $2D6F           ; "MP .../..." message ID
+  LDA $3C30,X         ; max MP
+  STA $2F38           ; save in msg data
+  LDA $3C08,X         ; current MP
+  JSL LongMsgArg      ; set arg, execute msg
+.exit
+  PLP                 ; restore flags
   RTL
-.no_weakness
-  LDA #$2C         ; "No Weakness"
-  STA $2D6F        ; set ^ message ID
-  LDA #$04         ; "message" animation type
-  PHK              ; push $C4 onto stack
-  PER .per_b-1     ; ensure JML below returns
-  PEA $00CA        ; use RTL at $C200CB
-  JML $C26411      ; queue message animation
-.per_b
+
+ScanWeak:
+  LDA #$15            ; first weakness message ID
+  STA $2D6F           ; set message ID
+  TDC                 ; zero A/B
+  TAY                 ; zero Y
+  DEC                 ; #$FF (elements to scan)
+  STA $EE             ; store ^
+  LDA $3BE0,X         ; weaknesses to check
+  STA $EC             ; store ^
+  LDA $3BE1,X         ; resisted elements
+  ORA $3BCC,X         ; absorbed elements
+  ORA $3BCD,X         ; immune elements
+  TRB $EC             ; remove resisted, absorbed, immune elements
+  JSR CheckEach       ; process these elements
+  DEY                 ; check if count not zero
+  BPL .exit           ; exit if at least one weakness
+  LDA #$2C            ; "No Weakness" message
+  STA $2D6F           ; set message ID
+  JSL LongMsg         ; process "No Weakness" message animation
+.exit
   RTL
 
 ScanStatus:
-  REP #$20         ; 16-bit A
-  LDA $3EE4,x      ; status-1/2
-  BIT #$F825       ; statuses to scan
-  BNE .scan_away   ; branch if at least one
-  LDA $3EF8,x      ; status-3/4
-  BIT #$84FE       ; statuses to scan
-  BNE .scan_away   ; branch if at least one
-  SEP #$20         ; 8-bit A
-  LDA #$58         ; "No Status"
-  STA $2D6F        ; set message ID ^
-  LDA #$04         ; "message" animation type
-  PHK              ; push $C4 onto stack
-  PER .per_c-1     ; ensure JML below returns
-  PEA $00CA        ; use RTL at $C200CB
-  JML $C26411      ; queue message animation
-.per_c
+  PHP                 ; store flags
+  LDA #$47            ; first status message ID
+  STA $2D6F           ; set message ID
+  REP #$20            ; 16-bit A
+  LDY #$00            ; initialize message counter
+  LDA #$F825          ; statuses (1-2) to scan
+  STA $EE             ; store ^
+  LDA $3EE4,X         ; current status (1-2)
+  STA $EC             ; store ^
+  JSR CheckEach       ; process these statuses
+  LDA #$84FE          ; statuses (3-4) to scan
+  STA $EE             ; store ^
+  LDA $3EF8,X         ; current status (3-4)
+  STA $EC             ; store ^
+  JSR CheckEach       ; process these statuses
+  DEY                 ; check if count not zero
+  BPL .exit           ; exit if at least one status msg
+  JSL LongMsg         ; process "No statuses" message (#$58)
+.exit
+  PLP                 ; restore flags
   RTL
-.scan_away
-  SEP #$20         ; 8-bit A
-  LDA #$47         ; first status message ID
-  STA $2D6F        ; set message ID ^
 
-  LDA $3EE4,x      ; status-1
-  BIT #$01         ; "Dark"
-  PHA              ; store status byte
-  JSR TryScan      ; display status message if ^
-  PLA              ; restore status byte
-  BIT #$04         ; "Poison"
-  PHA              ; store status byte
-  JSR TryScan      ; display status message if ^
-  PLA              ; restore status byte
-  BIT #$20         ; "Imp"
-  PHA              ; store status byte
-  JSR TryScan      ; display status message if ^
-  PLA              ; restore status byte
+CheckEach:
+  TDC                 ; zero A/B
+  INC                 ; first bit to check
+.loop  
+  BIT $EE             ; check if in list of "to check"
+  BEQ .next           ; skip if not checking
+  BIT $EC             ; check if in current status
+  BEQ .skip           ; skip if not ^
+  INY                 ; increment status message counter
+  JSL LongMsg         ; process message box animation
+.skip
+  INC $2D6F           ; set message ID for next status
+.next
+  ASL                 ; shift bit to check
+  BNE .loop           ; loop if still bits left
+  RTS
+warnpc $C4F26A+1
 
-  LDA $3EE5,x      ; status-2
-  BIT #$08         ; "Mute"
-  PHA              ; store status byte
-  JSR TryScan      ; display status message if ^
-  PLA              ; restore status byte
-  BIT #$10         ; "Bserk"
-  PHA              ; store status byte
-  JSR TryScan      ; display status message if ^
+; ------------------------------------------------------------------------
+; TODO: Remove all code below through the warnpc, as it is unused
+; $C4F26A - $C4F2DC: Now free space
+
+org $C4F26A
+  dw $F2C5         ; partial JSR code
   PLA              ; restore status byte
   BIT #$20         ; "Muddle"
   PHA              ; store status byte
@@ -748,7 +758,6 @@ ScanStatus:
   PHA              ; store status byte
   JSR TryScan      ; display status message if ^
   PLA              ; restore status byte
-
   LDA $3EF8,x      ; status-3
   BIT #$02         ; "Regen"
   PHA              ; store status byte
