@@ -461,18 +461,24 @@ ReflectClear3:
   RTS
 
 ; ------------------------------------------------------------------------
-; Helpers for Periodic Effects/Damage
+; Helper for Golem Restrictions
+;
+; Skip Golem if no battle power, and remove
+; element from attack if Golem blocks
 
-Sap_Chk:
-  LDA $11A7        ; Load special byte 3
-  BIT #$0080       ; Test if bit 8 is set
-  BNE Skip_Halving ; If it is, branch
-  LDA $11A4        ; Else, restore displaced code at $C20D24 and return
+GolemRestrict:
+  ORA $3A37        ; check Golem's HP hibyte [moved]
+  BEQ .exit        ; exit if no Golem
+  LDA $11A6        ; battle power of attack
+  BEQ .exit        ; exit without Golem if no damage
+  STZ $11A1        ; remove elemental properties
+.exit
   RTS
+  db $34,$0D       ; TODO: Remove this unused code fragment ASAP
+warnpc $C20AFF+1
 
-Skip_Halving:
-  PLA              ; No longer need to RTS
-  JMP DmgModInc    ; Jump back, skipping the damage halving instruction
+; ------------------------------------------------------------------------
+; Helpers for Periodic Effects/Damage
 
 Tick_Calc:
   PHA              ; store A (Max HP)
@@ -604,50 +610,121 @@ warnpc $C20C2E
 
 ; ########################################################################
 ; Damage Modification (per-target)
-
-org $C20CA6 : SEP #$30        ; 8-bit A, X/Y
-org $C20CB0 : JMP NewVariance ; hook for new vigor/stam-based variance
-OldVariance:                  ; [label] for jump back
-org $C20CBA : AfterVar:       ; [label] for after old variance handling
-org $C20CC9 : BNE IgnoreDef   ; Defense ignoring now still modified by Morph
-org $C20CE0 : LDA #$C1        ; Set Golem's Defense to 192 (TODO: Can remove)
-                              ; ^ this is vanilla value, re-rebalanced to account
-                              ; ^ for more frequent Golem appearance due to
-                              ; ^ "Doggy Miss" patch
-
-; ------------------------------------------------------------------------
+;
+; Rewritten damage modification routine to save
+; space. Large change is to reuse the X/256
+; multiplication helper.
+;
+; When Golem (or Doggy) blocks, the intended
+; target's defenses should not apply: Row,
+; Defend, Safe/Shell, Morph, Self-Dmg.
+;
 ; Forces magic attacks to take defending targets into consideration
 ; Changes the back row defense boost from 50% damage reduction to 25%
-
-org $C20CFF
-  LDA $3AA1,Y     ; target special state flags
-  BIT #$02        ; "Defending"
-  BEQ .row        ; branch if not ^
-  LSR $F1         ; dmg / 2
-  ROR $F0         ; dmg / 4
-.row
-  PLP             ; restore flags
-  BCC IgnoreDef   ; branch if not "Physical"
-  BIT #$20        ; "Back Row"
-  BEQ IgnoreDef   ; branch if not ^
-  JSR Row_Dmg     ; else lower damage by 25%
-  NOP
-
-; ------------------------------------------------------------------------
+;
 ; Change how morphed character damage is modified
+; Halve sap damage on party
 
-IgnoreDef:
-  LDA $3EF9,Y      ; target status byte 4
-  BIT #$08         ; "Morphed"
-  BEQ .done        ; branch if not ^
-  LDA $3B40,Y      ; target stamina
-  JSR MorphDmg     ; modify damage
-.done
+org $C20C9D
+ExitTop:
+  RTS
+TargetDamageMod:
+  REP #$20         ; 16-bit A
+  LDA $11B0        ; maximum dmg
+  STA $F0          ; set target dmg
+  SEP #$20         ; 8-bit A,X/Y
+  LDA $3414        ; "Modify Damage"
+  BPL ExitTop      ; branch if no ^
+  JSR Variance     ; apply damage variance
 
-; ------------------------------------------------------------------------
+.golem_dog
+  LDA $3A82        ; golem bits
+  AND $3A83        ; dog bits
+  ASL              ; carry: "No golem/dog"
+  LDA $11A2        ; attack flags
+  BIT #$20         ; check "Piercing"
+  BCS .player      ; branch if not Golem/Dog
+  BNE ExitTop      ; exit if Golem/Dog and Piercing
+  LDA #$C0         ; else, use 192 defense
+  JMP InvertMulti  ; exit after defense reduction
 
-org $C20D24 : JSR Sap_Chk ; Add hook to halve sap damage on party
-org $C20D34 : DmgModInc:  ; [label] finish with damage increment
+.player
+  BNE .morph       ; branch if piercing
+  LSR              ; carry: "physical" ($11A2 still in A)
+  LDA $3BB9,Y      ; magic defense
+  BCC .defense     ; branch if "magical"
+
+.backrow
+  LDA $3AA1,Y      ; target flags
+  BIT #$20         ; "Backrow" flag
+  BEQ .physical    ; branch if no ^
+  LDA #$C0         ; 192 (75%)
+  JSR MultiplyDmg  ; multiply 75% * Damage, then add 1
+.physical
+  LDA $3BB8,Y      ; else load physical defense
+
+.defense
+  JSR InvertMulti  ; (255-defense) * dmg / 256 + 1
+
+.shields
+  LDA $3EF8,Y      ; status byte 3
+  BCS .safe        ; branch if "physical"
+  ASL              ; shift byte 3 (safe->shell)
+.safe
+  ASL              ; shift safe/shell into N
+  BPL .defending   ; branch if not safe/shell
+  LDA #$AA         ; else, 66% multiplier
+  JSR MultiplyDmg  ; multiply 66% * Damage, then add 1
+
+.defending
+  LDA $3AA1,Y      ; target flags
+  BIT #$02         ; "Defending"
+  BEQ .morph       ; branch if not ^
+  LSR $F1          ; halve dmg
+  ROR $F0          ; halve dmg
+
+.morph
+  JSR HandleMorph  ; get multiplier based on stamina
+
+.periodic
+  PHP              ; save 8-bit A on stack
+  REP #$20         ; 16-bit A
+  LDA $B2          ; attack bytes (looking at $B3)
+  BPL .exit        ; exit if "Ignore Vanish" (sap/regen/poison)
+
+.self-dmg
+  LDA $11A4        ; attack flags
+  LSR              ; carry: "Healing"
+  LDA $F0          ; damage so far
+  BCS .increment   ; branch if "Healing"
+  CPY #$08         ; target is monster
+  BCS .increment   ; branch if ^
+  CPX #$08         ; attacker is monster
+  BCS .increment   ; branch if ^
+  LSR #2           ; dmg / 4
+
+.increment
+  JSR $370B        ; only exist via special effects at this point
+  STA $F0          ; final modified damage
+
+.exit
+  PLP              ; restore 8-bit A
+  RTS
+warnpc $C20D39+1
+
+; TODO: Remove this unused code fragment vvvvvv
+org $C20D1A
+  BEQ $06
+  LDA $3B40,Y
+  JSR $A65A
+  db $C2,$20,$20,$EF,$0A
+; TODO: Remove this unused code fragment ^^^^^^
+
+org $C20D39
+InvertMulti:
+  EOR #$FF         ; invert and set multiplier before 0D3D below
+MultiplyDmg:
+  STA $E8          ; set multiplier before to 0D3D below
 
 ; ########################################################################
 ; Atlas Armet / Earring Boosts
@@ -1284,6 +1361,11 @@ org $C22291
                       ; ^ this ensures Interceptor animation is used
 org $C22293
 .golem
+
+org $C22296
+  JSR GolemRestrict   ; skip Golem if no battle power, and remove
+                      ; element from attack if Golem blocks
+
 org $C2229F
   BRA .dodge2         ; dodge, but skip M-Tel/Vanish/Zombie check
                       ; ^ this ensures Golem animation/effect is used
@@ -3588,18 +3670,8 @@ org $C250F2 : BRA Scan
 ; Some portion of previous routine is now overwritten as freespace
 
 org $C250F4
-Row_Dmg:
-  PHP             ; store flags
-  REP #$20        ; 16-bit A
-  LDA $F0         ; dmg
-  LSR             ; dmg / 2
-  LSR             ; dmg / 4
-  EOR #$FFFF      ; -(dmg / 4) - 1
-  SEC             ; set carry (to add 1)
-  ADC $F0         ; dmg - dmg/4
-  STA $F0         ; update dmg
-  PLP             ; restore flags
-  RTS
+padbyte $FF          ; pad erased damage reduction helper routine
+pad $C25105          ; TODO: Can remove this padding and shift code up
 
 org $C25105
 GetTargeting:
@@ -5297,25 +5369,26 @@ org $C2806F : db $22       ; this is converted to two separate RNG calls (7E/6F8
 ; Freespace
 
 ; -------------------------------------------------------------------------
-; Morph damage taken helper
+; Morph damage taken helper. Updated by Golem Restrictions patch
 
 org $C2A65A
-MorphDmg:
-  CMP #$60          ; target stamina > 96
-  BCC .store        ; branch if not ^
-  LDA #$60          ; else use max 96
-.store
-  STA $E8           ; store stamina as multiplier
-  REP #$20          ; 16-bit A
-  ASL $F0           ; dmg * 2
-  LDA $F0           ; doubled damage
-  JSR $47B7         ; dmg * 2 * stamina / 256
-  PHA               ; store result ^
-  LDA $F0           ; dmg * 2
-  SBC $01,S         ; dmg * 2 - result from above.
-  STA $F0           ; update damage
-  PLA               ; clean up stack
+HandleMorph:
+  LDA $3EF9,Y      ; status byte 4
+  BIT #$08         ; "Morphed"
+  BEQ .exit        ; branch if not ^
+  LDA $3B40,Y      ; Stamina
+  CMP #$60         ; > 96
+  BCC .valid       ; branch if not ^
+  LDA #$60         ; else, use max 96
+.valid
+  ASL $F0          ; double damage
+  ROL $F1          ; double damage
+  JSR InvertMulti  ; invert stamina and multiply
+.exit
   RTS
+warnpc $C2A674+1
+
+  PLA : RTS         ; TODO: Remove this unused code fragment
 
 ; #########################################################################
 ; Esper Level and Experience Messages
@@ -5477,70 +5550,71 @@ GauRageStatuses2: ; TODO: Remove -- no longer used
 ; stamina in calculating the variance range
 ;
 ; Damage = (Damage * [(225 - 3/4 VigStam) .. (255 - VigStam)] / 225) + 1
+;
+; Routine shifted and reorganized by Golem Restrictions patch
 
 org $C2A770
-NewVariance:
-  LDA $11A4      ; attack flags-3
-  LSR            ; C: "Healing"
-  BCS .old_var   ; branch if ^
-  CPY #$08       ; target is monster
-  BCS .old_var   ; branch if ^
-  PHP            ; store flags
-  TDC            ; zero A/B
-  LDA $11A2      ; attack flags-1
-  LSR            ; C: "Physical"
-  LDA $3B40,Y    ; target's Stamina
-  BCC .variance  ; use Stamina if not "Physical"
-  LDA $3B2C,Y    ; else, load target's Vigor (x2)
-  LSR            ; / 2 to get real Vigor value
-.variance
-  PHA            ; store stat (stam or vig/2) on stack
-  LSR #2         ; stat / 4
-  STA $E8        ; store in scratch ^
-  LDA #$1E       ; A = 30
-  SEC            ; set carry
-  SBC $E8        ; A = 30 - stat/4 (this is the variance range)
-                 ; (hi = 255-stat, lo=225-.75stat. hi - lo = 30 - .25stat)
-  BCC .store     ; if negative, immediately store this value as E8
-  INC
-  JSR $4B65      ; A = random(0...max_variance)
+Variance:
+  LDA $11A4        ; attack flags
+  LSR              ; carry: "Healing"
+  BCS .vanilla     ; use vanilla variance for healing
+  CPY #$08         ; monster range
+  BCC .fancy       ; use vanilla variance for monsters
+.vanilla
+  JSR $4B5A        ; random(255)
+  ORA #$E0         ; random(224-255)
+  JMP MultiplyDmg  ; multiply E8 * Damage, then add 1
+.fancy
+  PHP              ; store flags
+  LDA $11A2        ; attack flags
+  LSR              ; carry: physical
+  LDA $3B40,Y      ; load stamina
+  BCC .magic       ; branch if "magical" damage
+  LDA $3B2C,Y      ; load vigor
+  LSR              ; divide by 2 (vigor is stored doubled)
+.magic
+  PHA              ; store stat (stam or vig/2) on stack
+  LSR              ; / 2
+  LSR              ; / 4
+  STA $E8          ; E8 = stat/4
+  LDA #$1E         ; A = 30
+  SEC : SBC $E8    ; A = 30 - stat/4 (this is the variance range)
+  BCC .store       ; if negative, immediately store this value as E8
+  INC              ; exclusive range
+  JSR $4B65        ; rand(0...max_variance)
 .store
-  STA $E8        ; E8 = random variance OR negative diff between hi and lo
-  PLA            ; A = stat
-  EOR #$FF       ; A = 255 - stat
-  SEC
-  SBC $E8        ; A = (255 - stat) - random_variance
-  STA $E8        ; if E8 is negative, A will equal the low bound
+  STA $E8          ; E8 = random variance OR negative diff between hi and lo
+  PLA              ; restore stat
+  EOR #$FF         ; 255 - stat
+  SEC : SBC $E8    ; A = (255 - stat) - random_variance
+  STA $E8          ; if E8 is negative, A will equal the low bound           
 
-padbyte $EA      ; TODO: Remove this padding
-pad $C2A7A9
-
-.multiply 
-  REP #$20       ; 16-bit A
-  LDA $F0        ; maximum damage
-  JSR $47B7      ; max damage * random variance
-  LDA $E8        ; lower 16-bits of product
-  PHX            ; store X
-  LDX #$E1       ; divisor (225)
-  JSR $4792      ; divide lower 16-bits by ^
-  STA $F0        ; save tentative final dmg
-  CLC            ; clear carry
-  LDX $EA        ; check for overflow from multiplication
-  BEQ .exit      ; exit if none ^
+  REP #$20         ; 16-bit A
+  LDA $F0          ; damage
+  JSR $47B7        ; E8 * damage
+  LDA $E8          ; product low bytes
+  PHX              ; store X
+  LDX #$E1         ; 225
+  JSR $4792        ; E8 * damage / 225
+  STA $F0          ; update damage
+  CLC              ; clear carry
+  LDX $EA          ; product high byte
+  BEQ .finish      ; branch if no overflow
 .loop
-  LDA #$0123     ; overflow increment value: 291 (65536 / 225)
-  ADC $F0        ; add to damage
-  STA $F0        ; update damage
-  DEX            ; decrement overflow iterator
-  BNE .loop      ; loop till all overflow handled
-.exit
-  INC $F0        ; damage + 1
-  PLX            ; restore X
-  PLP            ; restore flags
-  JMP AfterVar   ; jump back to damage mod routine
-.old_var
-  JSR $4B5A      ; random(256)
-  JMP OldVariance; jump back to damage mod routine
+  LDA #$0123       ; 0x10000 / 225 = 0x123
+  ADC $F0          ; add to existing damage
+  STA $F0          ; update damage
+  DEX              ; decrement overflow
+  BNE .loop        ; loop till all overflow gone
+.finish
+  INC $F0          ; dmg + 1
+  PLX              ; restore X
+  PLP              ; restore flags
+  RTS
+warnpc $C2A7D6+1
+
+; TODO: Remove this unused code fragment ASAP
+  db $0C : JSR $4B5A : JMP $0CB3 ; $BA
 
 ; -------------------------------------------------------------------------
 org $C2A7DD
