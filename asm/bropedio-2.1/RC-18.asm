@@ -4,7 +4,6 @@ hirom
 ; Brave New World 2.1 - Beta
 ; July 5, 2021
 
-incsrc runic-stance.asm      ; uses space from scan-restored
 incsrc weapon-swap-stop.asm
 incsrc rigged-colosseum.asm
 incsrc statuscrap.asm

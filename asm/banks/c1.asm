@@ -451,6 +451,17 @@ StatusTextDisp: ; @returns: bit 0 = Regen, Bit 1 = Rerise, Bit 2 = Sap
   PLA           ; restore original B
   XBA           ; store in B ^
   RTS
+
+; ------------------------------------------------------------------------
+; Runic Stance helper
+
+RunicAbsorb:
+  JSR $BAB7      ; regular runic absorb animation
+  JSR $BCA6      ; get first target index
+  CMP #$04       ; is absorber a monster?
+  JMP $AB92      ; reset sprite to default if not
+warnpc $C145B3+1
+
 padbyte $FF : pad $C145B3
 
 ; #######################################################################
@@ -672,11 +683,22 @@ org $C1A6E6 : NOP : JSL SetMPDmgFlagMass
 org $C1ABA6 : CMP #$19 ; increase black magic range by 1
 
 ; ######################################################################
+; Reset attacking character sprite to default
+
+org $C1AB8E : JSL StanceCheck ; Skip reset for Runic or Defend
+
+; ######################################################################
 ; Odin Animation
 ; Skip "Cleave" effect in Odin animation
 
 org $C1B0E4 : BRA No_Odin_Cleave
 org $C1B0EC : No_Odin_Cleave:
+
+; ######################################################################
+; Attack Animations Lookup Table
+
+org $C1B78B : dw RunicPrep
+org $C1B7BF : dw RunicAbsorb
 
 ; ######################################################################
 ; RNG
@@ -707,5 +729,14 @@ SwdTechMeter:
   ADC $36        ; adds known Bushid count (to speed up)
   STA $7B82      ; update meter position
   RTS
-  NOP            ; [unused space] TODO: Why?
+  NOP            ; [unused space] TODO: Remove
+  db $FF         ; [unused space] TODO: Remove
+
+; ----------------------------------------------------------------------
+; Runic Stance helper
+
+RunicPrep:
+  JSR $BAAA      ; regular runic prep animation 
+  JMP $914D      ; set sprite to "ready"
+warnpc $C20000+1
 

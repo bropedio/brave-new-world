@@ -740,23 +740,32 @@ CheckEach:
 warnpc $C4F26A+1
 
 ; ------------------------------------------------------------------------
-; TODO: Remove all code below through the warnpc, as it is unused
-; $C4F26A - $C4F2DC: Now free space
+; Helper for Runic Stance patch
 
 org $C4F26A
-  dw $F2C5         ; partial JSR code
-  PLA              ; restore status byte
-  BIT #$20         ; "Muddle"
-  PHA              ; store status byte
-  JSR TryScan      ; display status message if ^
-  PLA              ; restore status byte
-  BIT #$40         ; "Sap"
-  PHA              ; store status byte
-  JSR TryScan      ; display status message if ^
-  PLA              ; restore status byte
-  BIT #$80         ; "Sleep"
-  PHA              ; store status byte
-  JSR TryScan      ; display status message if ^
+StanceCheck:     ; 21 bytes
+  LDA ($78),Y    ; attacker index (vanilla code)
+  ASL            ; index * 2
+  TAY            ; index it
+  LDA $3E4C,Y    ; runic byte
+  LSR            ; shift $04 (runic) -> $02
+  ORA $3AA1,Y    ; defend byte
+  BIT #$02       ; is runic or defend set?
+  SEC            ; default to abort
+  BNE .abort     ; exit/abort if either set
+  TYA            ; attacker index * 2
+  LSR            ; restore index
+  CMP #$04       ; in character range (abort if carry set)
+.abort
+  RTL
+warnpc $C4F27F+1
+
+; ------------------------------------------------------------------------
+; TODO: Remove all code below through the warnpc, as it is unused
+; $C4F27F - $C4F2DC: Now free space
+
+org $C4F27F
+  dw $F2C8         ; partial JSR code
   PLA              ; restore status byte
   LDA $3EF8,x      ; status-3
   BIT #$02         ; "Regen"
