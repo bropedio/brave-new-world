@@ -424,7 +424,7 @@ MaybeNull:        ; 33 bytes
 SetKill:
   LDA $3AA1,Y     ; check immune to instant death bit
   BRA BitSet
-SetFrac:
+SetFrac:          ; TODO: This label is unused now
   LDA $3C80,Y     ; check fractional dmg immunity bit
 BitSet:
   BIT #$04        ; immune to instant death (or fractional)

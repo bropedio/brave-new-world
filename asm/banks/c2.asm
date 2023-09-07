@@ -2787,8 +2787,8 @@ pad $C23C6E
 
 ; #########################################################################
 ; Suplex Effect (now fractional immunity) [informative miss]
-
-org $C23C6E : JSL SetFrac : NOP ; test and set fractional immune miss
+; Clear old fractional routine
+padbyte $FF : org $C23C6E : pad $C23C75
 
 ; #########################################################################
 ; Air Anchor Routine (now freespace)
@@ -2887,6 +2887,7 @@ org $C23DEB : dw Cleave      ; Effect [?] - Cleave [?]
 org $C23E11 : dw NewLife     ; Effect $22 - Life (was Stone)
 org $C23E13 : dw NoCounter   ; Effect [?] - Instant Death
 org $C23E1D : dw $388C       ; no per-target mind blast hook (now inline)
+org $C23E2D : dw Fractional  ; Effect [?] - Fractional damage
 org $C23E43 : dw $388C       ; no per-target evil toot hook (now inline)
 org $C23E4B : dw $388C       ; no per-target stunner hook (now inline)
 org $C23E79 : dw Chainsaw2   ; Effect $56 (was Debilitator, now Chainsaw)
@@ -3821,8 +3822,20 @@ org $C250F2 : BRA $44 ; TODO: Remove this unused code fragment
 ; -------------------------------------------------------------------------
 ; Some portion of previous routine is now overwritten as freespace
 
+; -------------------------------------------------------------------------
+; Allow fractional damage to hurt bosses a little
+
 org $C250F4
-padbyte $FF          ; pad erased damage reduction helper routine
+Fractional:
+  LDA $3C80,Y     ; monster bits
+  BIT #$04        ; "boss" flag
+  BEQ .exit       ; exit if no boss flag
+  LDA #$80        ; "fractional dmg"
+  TRB $11A4       ; remove from spell flags
+.exit
+  RTS
+warnpc $C25105+1
+padbyte $FF
 pad $C25105          ; TODO: Can remove this padding and shift code up
 
 org $C25105
