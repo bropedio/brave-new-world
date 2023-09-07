@@ -11,6 +11,18 @@ hirom
 
 org $C20081 : JSR StatusFinish ; finish removing statuses from dead
 
+; -------------------------------------------------------------------------
+; Only conditionally clear "reaction script ran" based on X-Magic usage
+; This helps ensure only one counterattack can fire per X-Magic use
+
+org $C20084
+CounterFlags:
+  JSR MayReset     ; determine whether to clear 33FC-33FD
+  STA $33FE        ; clear bytes tracking "was attacked"
+  STA $33FF        ; clear bytes tracking "was attacked"
+warnpc $C2008F
+padbyte $EA
+pad $C2008E
 
 ; #########################################################################
 ; Conventional Turn Postprocessing ($C200F9)
@@ -363,15 +375,6 @@ CommandWaitTimes:
   db $10   ; Shock
   db $00   ; Possess
   db $00   ; MagiTek
-
-; ########################################################################
-; Initialize some things at battle start
-
-org $C20847
-  PHY            ; store Y
-  JSR XMagCntr   ; hook to persist X-Magic counter till second strike
-  PLY            ; restore Y
-  NOP            ; [padding]
 
 ; ########################################################################
 ; End of Each Turn Processing ($C2083F)
@@ -1067,11 +1070,6 @@ EvalKnight:
 org $C213A1 : JMP BossDeath
 
 ; #########################################################################
-; Character/Monster Takes One Turn
-
-org $C2140C : JSR XMagHelp ; hook to skip counterattacks if X-Magic pending
-
-; #########################################################################
 ; Add Entities to Battlefield ($C21471)
 ; Set pending statuses when entity enters battle
 
@@ -1268,27 +1266,74 @@ MPLowCounter:
 .exit
   RTS
 
-; -------------------------------------------------------------------------
-; Script $FC, command $07 (used to be MP Low Counter)
-; Now repurposed for extra "Hit at All" code path
+  JML $C3F598 : RTS ; TODO: This code can be removed, as it is unused
 
-MeleeParams:
-  JML MeleeParamsLong
-RTS_C2:
-  RTS
 warnpc $C21BD7+1
 
 ; -------------------------------------------------------------------------
-; Script $FC, command $05
+; Script $FC, command $01,$02,$03
+;
+; This patch rewrites Seibaby's counterattack work and refactors the handling
+; for FC 01 - FC 05 so that counterattacks cannot trigger counterattacks.
 
-org $C21C70 : doCounter: ;[label] FC command $05 (Counter if damaged)
+org $C21C3B
+Command01:
+  TDC
+  BRA Pivot
+Command02:
+  LDA #$01
+  BRA Pivot
+Command03:
+  LDA #$14
+Pivot:
+  JSL CounterCheck
+  BMI .fail
+  LDA $3D48,X      ; attack command/spell/item ID
+  CMP $3A2E        ; match first arg
+  BEQ Match        ; if ^, set target + carry
+  CMP $3A2F        ; match second arg
+  BEQ Match        ; if ^, set target + carry
+.fail
+  CLC
+  RTS
+
+Match:             ; [vanilla code]
+  REP #$20         ; 16-bit A
+  LDA $3018,Y      ; last attacker bit
+  STA $FC          ; save as target
+  SEC              ; indicate "true" conditional
+  RTS
+
+Command04:
+  LDA #$15         ; offset to attacker index data
+  JSL CounterCheck
+  BMI .exit
+  LDA $3D48,X      ; attack elements
+  BIT $3A2E        ; compare to arg1
+  BNE Match        ; if match, set target + carry
+.exit
+  RTS
+
+Command05:
+  TYX              ; target index
+  JSL TargetMelee  ; perform melee/mp checks
+  BEQ Match        ; if match, set counter target
+.exit
+  RTS
+
+warnpc $C21C7F+1
 
 ; -------------------------------------------------------------------------
-; Script $FC, command pointers
+; Script $FC, command pointers ($C21D55)
 
-org $C21D5F : dw MeleeParams  ; FC command $05 (hit at all)
-org $C21D61 : dw MPLowCounter ; FC command $06 (HP low counter)
-org $C21D63 : dw MPLowCounter ; FC command $07 (MP low counter)
+org $C21D57
+  dw Command01     ; command counter
+  dw Command02     ; spell counter
+  dw Command03     ; item counter
+  dw Command04     ; element counter
+  dw Command05     ; hit at all counter
+  dw MPLowCounter  ; FC command $06 (HP low counter)
+  dw MPLowCounter  ; FC command $07 (MP low counter)
 
 ; -------------------------------------------------------------------------
 ; Figure out what type of command a spell is
@@ -2255,8 +2300,11 @@ org $C2357E
 ; #########################################################################
 ; Initialize Variables for Counterattack Purposes
 ; New var $327D contains flags for physical, respects row, and MP dmg
+; Overwrite spell/command/item-specific counter data when null
 
-org $C235E9 : JSL InitAttackVars ; hook to track more counterattack vars
+org $C235E9 : JSL AttkBackup        ; hook to track more counterattack vars
+org $C235F8 : STA $3D49,Y : BEQ $01 ; save $FF (empty) for data and entity
+org $C23606 : STA $3D5C,Y : BEQ $01 ; save $FF (empty) for data and entity
 
 ; #########################################################################
 ; Weapon "Addition" Magic
@@ -3602,18 +3650,86 @@ org $C24B6F : JSL Random
 
 ; #########################################################################
 ; Run Monster Script (C24BF4)
-
-; -------------------------------------------------------------------------
+;
 ; Real statuses now persist longer after death, so quasi aren't used
+;
+; There is handling to allow a second reactive script to be queued if a
+; target has died, but there is not handling to allow that reactive script
+; to fire under the same conditions. The solution is to allow the
+; "entity has died" override to occur before the "has reactive script
+; fired already" check. 
 
-org $C24C11 : LDA $3EE4,X ; load real status 1-2, instead of quasi
-org $C24C19 : LDA $3EF8,X ; load real status 3-4, instead of quasi
+org $C24BFD
+DeathCounterFix:
+  TRB $3A56        ; clear "entity died since last 1F"
+  BNE .has_died    ; allow script if has died
+  TRB $33FC        ; clear "no 1F this batch"
+  BEQ .skip_it     ; bypass script if already run
+
+org $C24C11
+  LDA $3EE4,X      ; load real status 1-2, instead of quasi
+org $C24C19
+  LDA $3EF8,X      ; load real status 3-4, instead of quasi
+
+org $C24C28
+.has_died
+  TRB $33FC        ; clear "no 1F this batch" if died override
+org $C24C52
+.skip_it
+
 
 ; #########################################################################
 ; Prepare Counterattacks (C24C5B)
+;
+; Rewritten to ensure that forced death-counter scripts are run in
+; "limited" mode.
+;
+; Assumes that B8/B9 is only used locally here, to determine
+; if was hit. This change bakes B1:01 into that flag.
 
 org $C24C5B
 PrepCounter:     ; set parent label for full routine
+
+org $C24C68
+  STZ $B8            ; zero targets for counterattack
+  STZ $B9            ; zero targets for counterattack
+  LDA $B1            ; check for "normal" attack
+  LSR                ; carry: "non-normal" attack
+  BCS .skip          ; branch if ^
+  LDA $32E0,X        ; "hit by attack"
+  BPL .skip          ; branch if not ^
+  ASL                ; get attacker index
+  STA $EE            ; save in scratch RAM
+  CPX $EE            ; target === attacker?
+  BEQ .skip          ; branch if ^
+  TAY                ; attacker index
+  REP #$20           ; 16-bit A
+  LDA $3018,Y        ; attacker unique bit
+  STA $B8            ; save target for counterattack
+  LDA $3018,X        ; current target bit
+  TRB $33FE          ; flag to use full reactive script
+.skip
+  REP #$20           ; 16-bit A
+  LDA $3018,X        ; current target bit
+  BIT $3A56          ; "died since last reactive script"
+  SEP #$20           ; 8-bit A
+  BNE .react         ; branch if "died", so force script
+  LDA $B8            ; else, check if was attacked by normal
+  ORA $B9            ; ^
+  BEQ .next          ; no counterattack if not ^
+  LDA $32CD,X        ; entry point to counterattack queue
+  BPL .retort        ; branch if already something queued
+.react
+  LDA $3269,X        ; top byte of reactive script pointer
+  BMI .retort        ; branch if null ^
+warnpc $C24CA8
+padbyte $EA
+pad $C24CA7
+org $C24CB1
+.retort
+org $C24CBE
+.next
+
 org $C24CC2 : .no_counter
 org $C24CDD : BNE .counter ; skip blackbelt check for "damaged this turn"
 org $C24CE3 : BCC .counter ; skip blackbelt check for "damaged this turn"
@@ -5270,18 +5386,19 @@ BlindHelp:
   RTS
 
 ; -------------------------------------------------------------------------
-; X-Magic Counter Helpers
+; X-Magic Counter Helper (replaced to fix semi-broken original patch)
 
 org $C26744
-XMagHelp:
-  LDA $04,S         ; attacker index
-  TAX               ; index it
-  LDA $32CC,X       ; entrypoint to linked list queue
-  INC               ; null check (always null unless X-Magic)
-  BNE XMagCntr_exit ; branch if not null ^ [TODO: use local RTS]
-  JMP PrepCounter   ; else, prep counterattacks
+MayReset:
+  LDA #$FF         ; "null"
+  LDX $B0          ; loop flags
+  BMI .exit        ; exit if in middle of X-Magic
+  STA $33FC        ; clear bytes tracking "reaction script ran"
+  STA $33FD        ; clear bytes tracking "reaction script ran"
+.exit
   RTS
 
+; TODO: Remove this routine, as it is unused
 XMagCntr:
   LDA $04,S         ; attacker index
   TAY               ; index it

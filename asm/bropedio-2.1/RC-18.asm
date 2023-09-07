@@ -4,7 +4,6 @@ hirom
 ; Brave New World 2.1 - Beta
 ; July 5, 2021
 
-incsrc double-counter.asm
 incsrc boss-fractional-weak.asm
 incsrc wait-gauge.asm
 incsrc pincer-easy.asm

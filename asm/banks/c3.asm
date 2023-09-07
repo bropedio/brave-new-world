@@ -3081,48 +3081,50 @@ FrameCounter:
 ; Helpers for new Counterattack variable triggers
     
 org $C3F577
-InitAttackVars:
-  TXA                ; [displaced]
-  STA $3290,Y        ; [displaced]
-  LDA $B3            ; If Bit 5 is set it ignores attacker row
-  EOR #$FF           ; Invert it so bit 5 is set if melee
-  LSR                ; Shift it to bit 4
-  ORA $11A7          ; Merge with bit 4 of $11A7 ("respects row")
-  AND #$10           ; Isolate bit 4 (1 = respects row)
-  PHA        
-  LDA $11A2          ; Bit 0 = physical damage if set
-  LSR                ; Carry = 1 if physical damage
-  PLA        
-  ROL                ; Bit 1 = physical, Bit 5 = melee
-  ASL                ; Shift again
-  PHA        
-  LDA $11A3     
-  ROL                ; Carry = 1 if affects MP
-  PLA        
-  ROR                ; bit 1: physical, bit 5: melee, bit 7: affects MP    
-  STA $327D,Y        ; Save attack properties to unused var $327D,index
+AttkBackup:
+  TXA              ; attack index
+  STA $3290,Y      ; save target's last attacker
+  LDA $11A3        ; attack flags
+  ROL #2           ; $01: mp damage
+  PHA              ; store on stack 
+  LDA $B3          ; attack flags
+  EOR #$FF         ; invert them
+  LSR              ; shift $20 to $10
+  ORA $11A7        ; get combined "respect row" flag ($10)
+  LSR #4           ; shift it into $01
+  AND $11A2        ; combine with "physical" flag ($01)
+  LSR              ; carry: "melee attack"
+  PLA              ; restore flags
+  ROL #2           ; shift "mp dmg" to $04, "melee" to $02
+  PHA              ; store on stack again 
+  LDA $B1          ; attack flags
+  LSR              ; shift "special turn" into carry
+  PLA              ; restore row flags
+  ROR              ; shift "special" to $80, "mp dmg" to $02, "melee" to $01
+  AND #$83         ; only keep these flags
+  STA $327D,Y      ; store result
+  RTL
+
+TargetMelee:
+  LDY $327C,X      ; last attacker
+  BMI .exit        ; exit w/o match if "null" (no last attacker)
+  LDA $327D,X      ; last attack data
+  BMI .exit        ; exit w/o match for "double-counters"
+  AND $3A2F        ; match with op arg2 (condition bits)
+  CMP $3A2F        ; return with Z flag if are all conditions are met
 .exit
   RTL
 
-MeleeParamsLong:
-  LDA $3A2F          ; Script command byte 4
-  LSR                ; Check if it's 1 (melee counter)
-  BCS .melee        
-  LSR                ; Check if it's 2 (MP damage counter)
-  BCC .omni          ; If not set, it's a normal counter
-  LDA $327D,Y        
-  CMP #$80           ; Check if attack affects MP
-  BNE .exit          ; Exit if not
-  BRA .omni          ; Counter if attack affects MP      
-.melee
-  LDA $327D,Y        ; Attack properties
-  CMP #$21           ; Check respect row, physical
-  BNE .exit          ; Exit if not both are set
-.omni
-  JML doCounter
+CounterCheck:
+  STY $E8          ; save target index
+  ADC $E8          ; add with A offset
+  TAX              ; save index to relevant data
+  LDA $327D,Y      ; last attack flags
+  BMI .exit        ; branch if was "counterattack"
+  LDY $3290,X      ; relevant attacker index
 .exit
-  CLC
-  JML RTS_C2
+  RTL
+warnpc $C3F5C0+1
 
 ; -------------------------------------------------------------------------
 ; Helpers for Randomize Final Party patch
