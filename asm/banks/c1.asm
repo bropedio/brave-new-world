@@ -411,6 +411,22 @@ org $C18DFC
   NOP #5         ; no status update when equipment first selected
 
 ; ########################################################################
+; Equip Swap Code that never runs ($C18EFE used as freespace)
+
+; ------------------------------------------------------------------------
+; Helpers to prevent pause buffering during Setzers slot machine selection
+
+org $C18EFE
+CloseSlotsHelp:
+  STA $7BC4     ; vanilla code (moved)
+  STZ $EC0F     ; enable pausing (after slot machine)
+  RTS
+OpenSlotsHelp:
+  INC $EC0F     ; disable pausing (during slot machine)
+  JMP $5A4A     ; vanilla code (moved)
+warnpc $C18F0B+1
+
+; ########################################################################
 ; Damage number color palette routine
 ;
 ; Intercept to check for new MP dmg flag at bit6, part of Imzogelmo's 
@@ -472,6 +488,17 @@ org $C14B87         ; code draws valid swaps in yellow
   LDA $890E         ; still-equipped item's flags
   JSR DrawDual      ; set carry if not able to dual wield
   BCS $0F           ; branch if no dual wield
+
+; #######################################################################
+; Slot Machine "Menu"
+
+; -----------------------------------------------------------------------
+; When Opening Slots, Disable Pausing
+org $C15618 : JMP OpenSlotsHelp
+
+; -----------------------------------------------------------------------
+; When Closing Slots, Re-enable Pausing
+org $C156B1 : JSR CloseSlotsHelp
 
 ; #######################################################################
 ; Spell Name Message Display
