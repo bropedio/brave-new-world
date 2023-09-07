@@ -730,6 +730,23 @@ ProcFix2:              ; 14 bytes
   RTL
 
 ; -------------------------------------------------------------------------
+; Helper for Defending boost to Tank+Spank
+;
+; Apply on top of Tank+Spank patch to double chance
+; of covering healthy allies when in "defend" mode.
+
+DefendBetter:          ; [13 bytes]
+  SEP #$20             ; 8-bit A
+  LDA $3AA1,X          ; knight's special flags
+  LSR #2               ; shift "defending" flag to carry
+  LDA #$C0             ; 192 (cover threshold / 255)
+  BCC .done            ; branch if not defending
+  LSR                  ; 96 (lower cover threshold / 255)
+.done
+  RTL
+warnpc $C0DA17+1
+
+; -------------------------------------------------------------------------
 
 org $C0DE5E
 SetMPDmgFlag:

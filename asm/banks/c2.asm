@@ -1021,8 +1021,7 @@ EvalKnight:
   LDA $3EE5,X         ; guard status-2
   LSR #2              ; "Near Fatal"
   BCS .exit           ; exit if guard ^
-  SEP #$20            ; 8-bit A
-  LDA #$C0            ; 192
+  JSL DefendBetter    ; set 8-bit A, get cover threshold
   JSR $4B65           ; random(0..191)
   CMP $3B40,X         ; greater than guard stamina (max 128)
   REP #$20            ; 16-bit A
