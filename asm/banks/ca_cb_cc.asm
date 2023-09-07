@@ -1218,10 +1218,13 @@ org $CC19E8 : db $C0,$2F,$02,$EB,$51,$01
 ; ------------------------------------------------------------------------
 ; Changes the statue of Odin to drop the cracked stone rare item
 ; The queen's statue now turns the stone into the Odin magicite
+; The stairwell is always visible
 
+org $CC1A06 : dw $FDFD : dw $FDFD : dw $FDFD ; always reveal stairs on map load
 org $CC1ED1 : db $D2,$E0 ; Gain stone: Sets event bit $1E80($1E0) [$1EBC, bit 0]
 org $CC1F81 : db $D3,$E0 ; Lose stone: Clears event bit $1E80($1E0) [$1EBC, bit 0]
 org $CC1F85 : db $86,$41 ; Add Odin to party esper list
+org $CC1F8B : db $FE     ; Remove event when examining hidden tile in castle
 
 ; ------------------------------------------------------------------------
 ; Re-write the dragon counting routine to add a fade to each result
