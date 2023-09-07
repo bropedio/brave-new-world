@@ -1079,6 +1079,13 @@ org $C2140C : JSR XMagHelp ; hook to skip counterattacks if X-Magic pending
 org $C21492 : JSR EnterBattleState
 
 ; #########################################################################
+; Steal Command
+; Modified to be affected by "Blind" status
+
+org $C21592
+  JSR CoinHelp ; Redirect Steal to helper used by GP Rain
+
+; #########################################################################
 ; Fight (command)
 
 org $C215D1 : NOP #2   ; Enable desperation attacks at any time (nATB)
