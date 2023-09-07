@@ -285,9 +285,9 @@ org $C33BA7 : LDY #OffTxt2
 ; Old "Battle Speed" drawing routine [now freespace]
 org $C33BB7
   RTS           ; automatically return from battle speed jump
-BNWText:   dw $78D5 : db "Brave New World 2.0.0",$00
-                      db "b18 ",$00 ; TODO: Remove this text fragment
-BattleTxt: dw $3A4F : db $81,"attle","$00
+BNWText:   dw $78D1 : db "  Brave New World 2.1.0",$00
+                      db "8 ",$00 ; TODO: Remove this text fragment
+BattleTxt: dw $3A4F : db "Battle","$00
 warnpc $C33BDE+1
 padbyte $FF
 pad $C33BDE
