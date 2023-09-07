@@ -545,7 +545,7 @@ org $C20B8B
 AllTargetDmgMod:
   JMP .exit        ; elemental routine start - exit if zero battle power
 org $C20B9D
-  LDA $3EE4,Y      ; status-1
+  JSR PetrifyHelp  ; get current/future petrify status
   ASL              ; N: "Petrified"
   BMI .null        ; branch to null dmg if ^
 org $C20BB9
@@ -3776,9 +3776,25 @@ TargetDead:       ; When we get here, A = 11A2 & #80
   TSB $BA         ; finish setting BA bits
   PLP             ; restore C flag
   RTS
+
+; -------------------------------------------------------------------------
+; Helper for Petrify Heal patch
+;
+; Hitting a petrified target with the Remedy spell
+; should both remove petrify status, and do healing,
+; but a hardcoded petrify check automatically nulls
+; all healing and damage. Fix so that damage/healing
+; can be done if the petrify status will be lifted
+; by the attack.
+
+PetrifyHelp:
+  LDA $3DFC,Y        ; status-to-clear 1
+  EOR #$FF           ; status-to-not-clear 1
+  AND $3EE4,Y        ; current-status-keep 1
+  RTS
+warnpc $C25161+1
 padbyte $FF
 pad $C25161
-warnpc $C25161+1
 
 ; #########################################################################
 ; Probabilities for Umaro and Side/Pincer/Back/Normal attacks
