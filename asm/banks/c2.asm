@@ -1959,6 +1959,17 @@ MuddleBrush:
 .nope
   RTS
 
+; -------------------------------------------------------------------------
+; Helper for byte mod long access
+
+org $C22A33
+LongByteMod:
+  JSR $5217      ; X: byte index, A: bitmask for bit in byte
+  RTL
+warnpc $C22A37+1
+
+; -------------------------------------------------------------------------
+
 padbyte $FF
 pad $C22A37
 
@@ -6354,13 +6365,4 @@ GroundDmg:
   STA $B8         ; set filtered targets
   TYX             ; attacker index
   JMP $57C2       ; update targets [?]
-
-; -------------------------------------------------------------------------
-
-org $C2FCCD
-LongByteMod:
-  JSR $5217      ; X: byte index, A: bitmask for bit in byte
-  RTL
-warnpc $C2FCD1+1
-
 
