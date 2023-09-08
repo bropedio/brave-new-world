@@ -426,6 +426,66 @@ OpenSlotsHelp:
   JMP $5A4A     ; vanilla code (moved)
 warnpc $C18F0B+1
 
+; ------------------------------------------------------------------------
+; Wait Gauge helpers
+
+org $C18F85
+WaitRemaining:
+  LDA $1D4E        ; config options
+  ASL              ; carry: "Display Wait Times"
+  LDA $3219,X      ; ATB gauge
+  PHA              ; store on stack for later
+  BCC .atb         ; always display ATB when option turned off
+  BNE .atb         ; display ATB when filling
+  LDA $3205,X      ; more special flags
+  BPL .atb         ; never show wait during Palidor
+  LDA $3AA0,X      ; special state flags
+  BIT #$04         ; awaiting input
+  BNE .atb         ; display ATB when input pending
+  LDA $322C,X      ; total wait for command
+  INC              ; is it "null"
+  BNE .wait        ; branch if not ^
+  LDA $3AA1,X      ; special state flags
+  BIT #$01         ; "executing attack"
+  BNE .empty       ; show empty "wait" when ^
+.atb
+  LDA $01,S        ; ATB gauge
+  DEC
+  BRA .set         ; branch and exit
+.empty
+  LDA #$01         ; use smallest gauge (empty)
+  BRA .set         ; branch and exit
+.wait
+  SEC
+  SBC $3AB5,X      ; total wait - wait progress
+  CMP #$40         ; largest displayable wait
+  BCC .valid       ; branch if less than ^
+  LDA #$3F         ; else, enforce cap (affects Jump)
+.valid
+  ASL #2           ; x4 (make wait larger to see)
+.set
+  XBA              ; store gauge value
+  SEC              ; assume full ATB
+  PLA              ; ATB gauge
+  BEQ .shift       ; branch if full ATB
+  CLC              ; else, clear flag
+.shift
+  XBA              ; restore gauge value
+  ROR              ; shift "full ATB" flag into top bit
+  RTL
+GaugeValue:
+  CPX $00          ; fully empty gauge?
+  BNE .done
+  LDA $4E          ; get gauge color
+  CMP #$3D         ; red (stop status)
+  BEQ .done        ; use default (F1) value if ^
+  LDA #$F0         ; else, use fully empty F0
+  RTS
+.done
+  LDA $C168AC,X    ; gauge value
+  RTS
+warnpc $C19102+1
+
 ; ########################################################################
 ; Damage number color palette routine
 ;
@@ -482,6 +542,14 @@ warnpc $C145B3+1
 padbyte $FF : pad $C145B3
 
 ; #######################################################################
+; Get ATB/Morph/Condemned gauge data for active battle menu ($C14A97)
+;
+; Since the morph ram is used for the wait gauge now, we need to force
+; the code to never draw the morph gauge even if it appears to be on.
+
+org $C14AB7 : LDA #$00 ; Always disable morph gauge
+
+; #######################################################################
 ; Equipment Swap Palette Drawing
 
 org $C14B87         ; code draws valid swaps in yellow
@@ -519,32 +587,36 @@ org $C16031 : LDA $E6F567,X ; decrement starting offset by 1
 ; are changed so that the uncharged ones don't use colors 2 or 4, just
 ; the grey and transparency. Then the charged endcaps use colors 4
 ; (the brightest) and optionally color 2 like the vanilla endcaps did.
+;
+; Rewritten to support Wait Gauge
 
 org $C16854
-ATBEndCaps:
-  PHA
-  JSL LeftCap
-  JSR $66F3        ; Draw opening end of ATB gauge
-  LDA #$04
-  STA $1A
+DrawGauge:
+  JML HelpCaps
+FinGauge:
+  JSL NormDraw     ; draw it
+  LDA #$04         ; gauge iterator
+  STA $1A          ; save it
 .loop
-  LDA $C168AC,X    ; Get the ATB gauge character
-  JSR $66F3        ; Draw tile A
-  INX
-  DEC $1A          ; Decrement tiles to do
-  BNE .loop        ; Branch if we haven't done 4
-  PLA
-  JML RightCap
+  JSR GaugeValue   ; get gauge value
+  JSR $66F3        ; draw it
+  INX              ; next
+  DEC $1A          ; next
+  BNE .loop        ; loop for all 4 tiles
+  PLA              ; get end cap value
+  JSL NormDraw     ; draw it
+  RTS
   NOP
+warnpc $C16872+1
 
 ; -----------------------------------------------------------------------
 ; Add checks for statuses to ATB drawing routine
 
 org $C16872
-drawGauge:
+ATBDrawFix:
   LDA $2021        ; ATB gauge setting
   LSR              ; Gauge enabled?
-  BCC .draw_hp     ; Branch if disabled
+  BCC drawMaxHP    ; Branch if disabled
   LDA $4E          ; Text color
   PHA              ; Save it
   LDX $10          ; Offset to character data
@@ -558,17 +630,19 @@ drawGauge:
   STA $4E          ; Store text color
 .exit
   RTS
+LongDraw:
+  JSR $66F3
+  RTL
+warnpc $C16898+1
 
 ; Leftover from earlier version of patch TODO: Remove below
-  PLA              ; Restore ATB gauge value
-  JSR $6854        ; Draw the gauge
   PLA              ; Get saved text color
   STA $4E          ; Store text color
   RTS
 ; Leftover from earlier version of patch TODO: Remove above
 
 org $C16898
-.draw_hp
+drawMaxHP:
   LDA #$C0         ; Draw a "/" as HP divider
 
 ; #######################################################################

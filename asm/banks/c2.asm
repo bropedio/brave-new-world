@@ -1577,6 +1577,11 @@ warnpc $C223ED+1
 org $C2247A : STZ $3A8F : NOP #4
 
 ; ------------------------------------------------------------------------
+; Never turn off ATB gauges
+
+org $C22493 : BRA $03
+
+; ------------------------------------------------------------------------
 ; Delay setting death status at battle start
 
 org $C224A4 : JSR DoubleStatusSet
@@ -4485,6 +4490,11 @@ ReflectClear2:
 
 org $C25BDE : AND #$30 ; increased chances of running TODO: No effect
 org $C25BE0 : NOP #2   ; always queue running when ready
+
+; #########################################################################
+; Copy gauge data to animation buffers ($C25C54)
+
+org $C25C5A : JSL WaitRemaining ; compute wait and copy to unused morph ram
 
 ; #########################################################################
 ; Update Running Variables and State

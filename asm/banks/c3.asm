@@ -312,6 +312,7 @@ padbyte $FF
 pad $C33BF2
 
 org $C33C55 : LDY #WindowTxt
+org $C33C7E : LDY #OnWait
 org $C33CCB : LDY #ResetTxt
 org $C33CFF : LDY #WalkTxt
 
@@ -361,8 +362,8 @@ OnTxt2:        dw $39F5 : db "On",$00
 FastTxt:       dw $3A65 : db "Fast",$00
 SlowTxt:       dw $3A75 : db "Slow",$00
 ShortTxt:      dw $3B35 : db "Short",$00
-OnTxt:         dw $3BA5 : db "On",$00
-OffTxt:        dw $3BB5 : db "Off",$00
+OffWait:       dw $3BA5 : db "Off",$00        ; Off and On swapped for Wait Gauge
+OnWait:        dw $3BB5 : db "On",$00
 StereoTxt:     dw $3C25 : db "Stereo",$00
 MonoTxt:       dw $3C35 : db "Mono",$00
 MemoryTxt:     dw $3CB5 : db "Memory",$00
@@ -378,7 +379,7 @@ ConfigTxt5: dw ExpGainTxt
 ConfigTxt6: dw BattleTxt
 ConfigTxt7: dw MsgSpeedTxt
 ConfigTxt8: dw CmdSetTxt
-ConfigTxt9: dw GaugeTxt
+ConfigTxt9: dw GaugeLabel
 ConfigTxtA: dw SoundTxt
 ConfigTxtB: dw DashTxt
 
@@ -387,7 +388,7 @@ ExpGainTxt:     dw $39CF : db "Exp.Gain",$00
 BatSpeedTxt:    dw $3A0F : db "Bat.Speed",$00
 MsgSpeedTxt:    dw $3A8F : db "Msg.Speed",$00
 CmdSetTxt:      dw $3B0F : db "Cmd.Set",$00
-GaugeTxt:       dw $3B8F : db "Gauge",$00
+GaugeTxt:       dw $3B8F : db "Gauge",$00 ; TODO: No longer used
 SoundTxt:       dw $3C0F : db "Sound",$00
 DashTxt:        dw $3D0F : db "B Button",$00
 OffTxt2:        dw $39E5 : db "Off",$00,$00,$00,$00
@@ -1008,6 +1009,11 @@ warnpc $C3652D+1
 
 ; TODO: Remove this unused code ASAP
 org $C36511 : dw $7C4D : db "Exp to lv. up:",$00 ; status menu exp text
+
+; #########################################################################
+; Reset Game Data and Configurations ($C3709B)
+
+org $C370C5 : JSR GaugeOn ; default to Wait Gauge on
 
 ; #########################################################################
 ; Character Lineup
@@ -2886,32 +2892,33 @@ DrawEsperHook:
 
 ; ---------------------------------------------------------
 ; Handle in-battle gauge mode toggle via Select button
+; Modifed/Rewritten to convert Config option to "Show Delay"
 
 org $C3F444
 SwapGauge:
-  LDA $1D4E       ; Is gauge disabled in config?
-  BMI .off
-  LDA $0B
-  BIT #$20
-  BEQ .skip
-  STZ $021
-  BRA .exit
-.skip
-  LDA #$FF
-  STA $2021
+  STZ $2021         ; default to flag "off"
+  LDA $0B           ; semi-auto keys
+  ASL #2            ; shift "Select" to $80
+  BMI .exit         ; branch if ^
+  DEC $2021         ; else set flag "on" ($FF)
 .exit
   RTL
-.off
-  LDA $0B
-  BIT #$20
-  BNE .skip2
-  STZ $2021
-  BRA .exit2
+GaugeLabel:
+  dw $3B8F : db "Show Delay",$00
+GaugeOn:
+  LDA #$80          ; 'Show Delay' flag
+  STA $1D4E         ; init config option
+  RTS
+warnpc $C3F46A+1
+
+; TODO: Remove this unused code snippet
+  db $05
 .skip2
   LDA #$FF
   STA $2021
 .exit2
   RTL
+; TODO: Remove code snippet above
 
 ; ---------------------------------------------------------
 ; Support more colors for drawing esper names
