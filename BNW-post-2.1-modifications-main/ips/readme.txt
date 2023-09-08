@@ -31,6 +31,10 @@ Splash screen based on Iron Maiden album "Brave New World"
 -fast_anim (Sarah Shinespark)
 Replace Sap, Break, Holy, Flare, Dark and Rasp animation with faster alternatives.
 
+- fft_portraits / fft_skin
+the former changes portraits with superb fft-like portraits by Liji
+the latter is a fft theme that alters the window and font style and color to look like fft
+
 -graphical_signs (Gens)
 replace inn and pub text signs with pictures (the graphic is, by accident, very similar to pixel remaster)
 
