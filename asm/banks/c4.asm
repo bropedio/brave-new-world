@@ -602,7 +602,7 @@ DanceDescs:
   db "Elf Fire: 3/16, Raccoon: 1/16",$00
 .desert_aria
   db "Sand Storm: 7/16, Mirage: 5/16",$01
-  db "Sun Bath: 3/16, Meercat: 1/16",$00
+  db "Sun Bath: 3/16, Meerkat: 1/16",$00
 .love_sonata
   db "Bedevil: 7/16, Moonlight: 5/16",$01
   db "Elf Fire: 3/16, Tapir: 1/16",$00
