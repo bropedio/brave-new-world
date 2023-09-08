@@ -747,6 +747,62 @@ DefendBetter:          ; [13 bytes]
 warnpc $C0DA17+1
 
 ; -------------------------------------------------------------------------
+; Helpers for "Half Battle Power" patch
+
+org $C0DA20
+GetBushPwr:
+  REP #$20        ; 16-bit A [moved]
+  PHA             ; save power so far
+  SEP #$20        ; 8-bit A
+  LDA $3C58,X     ; weapon effects
+  BIT #$10        ; dual wielding
+  JSR GetBatPwr   ; get base battle power (preserves Z flag)
+  REP #$20        ; 16-bit A
+  BEQ .norm       ; branch if not dual wielding
+  ASL             ; else, double base battle power
+.norm
+  CLC : ADC $01,S ; add to power-so-far
+  STA $01,S : PLA ; clean up stack
+  LSR #2          ; [moved]
+  RTL
+
+GetPwrFork:
+  SEP #$20        ; [moved]
+  LDA $B5         ; command ID
+  CMP #$16        ; is command "Jump"
+  BEQ .get_pwr    ; branch if ^
+  LDA $3413       ; backup command (fight/mug)
+  BMI .exit       ; exit if not fight/mug or battle
+.get_pwr
+  JSR GetBatPwr   ; get base battle power
+  REP #$21        ; 16-bit A
+  ADC $04,S       ; add to stored power on stack
+  STA $04,S       ; overwrite with full power
+  SEP #$20        ; 8-bit A
+.exit
+  LDA $B5         ; [moved]
+  RTL
+
+org $C0DB01
+GetBatPwr:
+  PHP             ; store flags (including Z)
+  LDA $3ED8,X     ; character X's ID
+  STA $004202     ; prep multiplication
+  LDA #$16        ; size of character startup block
+  STA $004203     ; start mutliplication
+  NOP #3          ; wait for processor
+  REP #$30        ; 16-bit X/Y,A
+  LDA $004216     ; get product
+  PHX             ; save character index 
+  TAX             ; index to character data
+  TDC             ; zero A/B
+  SEP #$20        ; 8-bit A
+  LDA $ED7CAA,X   ; character battle power
+  PLX             ; restore character index
+  PLP             ; restore flags (including Z)
+  RTS
+
+; -------------------------------------------------------------------------
 
 org $C0DE5E
 SetMPDmgFlag:

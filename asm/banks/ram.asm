@@ -38,6 +38,13 @@
 ; $3A46:$10 ("Palidor was summoned this turn" flag) is now unused, due
 ; to the "Palidor Redux" patch
 
+; ------------------------------------------------------------------------
+; Unused RAM from the Equip Check Function
+; Used for battle power halving logic
+
+!baseb = $11CC ; apparently unused (in equip check func)
+!basec = $11CD ; needed for zero 16-bit read
+
 ; ========================================================================
 ; SRAM
 ; ========================================================================

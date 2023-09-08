@@ -1480,21 +1480,34 @@ General:
   XBA             ; now 16-bit A = sum of hands' battle powers
   PLP             ; restore gauntlet flag in carry
   REP #$20        ; 16-bit A
-  BCC .exit       ; branch if no Gauntlet
-  JSR OneAndAHalf ; else add 50% power
-.exit
-  PLB             ; restore old Data Bank ($00)
-  RTS
-
-OneAndAHalf:
+  PHP             ; save carry
+  CLC             ; clear carry
+  ADC !baseb      ; add base battle power
+  PLP             ; restore carry
+  BCC .genji      ; branch if not gauntlet
   PHA             ; store A
   LSR             ; A / 2
   CLC             ; clear carry
   ADC $01,S       ; add A
   STA $01,S       ; save result to stack
   PLA             ; A * 1.5
+.exit
+  PLB             ; restore old Data Bank ($00)
   RTS
-  RTS
+.genji
+  SEP #$10        ; 8-bit X/Y
+  INX : DEX       ; set flags for genji
+  REP #$10        ; 16-bit X/Y
+  BEQ .exit       ; exit if no genji
+  CLC             ; prep add
+  ADC !baseb      ; add another base battle power
+  PHA             ; store power on stack
+  LSR #2          ; power / 4
+  STA $E0         ; save quarter power to scratch
+  PLA             ; get full power again
+  SEC : SBC $E0   ; subtract 25%
+  BRA .exit       ; finish up
+warnpc $C393E5+1  ; NOTE Some freespace here, maybe
 
 ; #########################################################################
 ; Draw actor name in Equip or Relic menu

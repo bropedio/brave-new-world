@@ -768,7 +768,16 @@ warnpc $C20E61+1
 ; One portion of the equipment check function is included below, rewritten
 ; by Assassin to fix a bug that stopped the Genji Glove effect from reducing
 ; each weapon to 75% damage.
+;
+; Changes made to track base battle power in separate variable, to avoid
+; overflow
 
+; ------------------------------------------------------------------------
+; Save base battle power in new variable
+
+org $C20EA6 : STA !baseb : NOP #3 ; save base battle power
+
+; ------------------------------------------------------------------------
 org $C20EF3 : JSL EsperBonuses : NOP ; hook to apply esper equip bonuses
 
 org $C20F15
@@ -855,6 +864,11 @@ WeapChk:
 
 org $C2101C : BRA AfterImpEquip
 org $C21031 : AfterImpEquip:
+
+; -------------------------------------------------------------------------
+; Load weapon data
+
+org $C210E3 : BNE $01 : INC : STA $11AC,Y : NOP #4 ; overwrite battle power
 
 ; #########################################################################
 ; Called Every Frame (NMI, Sort of)
@@ -4908,8 +4922,7 @@ org $C263B6 : .simult ; address of simultaneous dmg messages
 org $C26469
 PlayerPhys:
   PHA             ; store A (BatPwr)
-  SEP #$20        ; 8-bit A
-  LDA $B5         ; command ID
+  JSL GetPwrFork  ; get real battle power, and command in A
   CMP #$07        ; "Bushido"
   BNE .two_hand   ; branch if not ^
 .bushido          ; else, include user's weapon(s) and skill modifier
@@ -4921,8 +4934,8 @@ PlayerPhys:
   XBA             ; hibyte of sum
   ADC #$00        ; add carry if overflow
   XBA             ; 16-bit BatPwr sum
-  REP #$20        ; 16-bit A
-  LSR #3          ; BatPwr / 8
+  JSL GetBushPwr  ; get modified bushido power
+  LSR             ; BatPwr / 8
   JSR $47B7       ; (BP / 8) * $E8 (for Bushido, is multiplier)
   LDA $E8         ; modified BatPwr
   STA $01,S       ; replace BatPwr on stack
