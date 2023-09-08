@@ -86,7 +86,7 @@ Bismark: db "Water damage - all foes",$00
 Stray: db "Stamina-based cure - party|Sets `Regen^",$00
 Palidor: db "Party attacks with `Jump^",$00
 Tritoch: db "Fire",$C0,"Ice",$C0,"Bolt damage - all foes",$00
-Odin: db "Non-elemental dmg - all foes|Stamina-based; ignores def.",$00
+Odin: db "Non-elemental dmg - all foes|Stamina-based, ignores def.",$00
 Loki: db $00
 Bahamut: db "Non-elemental dmg - all foes|Ignores def.",$00
 Crusader: db "Dark damage - all foes",$00
@@ -97,11 +97,11 @@ Zoneseek: db "Sets `Shell^ - party",$00
 Carbunkl: db "Sets `Rflect^ - party",$00
 Phantom: db "Sets `Vanish^ - party",$00
 Seraph: db "Sets `Rerise^ - party",$00
-Golem: db "Blocks physical attacks|(Durability = caster*s max HP)",$00
+Golem: db "Blocks physical attacks|(Durability ",$D2," caster's max HP)",$00
 Unicorn: db "Stamina-based cure - party|Lifts most bad statuses",$00
 Fenrir: db "Sets `Image^ - party",$00
 Starlet: db "Cures HP to max - party|Lifts all bad statuses",$00
-Phoenix: db "Revives fallen allies - party|(HP = max)",$00
+Phoenix: db "Revives fallen allies - party|(HP ",$D2," max)",$00
 
 ; #########################################################################
 ; Alphabetical Rage List (also in freespace)

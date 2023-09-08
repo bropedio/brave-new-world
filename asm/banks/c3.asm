@@ -639,8 +639,8 @@ org $C35AFF
   STA $2180         ; write ^
   STA $2180         ; write ^
   JSR Learn_Chk
+  JMP MPCost
 SPCost:
-  JSR $04E0         ; turn SP cost (A) into displayable digits
   LDA $F8           ; tens digit
   STA $2180         ; write ^
   LDA $F9           ; ones digit
@@ -2400,7 +2400,7 @@ ChkEsp:
 ; esper. We need to change this, as the name will be blank if the character simply
 ; can't equip it.
 Uneq:
-  BIT $FB           ; Is esper equippable?
+  LDA $FB           ; Is esper equippable?
   BPL +               
   LDA $1602,X       ; Character's name; displaced from calling function
   JMP $55B5         ; If esper is equippable, go back and display who has it equipped
@@ -3274,7 +3274,7 @@ Learn_Chk:
   STZ $AA
   LDA $E0           ; SP cost of the spell
   PHA               ; Preserve it, because C3/50A2 mutilates $E0
-  BIT $FB           ; Is esper equippable? (new)
+  LDA $FB           ; Is esper equippable? (new)
   BPL .cantEquip
   LDA $E1           ; If so, get spell ID
   JSR $50A2         ; See if it's known yet
@@ -3298,7 +3298,7 @@ Pressed_A:
 .spell
   LDA $99           ; load esper ID
   STA $4202         ; set multiplier
-  BIT $FB           ; Is esper equippable?
+  LDA $FB           ; Is esper equippable?
   BRA $04           ; Skip the next 4 bytes
   NOP #4            ; Dummy them out to be sure TODO: Remove these NOPs
   BPL .nope         ; branch if ^
@@ -3892,7 +3892,7 @@ FinishSP:
   STZ $2180         ; EOS
   JMP $7FD9         ; String done, now print it
 
-MPCost:             ; TODO: Apparently unused [??]
+MPCost:
   PHA               ; Store SP cost for retrieval
   PHX               ; Preserve X for isolation purposes
   LDA #$FF
