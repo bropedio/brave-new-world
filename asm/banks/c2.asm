@@ -4025,7 +4025,7 @@ DisableCommands:
   db $19             ; previous branch to .disable sublabel TODO: remove ASAP
 .skip_imp
   TXA                ; command ID *2
-  ROR                ; restore command ID (LSR would be fine)
+  LSR                ; restore command ID (was ROR, causing CPX above to bug out)
   LDX #$0009         ; initialize command loop
 .loop
   CMP ModifyCmds,X   ; current command matches special case
