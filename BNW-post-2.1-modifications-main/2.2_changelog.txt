@@ -125,6 +125,7 @@ Bugfixes/features temporarily discarded:
 - Gau taking steps when special are blocked by party members
 
 "Bro new world" features candidates for porting:
+- If "Fight" will yield a desperation attack, the text is yellow 
 - Status tick rate not affected by speed/haste/slow
 - Defend work against piercing (ignore defense) attacks
 - Dog Block and Golem preempt check for cover
@@ -135,7 +136,6 @@ Bugfixes/features temporarily discarded:
 	If lifting status, select target with the status
 	If damaging/healing, selects near fatal target
 - Enemy script changes shown in message boxes (eg. "Disabled)
-- Doom Gaze fix over Phoenix Cave, gating it
 - Fix sprite priority bug after covering
 
 BIB ideas:
