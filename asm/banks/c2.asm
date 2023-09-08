@@ -1615,6 +1615,7 @@ org $C2256D : JSR condenseSpellLists
 ; Per Bropedio Hack (later) for Pincers
 ; 1. Characters get reduced, but not zero, ATB
 ; 2. Enemies start with full ATB and get to act immediately
+; 3. CHANGE: Pincer behaves like "Front"
 
 org $C22575
 InitializeATBTimers:
@@ -1655,47 +1656,48 @@ InitializeATBTimers:
   LDA $3EE1      ; FF in every case, except for final 4-tier battle
   INC            ; check for null
   BNE .next      ; skip to next entity if not ^
-  LDX #$03       ; assume preemptive (=side type)
-  LDA $B0
-  ASL            ; this also clears Carry flag for later
-  BMI .type      ; keep X==3 if preemptive
-  LDX $201F      ; otherwise, load encounter type
+  LDA $B0        ; attack flags
+  ASL #2         ; carry: preemptive
+  LDA #$03       ; assume preemptive (=side type)
+  BCS .type      ; keep A==3 if preemptive
+  LDA $201F      ; otherwise, load encounter type
 .type
-  DEX            ; decrement type index
-  BMI .front     ; branch to front handling if type was 0
-  DEX            ; prepare for last type check
-  LDA $3018,Y    ; entity bit
-  BIT $3A40      ; acting as enemy?
+  LSR            ; carry: Back or Side attack
+  BCC .front     ; normal ATB if Front or Pincer
+  LSR            ; carry: Side attack (clear: Back)
+  LDA $3018,Y    ; character bit
+  BEQ .monster   ; branch if no character bit (is monster)
+  BIT $3A40      ; character acting as enemy?
   BNE .monster   ; branch if so
-  CPY #$08       ; monster range
-  BCS .monster   ; branch if in ^
 .human
-  DEX            ; decrement type index
-  BEQ .next      ; if type was 3, keep full ATB bar
+  BCS .next      ; if side attack, characters get full ATB
   LDA $F2
-  BRA .lessatb   ; pincer ATB = rand() + speed + genInc
+  BRA .lessatb   ; back attack ATB = rand() + speed + genInc
 .monster
-  DEX            ; decrement type index
-  BNE .next      ; type was 1 or 2 (side/pincer), keep full ATB
+  BCC .next      ; if back attack, monsters get full ATB
   LDA #$01
-  BRA .setatb    ; set top byte of ATB timer to 1
+  BRA .setatb    ; else, set top byte of ATB timer to 1 (no ATB)
 .front
-  LDA $3B19,Y    ; speed
-  ADC #$1E       ; +30
+  LDA $3B19,Y
+  ADC #$1E
   JSR $4B65      ; random(0..30+speed)
   ADC $F2        ; no chance to overflow here
 .lessatb
-  ADC $3B19,Y    ; add speed (again)
-  BCS .overflow  ; branch if overflow
-  ADC $3B19,Y    ; add speed (again)
-  BCS .overflow  ; branch if overflow
+  ADC $3B19,Y
+  BCS .overflow
+  ADC $3B19,Y
+  BCS .overflow
   ADC $F3        ; add general incrementor
-  BCC .setatb    ; branch if no overflow
+  BCC .setatb
 .overflow
   LDA #$FF       ; set to max ATB
 .setatb
   ORA #$01       ; ensure not zero
-  NOP            ; [padding] TODO: Remove
+
+warnpc $C225F7+1 ; TODO: Remove padding here
+padbyte $EA
+pad $C225F7
+
   STA $3219,Y    ; save top byte of ATB timer
 .next
   REP #$20       ; 16-bit A

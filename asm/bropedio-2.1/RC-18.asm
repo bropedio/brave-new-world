@@ -4,7 +4,6 @@ hirom
 ; Brave New World 2.1 - Beta
 ; July 5, 2021
 
-incsrc pincer-easy.asm
 incsrc item-overflow.asm
 incsrc rage-dance-description-fix.asm
 incsrc fig-esper-descriptions.asm
