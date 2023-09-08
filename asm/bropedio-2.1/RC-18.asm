@@ -4,7 +4,6 @@ hirom
 ; Brave New World 2.1 - Beta
 ; July 5, 2021
 
-incsrc fig-mp-criticals.asm
 incsrc angle-vector-fix.asm
 incsrc half-battle-pow.asm
 incsrc cover-visual-bugs.asm

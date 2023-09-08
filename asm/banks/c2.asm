@@ -3006,6 +3006,7 @@ Net_Target:
 
 ; -------------------------------------------------------------------------
 ; Shifted location for MP Crit Effect
+; Modified to ensure MP values in menu update after MP Crit is used
 
 MPCrit:
   LDA $B2          ; special attack flags
@@ -3026,8 +3027,12 @@ MPCrit:
   STA $3C08,Y      ; update current MP
   LDA #$0200       ; "Always Critical" ($B3)
   TRB $B2          ; set ^
+  LSR #2           ; Shift #$0200 -> #$0080
+  JMP $464C        ; Set bit on $3204,Y and return
 .exit
-  RTS
+  RTS              ; Target of the branches in preceding code
+  NOP              ; Just dummying out this lone byte (TODO: Remove)
+warnpc $C23F54+1
 
 ; #########################################################################
 ; Holy Wind Effect
@@ -3341,6 +3346,7 @@ warnpc $C242C6+1
 
 org $C242EB : dw SetIgnDef ; Defense Ignoring weapon
 org $C242EF : dw MPCrit    ; MP Criticals additional hook
+org $C242FF : dw $3E8A     ; Clear unused special effect $0F (MP crit)
 org $C24315 : dw BlowFish  ; Effect $1A - Blow Fish
 org $C2432B : dw GroundDmg ; Effect $25 - Quake
 org $C24333 : dw $3E8A     ; Clear once-per-strike N.Cross hook
