@@ -96,7 +96,6 @@ b20 (not yet released)
 - Press A on a Rage to show details: Elemental weaknesses/resistance, Statuses immunities/innate
 - Allow Esper menu to open "Curative Ally Targeting" submenu
 - Compress title screen graphic and/or import Snaphat compression algorythm
-- Scan anytime (HP/MP accessible via X, Status via Y, weaknesses via scan)
 - Phoenix glitch fix
 - Double Meteor fix in Kefka fight
 - Import Alphabetical Lore by Silent Enigma: useless for english version but useful for translations or future lores edits
@@ -118,25 +117,25 @@ Events
 	Sabin: At least we get to keep playing though, amirite?
 - Restore Shadow cutscene during Soul train fight
 
-Bugfixes/features temporarily discarded:
-- Bird bars (setzer position after bar-bar-bar palidor)
-- Banon riding chocobo pose 
-- Imperial camp dialogue fix (sabin aware of doma without speaking to Shadow)
-- Gau taking steps when special are blocked by party members
-
 "Bro new world" features candidates for porting:
 - If "Fight" will yield a desperation attack, the text is yellow 
+- Scan anytime (HP/MP accessible via X, Status via Y, weaknesses and AI hints via scan)
+- Enemy script changes shown in message boxes (eg. "Disabled)
+- No longer show damage on Interceptor
+- Fix sprite priority bug after covering
 - Status tick rate not affected by speed/haste/slow
 - Defend work against piercing (ignore defense) attacks
 - Dog Block and Golem preempt check for cover
-- No longer show damage on Interceptor
 - # Smart targeting
 	Random targeting behaves differently 50% of the time
 	If setting/toggling status, selects target without the status
 	If lifting status, select target with the status
 	If damaging/healing, selects near fatal target
-- Enemy script changes shown in message boxes (eg. "Disabled)
-- Fix sprite priority bug after covering
+
+Bugfixes/features temporarily discarded:
+- Bird bars (setzer position after bar-bar-bar palidor)
+- Banon riding chocobo pose 
+- Imperial camp dialogue fix (sabin aware of doma without speaking to Shadow)
 
 BIB ideas:
 - Rods don't consume MP on non critical attacks
