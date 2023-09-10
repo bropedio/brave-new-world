@@ -7,8 +7,8 @@ This is the official repo for development of the Brave New World ROM Hack (BNW).
 "hidden" features (e.g. the Mystery Egg) are not available here, so any builds
 will be incomplete*
 
-The `master` branch will always contain the most recent stable version of BNW
-The `develop` branch always contains the most up-to-date beta version of BNW
+* The `master` branch will always contain the most recent stable version of BNW
+* The `develop` branch always contains the most up-to-date beta version of BNW
 
 ## How to Build
 
