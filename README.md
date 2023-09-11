@@ -8,7 +8,6 @@ This is the official repo for development of the Brave New World ROM Hack (BNW).
 will be incomplete*
 
 * The `master` branch will always contain the most recent stable version of BNW
-* The `develop` branch always contains the most up-to-date beta version of BNW
 
 ## How to Build
 
@@ -42,17 +41,19 @@ Contributions are welcome, and will be reviewed and merged on a per-feature
 basis.
 
 1. Fork the `brave-new-world` repo
-2. Create a new branch named after your feature, based on the `develop` branch
+2. Create a new branch named after your feature, based on the `master` branch
 3. Fully integrate your `.asm` into the `asm/banks/` files
-   * Please keep all `org` statements sequential
+   * Please keep all `org` statements ordered by address
    * Use `; ---` and `; ###` line breaks to organize sections of code
    * Comment liberally, especially when altering existing code
 4. If you have pre-existing asm, please add it to `asm/banks/reference/`
-5. Add single-sentence description of your feature to `CHANGELOG.md`
-6. If warranted, add a longer description of your feature to `documentation.md`
-6. Open a pull request against `brave-new-world/develop`, with a description
-that briefly describes the "what" and "why" of the feature
+5. Open a pull request against `brave-new-world/master` with a comprehensive
+   description that describes the "what," "why," and "how" of the changes.
 
-Accepted features will be squashed into a single commit when merging. The single
-sentence description in the `CHANGELOG.md` entry will be used as the commit message.
+Accepted features will be squashed into a single commit when merging.
 
+## Beta Testing
+
+Each release candidate is tracked in unique testing branch (eg. v2.2.0-beta-18).
+If you would like to help test the current beta version, ask for the Beta Tester
+role at our Discord (via ngplus.net).
