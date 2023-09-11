@@ -65,11 +65,13 @@ org $C04E33
 ;
 ; Action $66 now used to set character lvl to Max(lvl, [18,19,20,21])
 ; Action $67 is now used to reset ELs for current party
+; Action $68 is now used to add WoB formations to WoR veldt
 ; Action $7F (Change Character Name) is optimized and shifted to make
 ; room for a fix to Action $8D (Unequip Character).
 
 org $C09926 : dw Level18
 org $C09928 : dw RespecELs
+org $C0992A : dw VeldtFree
 org $C09958 : dw CharName
 
 ; #########################################################################
@@ -782,6 +784,54 @@ GetPwrFork:
 .exit
   LDA $B5         ; [moved]
   RTL
+
+; -------------------------------------------------------------------------
+; Gau Veldt Freebies
+
+; Add a new event command to automatically unlock all the WoB-exclusive
+; formations on the Veldt (very hardcoded to formations as they appeared
+; in BNW 2.1).
+
+VeldtFree:
+  PHA                 ; Preserve A
+  PHX                 ; Preserve X
+  PHP                 ; Preserve CPU flags
+  SEP #$30            ; Set 8-bit accumulator and index registers
+  LDX #$11            ; Loop through 17 bytes
+.loop
+  LDA $7E1DDC,X       ; Index of Veldt formations clear data in SRAM
+  ORA FreeForms-1,X   ; Combine with table data
+  STA $7E1DDC,X
+  DEX                 ; Next value
+  BNE .loop           ; Loop 15 times
+  PLP                 ; Restore CPU flags
+  PLX                 ; Restore X
+  PLA                 ; Restore A
+  LDA #$01            ; Number of bytes until next event command in script = 1
+  JMP $9B5C           ; Advance event queue
+
+FreeForms:
+  db $EE              ; Formations 0-7
+  db $77              ; Formations 8-15
+  db $A0              ; Formations 16-23
+  db $48              ; Formations 24-31
+  db $88              ; Formations 32-39
+  db $A0              ; Formations 40-47
+  db $54              ; Formations 48-55
+  db $11              ; Formations 56-63
+  db $00              ; Formations 64-71
+  db $00              ; Formations 72-79
+  db $19              ; Formations 80-87
+  db $C8              ; Formations 88-95
+  db $31              ; Formations 96-103
+  db $50              ; Formations 104-111
+  db $C9              ; Formations 112-119
+  db $98              ; Formations 120-127
+  db $11              ; Formations 128-135
+
+
+; -------------------------------------------------------------------------
+; Helper for "Half Battle Power" patch
 
 org $C0DB01
 GetBatPwr:
