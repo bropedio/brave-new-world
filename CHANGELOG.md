@@ -1,6 +1,6 @@
 # Changelog
 
-## [2.1.0] - 2022/02/22
+## [2.1.0](https://github.com/bropedio/brave-new-world/releases/tag/v2.1.0) - 2022/02/22
 
 ### Features
 
