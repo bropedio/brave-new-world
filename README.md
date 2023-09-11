@@ -54,6 +54,6 @@ Accepted features will be squashed into a single commit when merging.
 
 ## Beta Testing
 
-Each release candidate is tracked in unique testing branch (eg. v2.2.0-beta-18).
+Each release candidate is tracked in a unique testing branch (eg. `v2.2.0-beta-18`).
 If you would like to help test the current beta version, ask for the Beta Tester
 role at our Discord (via ngplus.net).
