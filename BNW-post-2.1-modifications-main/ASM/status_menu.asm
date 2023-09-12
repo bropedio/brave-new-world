@@ -188,7 +188,7 @@ org $c3632A
 org $C3031C
 	jsl change_palette
 	
-org $C4B6C0
+org $C4B6D9
 change_palette:
     cmp #$ED        ; Cmp if icon
     BCS no_change   ; greater or equal?
