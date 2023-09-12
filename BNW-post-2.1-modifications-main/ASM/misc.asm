@@ -278,18 +278,6 @@ org $c3837f
 org $c38e4a
     db $c5,$7a,$ff,$ff,$ff,$00    ;Set blank tile over the numbers
 
-
-;;------------------------------------------------------------------
-;;Cinematic&Title Program&GFX
-;;------------------------------------------------------------------
-;check bankcross off
-;org $C2686C
-;	incbin "../asm/C2686C_Cinematic_Program.bin"		;Cinematic Program
-;	
-;org $D8f000
-;	incbin "../asm/D8F000_Cinematic_Title_Isle_GFX.bin"	;Cinematic, Title, Isle GFX & Tilemap Properties
-;check bankcross on
-
 ;------------------------------------------------------------------
 ;New consumable icon
 ;------------------------------------------------------------------	
@@ -434,18 +422,6 @@ org $C46DE9
 
 org $CA8AD5
 	db $F7
-
-;;Mute magitek sound in Cyan's dream
-;org $CB93EF
-;	db $FD,$FD
-;org $CB93F8
-;	db $FD,$FD
-;org $CB9400
-;	db $FD,$FD
-;org $CB9408
-;	db $FD,$FD
-;org $CB9410
-;	db $FD,$FD
 	
 ;Changing element tiles to print in inventory sub-menu
 
@@ -561,7 +537,7 @@ MenuLoopSplice:     ; [27 bytes]
 warnpc !warn
 
 ; #########################
-; Fix sprite priority after cover
+; Fix sprite priority after cover (Bropedio)
 
 org $C1C225 : BEQ $05
 org $C1C22A : NOP #2
