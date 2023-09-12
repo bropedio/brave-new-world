@@ -56,3 +56,15 @@ org $CCD321
 ;  db $4B,$FB,$00             ; Caption 250
 ;  db $F3,$10                 ; Fade in previously faded out song with trans. time 16
 ;  db $FE                     ; RTS
+
+;;Mute magitek sound in Cyan's dream
+;org $CB93EF
+;	db $FD,$FD
+;org $CB93F8
+;	db $FD,$FD
+;org $CB9400
+;	db $FD,$FD
+;org $CB9408
+;	db $FD,$FD
+;org $CB9410
+;	db $FD,$FD
