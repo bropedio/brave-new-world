@@ -560,6 +560,12 @@ MenuLoopSplice:     ; [27 bytes]
     RTS
 warnpc !warn
 
+; #########################
+; Fix sprite priority after cover
+
+org $C1C225 : BEQ $05
+org $C1C22A : NOP #2
+
 ;Brave New World data
 org $C33BB8
 	db $d1,$78,"Brave New World 2.2 b20",$00
