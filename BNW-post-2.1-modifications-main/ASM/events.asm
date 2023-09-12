@@ -17,7 +17,7 @@ org $CCD31D
                                             ; <A12> can do much more than just [Mimic].<D>
                                             ; Customize their command list on the status page.
 org $CCD321
-  db $6A,$16,$21,$08                  		; Change Map: Gogo's room at (8,6)
+  db $6A,$16,$21,$08,$06                    ; Change Map: Gogo's room at (8,6)
 
 
 ;;; Sealed by... song data (overwritten song ends at $C98D84, added twelve 00 bytes)	
