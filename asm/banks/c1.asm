@@ -147,10 +147,42 @@ org $C180A6
   BRA .r3_rig
 org $C180D7 : .r3_rig
 
-; ########################################################################
-; Lore Battle Menu
+; #########################################################################
+; Sustain Magic Menu
 
+; -------------------------------------------------------------------------
+; Rearrange targeting menu code to re-use item menu targeting and
+; create additional room for handling Lore targeting
+
+org $C181D6
+SpellJump:
+  LDA $2094,X     ; targeting byte
+  XBA             ; store in B
+  LDA #$03        ; "Magic" parent menu
+LoreHelp:
+  STA $ECBA       ; set parent menu
+  LDA #$00        ; ensure B stays zero
+  XBA             ; get targeting byte
+  STA $7A84       ; save ^
+  JMP ItemJump    ; leverage item code for targeting fork
+warnpc $C181EB+1
+
+; #########################################################################
+; Sustain Lore Menu
+
+; -------------------------------------------------------------------------
 org $C18336 : CMP #$0C    ; lore menu length - 4 (x2)
+
+; -------------------------------------------------------------------------
+; Support curative targeting window for Lores that target allies
+
+org $C18374
+LoreJump:
+  XBA            ; store targeting byte 
+  LDA #$09       ; set parent menu to "Lore"
+  JMP LoreHelp   ; handle opening targeting window
+
+; -------------------------------------------------------------------------
 org $C1838F : LDA #$0C    ; lore menu scrollbar rows + 4 (see above)
 
 ; ########################################################################
@@ -159,6 +191,12 @@ org $C1838F : LDA #$0C    ; lore menu scrollbar rows + 4 (see above)
 org $C184F9 : CMP #$1C    ; (64 rages / 2) - 4(onscreen)
 org $C1854A : LDA #$1C    ; rage menu scrollbar rows (see above)
 org $C1854E : LDX #$0140  ; pixels per rage menu scrollbar row [?]
+
+; #########################################################################
+; Sustain Item Menu
+
+; Fork where targeting menu type is selected
+org $C18931 : ItemJump:
 
 ; ########################################################################
 ; Equipment Swap Menu Sustain and Validation
@@ -535,6 +573,23 @@ org $C140AF : LDA Palettes+16,X  ; Load battle text palettes yellow and cyan
 org $C14100 : LDA Palettes+40,X  ; Load battle gauge palette
 
 ; #######################################################################
+; Close "Target Allies" Menu (Cursor handling)
+;
+; -------------------------------------------------------------------------
+; Modify conversion of $ECBA "parent menu" variable to support Lore menu
+;
+; Previously, was { x + 26 }
+; Now, does { x | 26 }
+;
+; Magic was 1, but now is 3 (computes to 27)
+; Item was 0, still is 0 (computes to 2)
+; Lore now is 9 (computes to 27)
+
+org $C14573
+  LDA #$1A         ; 26
+  NOP : ORA $ECBA  ; x | 26
+
+; #######################################################################
 ; Status Text Display for targeting window
 
 org $C14587
@@ -588,6 +643,23 @@ org $C14B87         ; code draws valid swaps in yellow
   LDA $890E         ; still-equipped item's flags
   JSR DrawDual      ; set carry if not able to dual wield
   BCS $0F           ; branch if no dual wield
+
+; #########################################################################
+; Close "Target Allies" Menu (Window handling)
+
+; -------------------------------------------------------------------------
+; Modify conversion of $ECBA "parent menu" variable to support Lore menu
+;
+; Previously, was { x * 2 + 2 }
+; Now, does { (x + 5) / 2 }
+;
+; Magic was 1, but now is 3 (computes to 4)
+; Item was 0, and still is 0 (computes to 2)
+; Lore now is 9 (computes to 7)
+
+org $C155C2
+  CLC : ADC #$05   ; (x + 5)
+  LSR              ; (x + 5) / 2
 
 ; #######################################################################
 ; Slot Machine "Menu"
