@@ -489,8 +489,7 @@ org $CB4E25 : db $B2,$88,$52,$01 ; JSR $CB5288
 ; Freespace, essentially
 ;
 ; First thing's first, deprecate the auction house with $FF byte padding
-; TODO: Avoid writing and overwriting the same ROM space. This free space
-; TODO: should be documented but left untouched by any padding.
+; TODO: Avoid writing and overwriting the same ROM space.
 
 org $CB4E5E : padbyte $FF : pad $CB5EC5
 

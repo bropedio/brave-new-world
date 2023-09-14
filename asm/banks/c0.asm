@@ -8,7 +8,6 @@ incsrc ram.asm
 ; Local access to RNG routine
 
 org $C0062E : JSL Random : RTS
-org $C00636 : JSL Random ; [TODO: Remove -- redundant with above]
 
 ; #########################################################################
 ; RNG
@@ -269,8 +268,6 @@ RespecELs:
   STZ $21          ; zero scratch RAM
   LDA $1608,Y      ; character level
   JMP $9F4A        ; run level averaging to set new max HP/MP and check
-  LDA #$02         ; [unused] TODO Remove this
-  JMP $9B5C        ; [unused] TODO Remove this
 
 ; -------------------------------------------------------------------------
 ; Esper Junctions (Equip Bonuses)
@@ -423,10 +420,6 @@ MaybeNull:        ; 33 bytes
   RTL
 SetKill:
   LDA $3AA1,Y     ; check immune to instant death bit
-  BRA BitSet
-SetFrac:          ; TODO: This label is unused now
-  LDA $3C80,Y     ; check fractional dmg immunity bit
-BitSet:
   BIT #$04        ; immune to instant death (or fractional)
   BEQ SetEnd      ; if not immune, exit
 SetNull:

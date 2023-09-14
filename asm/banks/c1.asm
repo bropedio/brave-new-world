@@ -76,7 +76,6 @@ CycleAura:
   BIT $38            ; check current status for this aura
   BEQ .loop          ; loop until match found
   BRA UpdateAura     ; set new aura color
-  RTS                ; [unneeded] TODO
 warnpc $C12EB5+1
 padbyte $EA          ; fill remaining space with NOP
 pad $C12EB4          ; ensure earlier $C12EB4 branches still work
@@ -667,12 +666,6 @@ LongDraw:
   RTL
 warnpc $C16898+1
 
-; Leftover from earlier version of patch TODO: Remove below
-  PLA              ; Get saved text color
-  STA $4E          ; Store text color
-  RTS
-; Leftover from earlier version of patch TODO: Remove above
-
 org $C16898
 drawMaxHP:
   LDA #$C0         ; Draw a "/" as HP divider
@@ -879,8 +872,6 @@ SwdTechMeter:
   ADC $36        ; adds known Bushid count (to speed up)
   STA $7B82      ; update meter position
   RTS
-  NOP            ; [unused space] TODO: Remove
-  db $FF         ; [unused space] TODO: Remove
 
 ; ----------------------------------------------------------------------
 ; Runic Stance helper
