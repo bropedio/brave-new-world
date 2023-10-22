@@ -396,13 +396,6 @@ org $CB30DB
   db $D4,$4D,$FE    ; Set event bit $24D, then return
 
 ; ------------------------------------------------------------------------
-; Prevents Shadow from randomly running off (3/5)
-; TODO: This is wrong, but inconsequential, since it overwrites unused
-; code from the Grand Stairway above
-
-org $CB3143 : db $B8
-
-; ------------------------------------------------------------------------
 ; Move the dialogue between Kefka and the party at the Sealed Gate to before the battle
 
 org $CB3AA8
@@ -460,14 +453,6 @@ org $CB4A84 : db $84,$20,$4E  ; Gives 20000 GP to the party
 org $CB4AC4 : db $80,$EA      ; Adds an X-Potion to party inventory
 org $CB4B03 : db $80,$ED      ; Adds an X-Ether to party inventory
 org $CB4B42 : db $80,$EE      ; Adds an Elixir to party inventory
-
-; ------------------------------------------------------------------------
-; Prevents Shadow from randomly running off (4/5)
-; TODO: This code is wrong, but was previously overwritten by the floating
-; chests changes above, so had no effect. Leaving here for reference, for
-; now.
-;
-; org $CB4A85 : db $B8
 
 ; ------------------------------------------------------------------------
 ; Emperor Gestahl's portrait dialogue change
