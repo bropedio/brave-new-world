@@ -694,7 +694,7 @@ TargetDamageMod:
   LDA $B2          ; attack bytes (looking at $B3)
   BPL .exit        ; exit if "Ignore Vanish" (sap/regen/poison)
 
-.self-dmg
+.self_dmg
   LDA $11A4        ; attack flags
   LSR              ; carry: "Healing"
   LDA $F0          ; damage so far
