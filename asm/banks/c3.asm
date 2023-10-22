@@ -3307,7 +3307,7 @@ Learn_Chk:
 Pressed_A:
   LDA $4B           ; pointer index
   BNE .spell        ; branch if pointing at a spell
-  JMP $C358DF       ; vanilla "can equip esper" fork
+  JML $C358DF       ; vanilla "can equip esper" fork TODO: Use JMP
 .spell
   LDA $99           ; load esper ID
   STA $4202         ; set multiplier
