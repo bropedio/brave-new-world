@@ -2382,7 +2382,7 @@ ChkEsp:
   LDA $E0           ; load esper ID
   AND #$07          ; which bit of the equippability byte corresponds to this esper?
   TAY
-  LDA EsperData,X   ; get equippability byte for esper/character pair
+  LDA.L EsperData,X ; get equippability byte for esper/character pair
 - LSR               ; Do: shift right
   DEY               ; | Y--
   BPL -             ; + loop until Y negative
@@ -2868,7 +2868,7 @@ Unspent_EL:
   JSR $3519         ; initialize WRAM buffer with ^
   LDX $00           ; zero X
 .write_uel
-  LDA UnspentTxt,X  ; get "Unspent EL:" tile
+  LDA.L UnspentTxt,X ; get "Unspent EL:" tile
   BEQ .finish       ; break if EOL
   STA $2180         ; else, write to WRAM
   INX               ; next tile index
