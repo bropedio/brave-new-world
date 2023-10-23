@@ -274,142 +274,116 @@ RespecELs:
 
 ; -------------------------------------------------------------------------
 ; Esper Junctions (Equip Bonuses)
-; TODO: Could save lots of space by converting data to script
-;       eg. [op][arg], so Ramuh could be [elem_op][$04]
+;
+; Implement one bonus per esper. We use a series of lookup tables and
+; control bytes to apply each bonus. Ensure the variables directly below
+; always align with the EBonCmd lookup table order.
 
-; Immunity 1    Immunity 2       Status 1      Special           Elem-half
-; $80: Death    $80: Sleep       $80: Reflect  $80: MP +12.5%    $80: Water
-; $40: Petrify  $40: Seizure     $40: Safe     $40: MP +50%      $40: Earth
-; $20: Imp      $20: Muddle      $20: Shell    $20: MP +25%      $20: Pearl
-; $10: Clear    $10: Berserk     $10: Stop     $10: HP +12.5%    $10: Wind
-; $08: MagiTek  $08: Mute        $08: Haste    $08: HP +50%      $08: Poison
-; $04: Poison   $04: Image       $04: Slow     $04: HP +25%      $04: Bolt
-; $02: Zombie   $02: Near Fatal  $02: Regen    $02: MDamage +25% $02: Ice
-; $01: Dark     $01: Condemned   $01: Float    $01: PDamage +25% $01: Fire
+; Note that these control bytes are already x2 to avoid ASL
+!eb_status=$00 ; Offset into status lookup (multiples of 2)
+!eb_innate=$02 ; Status bitmask 3
+!eb_percnt=$04 ; Percent special effects ($11D5)
+!eb_stat_a=$06 ; $aaaaZZZZ | a: boost size, Z: stat offset from $11A0
+!eb_stat_b=$08 ; $aaaaZZZZ | a: boost size, Z: stat offset from $11B0
+!eb_elemnt=$0A ; Element resist bitmask
 
-; Speed/Vigor   Magic/Stamina    Defense       MDef              Mblock/Evade
-; $x0: Speed    $x0: Magic       $xx: Defense  $xx: Mdef         $x0: Mblock
-; $x0: Speed    $x0: Magic       $xx: Defense  $xx: Mdef         $x0: Mblock
-; $x0: Speed    $x0: Magic       $xx: Defense  $xx: Mdef         $x0: Mblock
-; $x0: Speed    $x0: Magic       $xx: Defense  $xx: Mdef         $x0: Mblock
-; $0x: Vigor    $0x: Stamina     $xx: Defense  $xx: Mdef         $0x: Evade
-; $0x: Vigor    $0x: Stamina     $xx: Defense  $xx: Mdef         $0x: Evade
-; $0x: Vigor    $0x: Stamina     $xx: Defense  $xx: Mdef         $0x: Evade
-; $0x: Vigor    $0x: Stamina     $xx: Defense  $xx: Mdef         $0x: Evade
+EBonCmd:
+  dw StatusBonus
+  dw InnateBonus
+  dw PercentBonus
+  dw StatABonus
+  dw StatBBonus
+  dw ElemBonus
 
-org $C0D690
-  dw $0000                ; Ramuh: Status immunity 1/2
-  db $00                  ; Ramuh: Innate status
-  db $00                  ; Ramuh: Damage & HP%/MP% bonuses
-  db $04                  ; Ramuh: Elemental resistance
-  db $00                  ; Ramuh: Speed & Vigor
-  db $00                  ; Ramuh: Magic & Stamina
-  db $00                  ; Ramuh: Defense
-  db $00                  ; Ramuh: Magic Defense
-  db $00                  ; Ramuh: M.Block & Evade
+EStatus:   ; Status bitmask 1 & 2
+  dw $3800 ; $00 - Siren (mute, muddle, bserk)
+  dw $0025 ; $02 - Stray (blind, poison, imp)
+  dw $80C2 ; $04 - Seraph (sleep, petrify, death)
 
-  dw $0000 : db $00,$00,$01,$00,$00,$00,$00,$00    ; Ifrit
-  dw $0000 : db $00,$00,$02,$00,$00,$00,$00,$00    ; Shiva
-  dw $3800 : db $00,$00,$00,$00,$00,$00,$00,$00    ; Siren
-  dw $0000 : db $00,$00,$40,$00,$00,$00,$00,$00    ; Terrato
-  dw $0000 : db $00,$00,$00,$00,$05,$00,$00,$00    ; Shoat
-  dw $0000 : db $00,$00,$10,$00,$00,$00,$00,$00    ; Maduin
-  dw $0000 : db $00,$00,$80,$00,$00,$00,$00,$00    ; Bismark
-  dw $0025 : db $00,$00,$00,$00,$00,$00,$00,$00    ; Stray
-  dw $0000 : db $08,$00,$00,$00,$00,$00,$00,$00    ; Palidor
-  dw $0000 : db $20,$00,$00,$00,$00,$00,$00,$00    ; Tritoch
-  dw $0000 : db $00,$00,$00,$50,$00,$00,$00,$00    ; Odin
-  dw $0000 : db $00,$00,$00,$00,$00,$00,$00,$00    ; Raiden
-  dw $0000 : db $40,$00,$00,$00,$00,$00,$00,$00    ; Bahamut
-  dw $0000 : db $80,$00,$00,$00,$00,$00,$00,$00    ; Crusader
-  dw $0000 : db $00,$02,$00,$00,$00,$00,$00,$00    ; Ragnarok
-  dw $0000 : db $00,$01,$00,$00,$00,$00,$00,$00    ; Alexandr
-  dw $0000 : db $00,$00,$00,$00,$50,$00,$00,$00    ; Kirin
-  dw $0000 : db $00,$00,$00,$00,$00,$00,$0A,$00    ; Zoneseek
-  dw $0000 : db $02,$00,$00,$00,$00,$00,$00,$00    ; Carbunkl
-  dw $0000 : db $00,$00,$00,$00,$00,$00,$00,$A0    ; Phantom
-  dw $80C2 : db $00,$00,$00,$00,$00,$00,$00,$00    ; Seraph
-  dw $0000 : db $00,$00,$00,$00,$00,$0A,$00,$00    ; Golem
-  dw $0000 : db $00,$00,$00,$05,$00,$00,$00,$00    ; Unicorn
-  dw $0000 : db $00,$00,$00,$00,$00,$00,$00,$0A    ; Fenrir
-  dw $0000 : db $00,$20,$00,$00,$00,$00,$00,$00    ; Starlet
-  dw $0000 : db $00,$04,$00,$00,$00,$00,$00,$00    ; Phoenix
+EBonus:
+  db !eb_elemnt,$04   ; Ramuh (resist bolt)
+  db !eb_elemnt,$01   ; Ifrit (resist fire)
+  db !eb_elemnt,$02   ; Shiva (resist ice)
+  db !eb_status,$00   ; Siren (status-0)
+  db !eb_elemnt,$40   ; Terrato (resist earth)
+  db !eb_stat_a,$52   ; Shoat (+5 stamina)
+  db !eb_elemnt,$10   ; Maduin (resist wind)
+  db !eb_elemnt,$80   ; Bismark (resist water)
+  db !eb_status,$02   ; Stray (status-1)
+  db !eb_innate,$08   ; Palidor (auto-haste)
+  db !eb_innate,$20   ; Tritoch (auto-shell)
+  db !eb_stat_a,$54   ; Odin (+5 speed)
+  db !eb_stat_a,$00   ; Raiden (+0 magic)
+  db !eb_innate,$40   ; Bahamut (auto-safe)
+  db !eb_innate,$80   ; Crusader (auto-reflect)
+  db !eb_percnt,$02   ; Ragnarok (+25% magical-dmg)
+  db !eb_percnt,$01   ; Alexandr (+25% physical-dmg)
+  db !eb_stat_a,$50   ; Kirin (+5 magic)
+  db !eb_stat_b,$AB   ; Zoneseek (+10 MDef) [$11BB]
+  db !eb_innate,$02   ; Carbunkl (auto-regen)
+  db !eb_stat_a,$AA   ; Phantom (+10 MBlock) [$11AA]
+  db !eb_status,$04   ; Seraph (status-2)
+  db !eb_stat_b,$AA   ; Golem (+10 Def) [$11BA]
+  db !eb_stat_a,$56   ; Unicorn (+5 vigor)
+  db !eb_stat_a,$A8   ; Fenrir (+10 Evade) [$11A8]
+  db !eb_percnt,$20   ; Starlet (+25% MP)
+  db !eb_percnt,$04   ; Phoenix (+25% HP)
 
 ; -------------------------------------------------------------------------
-; Esper Equip Bonus application
+; Apply Esper Equip Bonuses
 
-org $C0D79E
 EsperBonuses:
   LDA $15FB,X       ; equipped esper
-  BPL .chk_bonus    ; branch if not null ^
-  JMP .finish       ; else, exit/finish
-.chk_bonus
-  XBA               ; store esper index
-  LDA #$0A          ; size of esper item block
-  REP #$20          ; 16-bit A
-  STA $004202       ; set multiplication register
+  BMI .finish       ; exit if null ^
   PHX               ; store X
-  PHY               ; store Y
-  NOP               ; wait for multiplication
-  LDA $004216       ; esper data offset
+  ASL               ; esper index * 2
   TAX               ; index it ^
-  LDA $C0D690,X     ; Status protection
-  TSB $11D2         ; add to equipment status protection
-  LDA $C0D692,X     ; Innate statuses and percent bonuses
-  JSR EarringFix    ; hook to extend handling in subroutine
-  LDA $C0D695,X     ; Stat bonuses
-  LDY #$0006        ; stat iterator (4 stats)
-.loop
-  PHA               ; store stat bonuses
-  AND #$000F        ; buttom nibble
-  CLC               ; clear carry
-  ADC $11A0,Y       ; add to equipment stat bonus byte
-  STA $11A0,Y       ; update ^
-  PLA               ; restore stat bonuses
-  LSR #4            ; shift next stat into place
-  DEY #2            ; decrement iterator
-  BPL .loop         ; loop through all 4 core stats
-  SEP #$20          ; 8-bit A
-  LDA $C0D699,X     ; Evade & Mblock
-  PHA               ; store ^
-  AND #$0F          ; bottom nibble TODO: Missing CLC
-  ADC $11A8         ; add to equipment Evade stat
-  STA $11A8         ; update ^
-  PLA               ; restore Evade/MBlock
-  AND #$F0          ; get MBlock TODO: Unnecessary AND, just CLC after LSR
-  LSR #4            ; shift MBlock into place
-  ADC $11AA         ; add to equipment MBlock stat
-  STA $11AA         ; update ^
-  LDA $C0D694,X     ; Elemental resistances
-  TSB $11B9         ; add to equipment resistances
-  LDA $C0D697,X     ; Defense TODO: Missing CLC, but probably no bug
-  ADC $11BA         ; add to equipment defense
-  BCC .noCap1       ; branch if no overflow
-  LDA #$FF          ; else use max 255
-.noCap1
-  STA $11BA         ; update equipment defense
-  LDA $C0D698,X     ; M.Def TODO: Missing CLC
-  ADC $11BB         ; add to equipment M.Def
-  BCC .noCap2       ; branch if no overflow
-  LDA #$FF          ; else use max 255
-.noCap2
-  STA $11BB         ; update equipment M.Def
-  PLY               ; restore Y
+  LDA.L EBonus,X    ; get bonus type (already x2)
+  TAX               ; index to bonus jmp table
+  LDA.L EBonus+1,X  ; bonus arg
+  JSR (EBonCmd,X)   ; execute bonus cmd
   PLX               ; restore X
 .finish
   LDA $15ED,X       ; [displaced] MaxMP hibyte
   AND #$3F          ; [displaced] mask +% effects
   RTL
 
-org $C0D827
-EarringFix:         ; TODO: Move this code in-line
-  TSB $11D4         ; [displaced] add to equipment innate statuses/etc
-  SEP #$20          ; 8-bit A
-  XBA               ; A = 11D5 bits 
-  AND #$02          ; isolate earring bit
-  TSB $11D7         ; set earring bit
+StatusBonus:
+  TAX               ; index status lookup offset
   REP #$20          ; 16-bit A
+  LDA.L $EStatus,X  ; get status protection bits
+  TSB $11D2         ; add to equipment status protection bitmask 1 & 2
+  SEP #$20          ; 8-bit A
   RTS
+InnateBonus:
+  TSB $11D4         ; set innate statuses
+  RTS
+ElemBonus:
+  TSB $11B9         ; add to equipment resistances
+  RTS
+PercentBonus:
+  TSB $11D5         ; set percent bonuses
+  AND #$02          ; isolate earring bit
+  TSB $11D7         ; set earring bit if needed
+  RTS
+StatABonus:
+  PHA               ; store bonus arg
+  AND #$0F          ; isolate stat offset
+.x
+  TAX               ; index stat offset
+  PLA               ; restore bonus arg
+  LSR #4            ; get boost size
+  CLC : ADC $11A0,X ; add to base stat Vig/Mag/Spd/Stam/Evd/MEvd/Def/MDef
+  BCC .safe         ; branch if no overflow
+  LDA #$FF          ; else use max 255
+.safe
+  STA $11A0,X       ; save new stat value
+  RTS
+StatBBonus:
+  PHA               ; store bonus arg
+  AND #$0F          ; isolate stat offset
+  CLC : ADC #$10    ; start at $11B0 instead of $11A0
+  BRA StatABonus_x  ; branch to regular $11A0 offset handling
 
 ; -------------------------------------------------------------------------
 ; Informative Miss Helpers
