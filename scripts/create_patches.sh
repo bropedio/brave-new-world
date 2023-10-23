@@ -3,12 +3,11 @@
 bnw_path="$1"
 version="$2"
 
-tmp_dir="../tmp"
-bnw_h_path="$tmp_dir/bnw-h.sfc"
-ff6_h_path="$tmp_dir/ff6-h.sfc"
-header_path="$tmp_dir/header"
-n_ips_path="$tmp_dir/[n]BNW-$version.ips"
-h_ips_path="$tmp_dir/[h]BNW-$version.ips"
+bnw_h_path="../temp/bnw-h.sfc"
+ff6_h_path="../temp/ff6-h.sfc"
+header_path="../temp/header"
+n_ips_path="../temp/[n]BNW-$version.ips"
+h_ips_path="../temp/[h]BNW-$version.ips"
 zip_path="../releases/BNW-$version.zip"
 
 # Load in environment variables
@@ -18,10 +17,6 @@ source "./settings.sh"
 create_patch () {
   "$IPS_PATH" --create --ips "$1" "$2" "$3"
 }
-
-# Main
-rm -r "$tmp_dir"
-mkdir "$tmp_dir"
 
 dd if=/dev/zero bs=512 count=1 > "$header_path"
 cat "$header_path" "$bnw_path" > "$bnw_h_path"
