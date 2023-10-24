@@ -5596,11 +5596,11 @@ StamCounter:
   RTS
 
 ; #########################################################################
-; Upper C2 Condensed Graphics
+; Upper C2 Condensed Graphics and Code
 ; See Bank F0 for uncompressed ASM changes
 
 org $C2686C
-  incbin bin/title-compressed.bin
+  incbin ../../temp/intro.compressed
 warnpc $C28A45+1
 
 ; -------------------------------------------------------------------------

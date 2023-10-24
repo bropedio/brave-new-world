@@ -2,24 +2,30 @@
 
 rom_path="$1"
 version="$2"
-temp_rom="../temp/temp_rom.sfc"
+temp="../temp"
+temp_rom="${temp}/temp_rom.sfc"
 
 # Load in environment variables
 source "./settings.sh"
 
-# Main
-rm -r "../temp"
-mkdir "../temp"
+# Create/Replace temporary directory
+if [ -d "$temp" ]; then rm -r "$temp"; fi
+mkdir "$temp"
 
+# Copy source ROM and apply IPS patches
 cp "$FF6_PATH" "$rom_path"
 ./patch.sh "$rom_path"
 
-# Compile compressed binaries with temporary copy
-cp "$rom_path" "$temp_rom"
-./assemble.sh "$temp_rom"
-./compress.sh "$temp_rom"
+# Decompress all compressed sections that need modification
+./lzss.sh decode "$rom_path"
 
-# Real assembly step, with newly compressed binaries available
+# Assemble entire asm/banks directory (including temporary f0.asm)
+./assemble.sh "$rom_path"
+
+# Compress f0.asm sections into new compressed binaries
+./lzss.sh encode "$rom_path"
+
+# Rerun assembly with newly compressed binaries available
 ./assemble.sh "$rom_path"
 
 # Truncate end of assembled file to remove decompressed ASM in F0
@@ -28,3 +34,6 @@ mv "$temp_rom" "$rom_path"
 
 node ./checksum.js "$rom_path"
 ./create_patches.sh "$rom_path" "$version"
+
+# Remove temporary directory
+rm -r "$temp"

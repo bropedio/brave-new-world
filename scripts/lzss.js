@@ -24,7 +24,7 @@ main(action, input_path, output_path, options);
 
 function main (action, input_path, output_path, options) {
   const input_buffer = fs.readFileSync(input_path);
-  
+
   const func = {
     encode: compress,
     decode: decompress,
@@ -84,6 +84,9 @@ function decompress (ff6, opts) {
     control >>>= 1;
     counter--;
   }
+
+  const data_length = data.length;
+  data.unshift(data_length & 0xFF, data_length >>> 8);
 
   return Buffer.from(data);
 }

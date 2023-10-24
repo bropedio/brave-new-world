@@ -6,32 +6,34 @@ hirom
 ; ROM space to write uncompressed routines during the build phase.
 ; This allows us to have cross-label references with other banks.
 ;
-; Note that some specific set-up is necessary to get this compressed
-; ASM working properly. Use the macro below, and set up variables
-; for offset manipulation when necessary.
+; Note
+; When adding new compressed sections, the `scripts/lzss.sh` script
+; must be updated with the correct offsets and file names. You also
+; must `incbin` the compressed binary at the correct code offset.
+;
+; eg: incbin ../../temp/intro.compressed
+;
+; For all internal JSR and JMP ops, set up variables using the macro below
 
-macro Compressable(offset, binary)
-org <offset>
-  dw ?EndBin-?StartBin ; Write the length
-?StartBin:
+macro Compressable(offset, actual, binary)
+  org <offset>
   incbin <binary> ; Write the full, unmodified, decompressed ASM
-?EndBin:
+  !c_offset = <offset>+2-<actual>
+  !c_invert = <actual>-<offset>-2
 endmacro
 
 ; #########################################################################
 ; Title, Intro, Floating Island, World Cinematics
 
-%Compressable($F00000, bin/title-decompressed.bin)
-!c_title = $F00002-$7E5000
-!d_title = $7E5000-$F00002
+%Compressable($F00000, $7E5000, ../../temp/intro.decompressed)
 
 ; -------------------------------------------------------------------------
 ; Update several RNG calls to use new routine
 
-org $7E5639+!c_title
+org $7E5639+!c_offset
   JSL Random
-org $7E6F89+!c_title
+org $7E6F89+!c_offset
   JSL Random
-org $7E6F90+!c_title
+org $7E6F90+!c_offset
   JSL Random
 
