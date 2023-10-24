@@ -22,6 +22,14 @@ macro Compressable(offset, actual, binary)
   !c_invert = <actual>-<offset>-2
 endmacro
 
+macro OrgOffset(offset)
+  org <offset>+!c_offset
+endmacro
+
+macro OrgInvert(offset)
+  org <offset>+!c_invert
+endmacro
+
 ; #########################################################################
 ; Title, Intro, Floating Island, World Cinematics
 
@@ -30,10 +38,10 @@ endmacro
 ; -------------------------------------------------------------------------
 ; Update several RNG calls to use new routine
 
-org $7E5639+!c_offset
+%OrgOffset($7E5639)
   JSL Random
-org $7E6F89+!c_offset
+%OrgOffset($7E6F89)
   JSL Random
-org $7E6F90+!c_offset
+%OrgOffset($7E6F90)
   JSL Random
 
