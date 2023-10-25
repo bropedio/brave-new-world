@@ -210,7 +210,7 @@ Level18:
 .lvlup
   LDA $EB            ; event param
   TAX                ; X = character #
-  LDA.L RejoinLvl,X  ; A = rejoin level
+  LDA.l RejoinLvl,X  ; A = rejoin level
   BRA .finish        ; set new level
 
 RejoinLvl:
