@@ -800,7 +800,7 @@ VeldtFree:
   LDX #$11            ; Loop through 17 bytes
 .loop
   LDA $7E1DDC,X       ; Index of Veldt formations clear data in SRAM
-  ORA FreeForms-1,X   ; Combine with table data
+  ORA.l FreeForms-1,X ; Combine with table data
   STA $7E1DDC,X
   DEX                 ; Next value
   BNE .loop           ; Loop 15 times
