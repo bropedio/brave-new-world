@@ -1235,7 +1235,6 @@ warnpc $C21977
 ; Code Pointers for Commands
 
 org $C219ED : dw PreDanceCmd ; changed to add Moogle Charm hook
-org $C21A15 : dw FullScan ; new scan command location
 
 ; #########################################################################
 ; AI Command Scripts
@@ -3783,12 +3782,33 @@ org $C2505B : JSR Tick_Calc : NOP #2 ; Re-written formulas for periodic effects
 
 ; #########################################################################
 ; Scan Command ($C250DD)
-; TODO: Shift around so previous Scan command address can be restored
+;
+; Modified by dn's "Scan Status" patch to add support for Status messages.
+; Most "Scan Weakness" code is now displaced into C4 along with the new
+; "Scan Status" code.
+;
+; Rewritten for "Scan Restored" patch, which brings back HP/MP display and
+; condenses the routine for space savings
+
+org $C250DD
+FullScan:
+  PHP                 ; store flags
+  LDX $B6             ; get target of original casting
+  LDA #$FF            ; null (end of script marker)
+  STA $2D72           ; set end-of-script flag
+  LDA #$02            ; "Display Battle Msg" command ID
+  STA $2D6E           ; set battle command ID
+  STZ $2F37           ; clear message parameter
+  STZ $2F3A           ; clear message parameter
+  JSL ScanHPMP
+  JSL ScanWeak
+  JSL ScanStatus
+  PLP
+  RTS
 
 ; -------------------------------------------------------------------------
 ; Helpers for scan command parts
 
-org $C250DD
 LongMsgArg:
   STA $2F35           ; save param for message
 LongMsg:
@@ -3800,15 +3820,10 @@ LongMsg:
   PLP                 ; restore flags
   PLA                 ; restore A
   RTL
-warnpc $C250F4+1
-
-; -------------------------------------------------------------------------
-; Some portion of previous routine is now overwritten as freespace
 
 ; -------------------------------------------------------------------------
 ; Allow fractional damage to hurt bosses a little
 
-org $C250F4
 Fractional:
   LDA $3C80,Y     ; monster bits
   BIT #$04        ; "boss" flag
@@ -3819,6 +3834,7 @@ Fractional:
   RTS
 
 ; -------------------------------------------------------------------------
+
 GetTargeting:
   PHX
   PHP
@@ -3836,41 +3852,12 @@ GetTargeting:
   PLP
   PLX
   RTS
-warnpc $C25120+1
-
-; -------------------------------------------------------------------------
-; Modified by dn's "Scan Status" patch to add support for Status messages.
-; The "Scan Weakness" code is now displaced into C4 along with the new
-; "Scan Status" code.
-;
-; Rewritten for "Scan Restored" patch, which brings back HP/MP display and
-; condenses the routine for space savings
-
-org $C25120
-FullScan:
-  PHP                 ; store flags
-  LDX $B6             ; get target of original casting
-  LDA #$FF            ; null (end of script marker)
-  STA $2D72           ; set end-of-script flag
-  LDA #$02            ; "Display Battle Msg" command ID
-  STA $2D6E           ; set battle command ID
-  STZ $2F37           ; clear message parameter
-  STZ $2F3A           ; clear message parameter
-  JSL ScanHPMP
-  JSL ScanWeak
-  JSL ScanStatus
-  PLP
-  RTS
-warnpc $C25141+1
-padbyte $FF
-pad $C25141
 
 ; -------------------------------------------------------------------------
 ; Freespace used by "Stray Targeting" patch
 ; If special effect 0x4E is set on attack, allow targeting both dead
 ; and living allies at the same time.
 
-org $C25141
 TargetDead:       ; When we get here, A = 11A2 & #80
   PHP             ; store C flag (used later)
   LDX #$9C        ; load 0x4E * 2 (current X does not need saving)
