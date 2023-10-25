@@ -2669,6 +2669,54 @@ EPClear:
 UnspentTxt:
   db "Unspent EL:",$00
 
+Calc_EP_Status:
+  LDA $1E8A         ; event byte
+  AND #$08          ; "met Ramuh"
+  BEQ .no_ep        ; branch if not ^
+  LDX $67           ; character data offset
+  LDA $0000,X       ; character ID
+  CMP #$0C          ; Gogo or above
+  BCC .yes_ep       ; branch if not ^
+.no_ep
+  LDY #EPClear      ; pointer for spaces to blank out EP value
+  JSR $02F9         ; draw ^
+  LDY #EPUpClr      ; pointer for spaces to blank out "EP to lv. up"
+  JSR ClearEPLabel  ; draw ^
+  CLC               ; clear carry (hide EP needed)
+  RTS
+.yes_ep
+  PHA               ; store character ID
+  LDA #$2C          ; color: gray-blue
+  STA $29           ; set text palette
+  LDY #EPUpTxt      ; pointer for "EP to lv. up" text display
+  JSR DrawEPLabel   ; draw ^
+  TDC               ; zero A/B
+  LDA #$20          ; color: white
+  STA $29           ; set text palette
+  PLA               ; restore character ID
+  TAY               ; index it
+  LDA !EL,Y         ; character's esper level
+  CMP #$19          ; at max (25)
+  BNE .needed_ep    ; branch if not ^
+  SEC               ; set carry (show EP needed)
+  JMP $60C3         ; display zero and exit
+.needed_ep
+  ASL               ; EL x2
+  TAX               ; index to EP lookup
+  TYA               ; character ID
+  ASL               ; x2
+  TAY               ; index it
+  REP #$30          ; 16-bit A, X/Y
+  LDA !EP,Y         ; character's total EP
+  STA $F1           ; store ^
+  LDA.l EP_Chart,X  ; EP needed for next level
+  SEC               ; set carry
+  SBC $F1           ; EP needed - total EP
+  STA $F3           ; store ^ (* modified by Status Menu Redesign)
+  SEP #$20          ; 8-bit A
+  SEC               ; set carry (show EP needed)
+  RTS
+
 Esp_Lvl:
   JSR $04B6         ; [displaced] draw two digits
   JSR Ramuh_Chk     ; check if optained espers yet
@@ -3548,7 +3596,7 @@ PortraitPlace:
   RTS
 
 ELStuff:
-  JSR $F31B               ; get EP and EP to next Lvl (in F1-F4)
+  JSR Calc_EP_Status      ; get EP and EP to next Lvl (in F1-F4)
   BCC .exit
   JSR $052E               ; convert 16-bit number into text (from F3-F4)
   LDX #$7B7B              ; next EL number coords
