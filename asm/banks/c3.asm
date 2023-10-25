@@ -868,7 +868,7 @@ org $C36043 : LDX #$887F     ; Mblock position
 org $C36049 : LDY #$78D9     ; Actor name position
 
 org $C36055
-  JSR $F3BF       ; draw EL label
+  JSR EL_Status   ; draw EL label
   JSR ELStuff     ; draw next EL labels
 
 ; -------------------------------------------------------------------------
@@ -2773,6 +2773,13 @@ EL_Skill:
   LDA #$24          ; color: blue
   STA $29           ; set text palette
   LDA #$20          ; offset for "EL" label in skills menu
+  PHA               ; store ^
+  BRA Stat_Skill_Ent ; draw "EL" label
+
+EL_Status:
+  LDA #$24          ; color: blue
+  STA $29           ; set text palette
+  LDA #$28          ; offset for "EL" label in status menu
   PHA               ; store ^
   BRA Stat_Skill_Ent ; draw "EL" label
 
