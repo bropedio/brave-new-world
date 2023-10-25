@@ -396,13 +396,6 @@ org $CB30DB
   db $D4,$4D,$FE    ; Set event bit $24D, then return
 
 ; ------------------------------------------------------------------------
-; Prevents Shadow from randomly running off (3/5)
-; TODO: This is wrong, but inconsequential, since it overwrites unused
-; code from the Grand Stairway above
-
-org $CB3143 : db $B8
-
-; ------------------------------------------------------------------------
 ; Move the dialogue between Kefka and the party at the Sealed Gate to before the battle
 
 org $CB3AA8
@@ -462,14 +455,6 @@ org $CB4B03 : db $80,$ED      ; Adds an X-Ether to party inventory
 org $CB4B42 : db $80,$EE      ; Adds an Elixir to party inventory
 
 ; ------------------------------------------------------------------------
-; Prevents Shadow from randomly running off (4/5)
-; TODO: This code is wrong, but was previously overwritten by the floating
-; chests changes above, so had no effect. Leaving here for reference, for
-; now.
-;
-; org $CB4A85 : db $B8
-
-; ------------------------------------------------------------------------
 ; Emperor Gestahl's portrait dialogue change
 
 org $CB4B6F : db $81
@@ -489,8 +474,7 @@ org $CB4E25 : db $B2,$88,$52,$01 ; JSR $CB5288
 ; Freespace, essentially
 ;
 ; First thing's first, deprecate the auction house with $FF byte padding
-; TODO: Avoid writing and overwriting the same ROM space. This free space
-; TODO: should be documented but left untouched by any padding.
+; TODO: Avoid writing and overwriting the same ROM space.
 
 org $CB4E5E : padbyte $FF : pad $CB5EC5
 
