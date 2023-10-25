@@ -2629,7 +2629,6 @@ string_bet:
   CMP #$FF                ; null?
   BEQ .case_empty         ; branch if ^
 .case_default
-  LDA $0205               ; item ID to bet [TODO: Redundant]
   JMP $C068               ; load item name
 .case_empty
   LDA #$FF                ; space character
