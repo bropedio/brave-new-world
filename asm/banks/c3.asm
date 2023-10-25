@@ -3496,7 +3496,7 @@ EvadeText:
 MEvadeText:
   dw $83AB : db "M.Evade",$00
 PowerText:
-  dw $812B : db "Attack",$00,
+  dw $812B : db "Attack",$00
 UnknownTxt:
   dw $813F : db "???",$00
 PowerDash:
