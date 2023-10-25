@@ -4592,9 +4592,6 @@ org $C2600D
 ; #########################################################################
 ; Level-up Routine
 
-; Check for learning abilities in new displaced routine location
-org $C260BC : JSR LevelChk
-
 ; Re-arranging level up function to separate levels from esper bonuses
 org $C260DD
   REP #$21      ; Set 16-bit A, clear carry
@@ -4704,67 +4701,11 @@ AddEL:
   BRA .doone      ; loop for second bonus byte
 
 ; --------------------------------------------------------------------------
-; Img Damage Reduction Helper (in freespace)
-
-ImpNerf:
-  LDA $B5           ; command id
-  CMP #$01          ; is command "Item"
-  BEQ .skip         ; exit if so
-  LDA $3EE4,X       ; status byte 1
-  BIT #$20          ; "imp"
-  BEQ .skip         ; exit if not imped
-  LSR $11B1         ; half damage (high byte)
-  ROR $11B0         ; half damage (low byte)
-.skip
-  JMP $14AD         ; continue to hitting back check
-
-; --------------------------------------------------------------------------
-; Helpers for Petrify/Morph immunities
-
-Vulnerables2:
-  AND $3330,Y     ; mask fixed status vulnerables (3-4)
-  STA $E8         ; store vulnerable status-to-set
-  LDA #$9BFF      ; Dance,Regen,Slow,Haste,Stop,Shell,Safe,Reflect
-                  ; Rage,Frozen,Morph,Spell,Float
-FinishPet:
-  PHA             ; store petrify immunities
-  LDA $3EE3,Y     ; status bytes 1-2
-  ASL #2          ; Carry: "Petrify"
-  PLA             ; restore petrify immunities
-  BCC .done       ; branch if no "Petrify"
-  TRB $E8         ; remove vulnerables
-.done
-  LDA $E8         ; real vulnerables
-  RTS
-
-; --------------------------------------------------------------------------
-
-StatusFinish:
-  REP #$20             ; 16-bit A
-  LDA !died_flag       ; bitmask of entities needing status cleanup
-  BEQ .done            ; if none, exit
-  JSL StatusFinHelp    ; prepare status cleanup
-  JSR $4391            ; cleanup statuses
-.done
-  SEP #$20             ; 8-bit A
-  JMP $47ED            ; [displaced] vanilla code
-
-; --------------------------------------------------------------------------
-
-StamSpecial:      ; helper for monster special status attacks
-  TXA             ; A = status byte index
-  BNE .end        ; exit if not status-1 (Death)
-  LDA #$02        ; "Miss if Death Immune"
-  TSB $11A2       ; set ^ flag
-.end
-  RTS
-
-; --------------------------------------------------------------------------
 ; Freespace
 
-warnpc $C261FC+1
+warnpc $C261B6+1
 padbyte $FF
-pad $C261FC
+pad $C261B6
 
 ; #########################################################################
 ; Add Experience after Battle
@@ -5189,46 +5130,60 @@ NoSketch2:
   RTS
 
 ; --------------------------------------------------------------------------
-; Displaced due to original esper boost rewrite
-; TODO: Look into moving back in-line after Bropedio change overwrites boosts
 
-LevelChk:
-  LDX #$0000       ; Beginning of Terra's magic learned at level up block
-  CMP #$00
-  BEQ .learn_magic ; If Terra leveled, branch to see if she learns any spells
-  LDX #$0020       ; Beginning of Celes' magic learned at level up block
-  CMP #$06
-  BEQ .learn_magic ; If Celes leveled, branch to see if she learns any spells
-  LDX #$0000       ; Beginning of Cyan's SwdTech learned at level up block
-  CMP #$02         ; If Cyan leveled, check for any new SwdTechs
-  BNE .learn_blitz ; Else, check for any new Blitzes for Sabin
-.learn_bushido
-  JSR $6222        ; Are any SwdTechs learned at the current level?
-  BEQ .exit        ; If not, exit
-  TSB $1CF7        ; If so, enable the newly learnt SwdTech
-  BNE .exit        ; If it was already enabled (finished the nightmare), exit
-  LDA #$40
-  TSB $F0
-  BNE .exit
-  LDA #$42
-  JMP $5FD4
-.learn_blitz
-  LDX #$0008       ; Beginning of Sabin's Blitzes learned at level up block
-  CMP #$05         ; If Sabin leveled, check for any new Blitzes
-  BNE .exit        ; If not, exit
-  JSR $6222        ; Are any Blitzes learned at the current level?
-  BEQ .exit        ; If not, exit
-  TSB $1D28        ; If so, enable the newly learnt Blitz
-  BNE .exit        ; If it was already enabled (Bum Rush), exit
-  LDA #$80
-  TSB $F0
-  BNE .exit
-  LDA #$33
-  JMP $5FD4
-.learn_magic
-  JMP $61FC
-.exit
+StatusFinish:
+  REP #$20             ; 16-bit A
+  LDA !died_flag       ; bitmask of entities needing status cleanup
+  BEQ .done            ; if none, exit
+  JSL StatusFinHelp    ; prepare status cleanup
+  JSR $4391            ; cleanup statuses
+.done
+  SEP #$20             ; 8-bit A
+  JMP $47ED            ; [displaced] vanilla code
+
+; --------------------------------------------------------------------------
+
+StamSpecial:      ; helper for monster special status attacks
+  TXA             ; A = status byte index
+  BNE .end        ; exit if not status-1 (Death)
+  LDA #$02        ; "Miss if Death Immune"
+  TSB $11A2       ; set ^ flag
+.end
   RTS
+
+; --------------------------------------------------------------------------
+; Helpers for Petrify/Morph immunities
+
+Vulnerables2:
+  AND $3330,Y     ; mask fixed status vulnerables (3-4)
+  STA $E8         ; store vulnerable status-to-set
+  LDA #$9BFF      ; Dance,Regen,Slow,Haste,Stop,Shell,Safe,Reflect
+                  ; Rage,Frozen,Morph,Spell,Float
+FinishPet:
+  PHA             ; store petrify immunities
+  LDA $3EE3,Y     ; status bytes 1-2
+  ASL #2          ; Carry: "Petrify"
+  PLA             ; restore petrify immunities
+  BCC .done       ; branch if no "Petrify"
+  TRB $E8         ; remove vulnerables
+.done
+  LDA $E8         ; real vulnerables
+  RTS
+
+; --------------------------------------------------------------------------
+; Img Damage Reduction Helper (in freespace)
+
+ImpNerf:
+  LDA $B5           ; command id
+  CMP #$01          ; is command "Item"
+  BEQ .skip         ; exit if so
+  LDA $3EE4,X       ; status byte 1
+  BIT #$20          ; "imp"
+  BEQ .skip         ; exit if not imped
+  LSR $11B1         ; half damage (high byte)
+  ROR $11B0         ; half damage (low byte)
+.skip
+  JMP $14AD         ; continue to hitting back check
 
 ; -------------------------------------------------------------------------
 ; Zantetsuken Effect Helpers
