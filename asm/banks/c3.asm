@@ -1606,14 +1606,20 @@ OptTbl:
 ; ------------------------------------------------------------------------
 ; Update JSR targets
 
+org $C39674
 DoEquip:
   JSR YellowTxt   ; Update text colour (Yellow)
   JSR SetEquip    ; Update menu colours (Equip)
 
+org $C39685       ; Old "Optimum" handler, now freespace
+warnpc $C3968E+1
+
+org $C3968E
 DoRemove:
   JSR YellowTxt   ; Update text colour (Yellow)
   JSR SetRmove    ; Update menu colours (Remove)
 
+org $C3969F
 DoEmpty:
   JSR RemoveGear  ; Remove gear
   JSR DrawInfo    ; Redo text, status (* new routine location)
@@ -1624,6 +1630,7 @@ DoEmpty:
 ; Remove option optimized with a loop
 ; Rewrites $C396A8
 
+org $C396A8
 RemoveGear:
   JSR $93F2       ; Define Y
   LDX #$0005      ; Loop R-Hand, L-Hand, Head, Body, Relic1, Relic2
