@@ -3643,7 +3643,6 @@ WriteLine:
   BNE WriteChar   ; loop if not 00
 WriteExit:
   RTS
-warnpc $C40000
 
 ; ------------------------------------------------------------------------
 ; More EL/EP/SpellBank Helpers
