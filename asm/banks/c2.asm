@@ -511,11 +511,8 @@ Tick_Calc:
 
 .end
   PHA              ; store A
-  SEP #$20         ; 8-bit A
-  LDA $11A7        ; special byte 3
-  ORA #$80         ; add "Periodic" flag (new flag in BNW)
-  STA $11A7        ; update special byte 3 TODO: Use TSB instead
-  REP #$20         ; 16-bit A
+  LDA #$0080       ; "Periodic" flag (new flag in BNW)
+  TSB $11A7        ; set ^ in special byte 3
   PLA              ; restore A
   RTS
 
