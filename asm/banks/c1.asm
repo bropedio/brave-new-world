@@ -191,12 +191,8 @@ org $C189E4      ; code determines if swap can execute
 org $C18A0C      ; skip setting status update flag (until command code)
   CLC            ; clear carry to indicate valid equipment
   RTS
-HalfTurn:        ; 6 bytes in new freespace TODO: Move this into C2
-  LDA #$7E       ; half-full ATB
-  STA $3219,X    ; set new ATB value
-  RTL
-warnpc $C18A19
-padbyte $FF      ; frees 4 bytes
+warnpc $C18A18+1
+padbyte $FF
 pad $C18A18
 
 org $C18A90

@@ -1209,9 +1209,9 @@ org $C21908 : JSR CoinHelp
 
 org $C21955
 HalfSelf:
-  JSL HalfTurn      ; reset ATB to 50%
+  JSR HalfTurn      ; reset ATB to 50%
   BRA SelfHit       ; execute self-hit
-warnpc $C2195C
+warnpc $C2195B+1
 
 ; #########################################################################
 ; Runic (command)
@@ -1958,14 +1958,13 @@ MuddleBrush:
 ; -------------------------------------------------------------------------
 ; Helper for byte mod long access
 
-org $C22A33
 LongByteMod:
   JSR $5217      ; X: byte index, A: bitmask for bit in byte
   RTL
-warnpc $C22A37+1
 
 ; -------------------------------------------------------------------------
 
+warnpc $C22A37+1
 padbyte $FF
 pad $C22A37
 
@@ -3901,6 +3900,17 @@ PetrifyHelp:
   EOR #$FF           ; status-to-not-clear 1
   AND $3EE4,Y        ; current-status-keep 1
   RTS
+
+; -------------------------------------------------------------------------
+; Helper for Half Turn ATB
+
+HalfTurn:
+  LDA #$7E       ; half-full ATB
+  STA $3219,X    ; set new ATB value
+  RTS
+
+; -------------------------------------------------------------------------
+
 warnpc $C25161+1
 padbyte $FF
 pad $C25161
