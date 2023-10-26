@@ -8,7 +8,6 @@ incsrc ram.asm
 ; Local access to RNG routine
 
 org $C0062E : JSL Random : RTS
-org $C00636 : JSL Random ; [TODO: Remove -- redundant with above]
 
 ; #########################################################################
 ; RNG
@@ -202,16 +201,16 @@ org $C0BE03
 
 org $C0D613
 Level18:
-  LDA $1D4D        ; config settings
-  AND #$08         ; "Experience Enabled"
-  BNE .lvlup       ; branch if ^ (else, A=0)
+  LDA $1D4D          ; config settings
+  AND #$08           ; "Experience Enabled"
+  BNE .lvlup         ; branch if ^ (else, A=0)
 .finish
-  JMP $9F35        ; A will be minimum new level
+  JMP $9F35          ; A will be minimum new level
 .lvlup
-  LDA $EB          ; event param
-  TAX              ; X = character #
-  LDA RejoinLvl,X  ; A = rejoin level
-  BRA .finish      ; set new level
+  LDA $EB            ; event param
+  TAX                ; X = character #
+  LDA.l RejoinLvl,X  ; A = rejoin level
+  BRA .finish        ; set new level
 
 RejoinLvl:
   db $15 ; Terra
@@ -229,14 +228,9 @@ RejoinLvl:
   db $15 ; Gogo
   db $15 ; Umaro
 
-; Fill remaining (now unused) bytes
-padbyte $FF
-pad $C0D636
-
 ; -------------------------------------------------------------------------
 ; Helper for Respec general action
 
-org $C0D636
 RespecELs:
   LDA #$16         ; length of character base stats data
   STA $4202        ; set multiplier
@@ -269,8 +263,6 @@ RespecELs:
   STZ $21          ; zero scratch RAM
   LDA $1608,Y      ; character level
   JMP $9F4A        ; run level averaging to set new max HP/MP and check
-  LDA #$02         ; [unused] TODO Remove this
-  JMP $9B5C        ; [unused] TODO Remove this
 
 ; -------------------------------------------------------------------------
 ; Esper Junctions (Equip Bonuses)
@@ -338,9 +330,9 @@ EsperBonuses:
   PHX               ; store X
   ASL               ; esper index * 2
   TAX               ; index it ^
-  LDA.L EBonus,X    ; get bonus type (already x2)
+  LDA.l EBonus,X    ; get bonus type (already x2)
   TAX               ; index to bonus jmp table
-  LDA.L EBonus+1,X  ; bonus arg
+  LDA.l EBonus+1,X  ; bonus arg
   JSR (EBonCmd,X)   ; execute bonus cmd
   PLX               ; restore X
 .finish
@@ -388,7 +380,6 @@ StatBBonus:
 ; -------------------------------------------------------------------------
 ; Informative Miss Helpers
 
-org $C0D835
 MaybeNull:        ; 33 bytes
   LDA $11A4       ; attack flags
   AND #$0004      ; does attack lift status?
@@ -397,10 +388,6 @@ MaybeNull:        ; 33 bytes
   RTL
 SetKill:
   LDA $3AA1,Y     ; check immune to instant death bit
-  BRA BitSet
-SetFrac:          ; TODO: This label is unused now
-  LDA $3C80,Y     ; check fractional dmg immunity bit
-BitSet:
   BIT #$04        ; immune to instant death (or fractional)
   BEQ SetEnd      ; if not immune, exit
 SetNull:
@@ -511,7 +498,6 @@ StatusHelp:       ; 20 bytes
 ; strike will behave as though these statuses were not set.
 ; Statuses: Dark, Mute, Shell, Safe, Sleep, Muddle, Berserk, Freeze, Stop
 
-org $C0D8F0
 StatusRemove:
   CPY #$08             ; is target a monster?
   BCC .skip            ; branch if character
@@ -548,7 +534,6 @@ StatusFinHelp:         ; 33 bytes
 ; -------------------------------------------------------------------------
 ; Helper for Poison Tick Adjustments (from C2)
 
-org $C0D930
 TickLogic:
   STA $BD         ; set damage increment
   BEQ .incr       ; initialize tick to 100%
@@ -560,13 +545,11 @@ TickLogic:
 .incr
   INC #2          ; add 100% more damage
   RTL
-warnpc $C0D93E+1
 
 ; -------------------------------------------------------------------------
 ; Helper for North Cross targeting
 ; (runs immediately before status phase)
 
-org $C0D940
 NorthCrossMiss:
   PHP
   LDA $11A9              ; special effect
@@ -611,13 +594,9 @@ RemoveStatuses:
   TRB !fail           ; remove "fail" message (if set)
   PLP                 ; restore flags
   RTS
-warnpc $C0D990+1
-
 
 ; -------------------------------------------------------------------------
 ; Helpers for Palidor Redux (in C2)
-
-org $C0D990
 
 WaitTimer:
   LDA $3204,X            ; load 3204,X and 3205,X
@@ -659,7 +638,6 @@ ClearWaitQ:
 ; -------------------------------------------------------------------------
 ; Helper for X Fight Retargeting Fix (in C2)
 
-org $C0D9D0
 HandleXFight:            ; 27 bytes
   LDA #$20               ; "First strike of turn"
   TRB $B2                ; test and clear
@@ -684,7 +662,6 @@ HandleXFight:            ; 27 bytes
 ; the accompanying weapon strike had no targets to
 ; strike.
 
-org $C0D9F0
 ProcFix:               ; 12 bytes
   LDA $B8              ; character targets
   ORA $B9              ; enemy targets
@@ -718,12 +695,10 @@ DefendBetter:          ; [13 bytes]
   LSR                  ; 96 (lower cover threshold / 255)
 .done
   RTL
-warnpc $C0DA17+1
 
 ; -------------------------------------------------------------------------
 ; Helpers for "Half Battle Power" patch
 
-org $C0DA20
 GetBushPwr:
   REP #$20        ; 16-bit A [moved]
   PHA             ; save power so far
@@ -757,7 +732,6 @@ GetPwrFork:
   LDA $B5         ; [moved]
   RTL
 
-org $C0DB01
 GetBatPwr:
   PHP             ; store flags (including Z)
   LDA $3ED8,X     ; character X's ID
@@ -778,7 +752,6 @@ GetBatPwr:
 
 ; -------------------------------------------------------------------------
 
-org $C0DE5E
 SetMPDmgFlag:
   ORA #$01           ; [moved] Add "enable dmg numeral" flag
   PHA                ; store flags so far
@@ -828,12 +801,10 @@ PaletteMP:
   STA $0303,Y        ; store palette [?]
   STA $0307,Y        ; store palette [?]
   RTL
-warnpc $C0DEA0+1
 
 ; -------------------------------------------------------------------------
 ; Helper for Gau Targeting (single target across field) support
 
-org $C0DEA0
 SpreadRandom:        ; 24 bytes
   LDA $BB            ; targeting byte (vanilla code)
   AND #$2C           ; "multi" flags or "manual" flag
@@ -857,7 +828,6 @@ SpreadRandom:        ; 24 bytes
 ; Delay check for added "Steal" until special effect routine 
 ; so other weapon special effects are preserved.
 
-org $C0DF6B
 MugHelper:
   PHP                   ; store M/X flags
   SEP #$20              ; 8-bit A
@@ -884,8 +854,10 @@ MugHelper:
   PLP                   ; restore M/X flags
   LDA $3A48             ; missed flag (vanilla code)
   RTL
-warnpc $C0DFA0+1
 
+; -------------------------------------------------------------------------
+
+warnpc $C0DFA0+1        ; end of large freespace
 
 ; #########################################################################
 ; XOR Shift RNG Algorithm (replaces RNG Table)
