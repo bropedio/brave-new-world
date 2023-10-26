@@ -272,12 +272,12 @@ RespecELs:
 ; always align with the EBonCmd lookup table order.
 
 ; Note that these control bytes are already x2 to avoid ASL
-!eb_status=$00 ; Offset into status lookup (multiples of 2)
-!eb_innate=$02 ; Status bitmask 3
-!eb_percnt=$04 ; Percent special effects ($11D5)
-!eb_stat_a=$06 ; $aaaaZZZZ | a: boost size, Z: stat offset from $11A0
-!eb_stat_b=$08 ; $aaaaZZZZ | a: boost size, Z: stat offset from $11B0
-!eb_elemnt=$0A ; Element resist bitmask
+!eb_status = $00 ; Offset into status lookup (multiples of 2)
+!eb_innate = $02 ; Status bitmask 3
+!eb_percnt = $04 ; Percent special effects ($11D5)
+!eb_stat_a = $06 ; $aaaaZZZZ | a: boost size, Z: stat offset from $11A0
+!eb_stat_b = $08 ; $aaaaZZZZ | a: boost size, Z: stat offset from $11B0
+!eb_elemnt = $0A ; Element resist bitmask
 
 EBonCmd:
   dw StatusBonus
@@ -343,7 +343,7 @@ EsperBonuses:
 StatusBonus:
   TAX               ; index status lookup offset
   REP #$20          ; 16-bit A
-  LDA.L $EStatus,X  ; get status protection bits
+  LDA.l EStatus,X   ; get status protection bits
   TSB $11D2         ; add to equipment status protection bitmask 1 & 2
   SEP #$20          ; 8-bit A
   RTS
