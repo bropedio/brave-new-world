@@ -2529,6 +2529,8 @@ org $C23A09 : enemySteal:
 
 ; #########################################################################
 ; Metamorph Special Effect (now freespace)
+; Debilitator Effect (now freespace)
+; Control Effect (now mostly freespace)
 
 org $C23A3C
 RandomCast:
@@ -2575,21 +2577,6 @@ Wpn_Chk:
   RTS
 
 ; -------------------------------------------------------------------------
-; Immediately add Stolen items to inventory, preserving
-; any existing reserve item.
-; NOTE: Metamorph is unused in BNW, so this should be removed
-
-org $C23A7C
-Metamorph:
-  XBA               ; store acquired item in B
-  LDA $3018,X       ; character's unique bit
-  JSR SaveItem      ; save new item to buffer
-  NOP #2
-
-; #########################################################################
-; Debilitator Special Effect (now freespace)
-
-; -------------------------------------------------------------------------
 ;  Helper for Moogle Charm "fall like a stone" effect
 
 org $C23A9E
@@ -2625,14 +2612,33 @@ DanceChance:
   PLA              ; restore A
   RTS
 
-; #########################################################################
-; Control Effect (largely unused)
-
 ; -------------------------------------------------------------------------
 ; Control failure fork, reused by multiple special effects
-; Add hook to clear any status-to-set from missed special effect
+; We shifted it upward to add status-to-set clearing
 
-org $C23B1D : JSR Clear_Status
+EffectFail:
+  STA $3401        ; display text msg in A
+  REP #$20         ; 16-bit A
+  TYX              ; target index
+  STZ $3DD4,X      ; clear status-to-set bytes 1/2
+  STZ $3DE8,X      ; clear status-to-set bytes 3/4
+  LDA $3018,Y      ; target bit
+  STA $3A48        ; indicate target miss
+  TSB !miss        ; add to "missed" bitmask
+  TRB $A4          ; remove target from hit targets
+  RTS
+
+; -------------------------------------------------------------------------
+
+warnpc $C23B29+1
+padbyte $FF
+pad $C23B29
+
+; #########################################################################
+; Sketch Effect (modified at end to use EffectFail better
+; Two bytes freespace at $C23B69
+
+org $C23B66 : JMP EffectFail
 
 ; #########################################################################
 ; Leap Effect (rewritten)
@@ -2652,7 +2658,7 @@ org $C23B71
   RTS
 .miss
   LDA #$05       ; "Cannot Leap" message ID
-  JMP $3B18      ; miss with messasge ^
+  JMP EffectFail ; miss with messasge ^
 
 checkLeap:
   LDA $2F4B      ; formation flags
@@ -3214,6 +3220,9 @@ warnpc $C241E6+1
 ; Old Revenge Routine (now freespace)
 
 org $C241E6
+warnpc $C241F6+1
+padbyte $FF
+pad $C241F6
 
 ; #########################################################################
 ; Rewrite Palidor once-per-strike handler. Now, remove dead targets.
@@ -3263,17 +3272,6 @@ Chakra:
   RTS            ; preserved in case it's branched to from elsewhere
 warnpc $C2424B+1
 
-; -------------------------------------------------------------------------
-; Helper for special effect misses
-
-org $C2428B
-Clear_Status:
-  TYX            ; target index
-  STZ $3DD4,X    ; clear status-to-set bytes 1/2
-  STZ $3DE8,X    ; clear status-to-set bytes 3/4
-  LDA $3018,Y    ; [displaced]
-  RTS
-
 ; #########################################################################
 ; Mantra (per-strike special effect)
 ;
@@ -3292,11 +3290,17 @@ Mantra:
   LDA $3018,Y    ; attacker bitmask
   TRB $A4        ; miss caster
   RTS
+warnpc $C24280+1
 
 ; #########################################################################
-; End of Suplex + Reflect ??? (special effects) -- used as freespace
+; Suplex Random Targeting Effect (now freespace)
+; Reflect??? Effect (freespace)
+; Quick Effect (freespace)
 
-org $C242A4
+org $C2428B
+
+; -------------------------------------------------------------------------
+
 MantraHelp:
   LDA $3B40,Y    ; attacker stamina
   STA $E8        ; save multiplier
@@ -3314,7 +3318,12 @@ ChakraHelp:
   LSR            ; / 2
   STA $11B0      ; set MP heal amount
   RTS
-warnpc $C242C6+1
+
+; -------------------------------------------------------------------------
+
+warnpc $C242E1+1
+padbyte $FF
+pad $C242E1
 
 ; #########################################################################
 ; Special Effect (per-strike) Jump Table [C242E1]
