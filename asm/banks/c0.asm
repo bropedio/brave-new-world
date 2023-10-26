@@ -330,9 +330,11 @@ EsperBonuses:
   PHX               ; store X
   ASL               ; esper index * 2
   TAX               ; index it ^
+  LDA.l EBonus+1,X  ; bonus arg
+  PHA               ; store on stack for a moment
   LDA.l EBonus,X    ; get bonus type (already x2)
   TAX               ; index to bonus jmp table
-  LDA.l EBonus+1,X  ; bonus arg
+  PLA               ; get bonus arg
   JSR (EBonCmd,X)   ; execute bonus cmd
   PLX               ; restore X
 .finish
