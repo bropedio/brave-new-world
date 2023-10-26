@@ -4113,7 +4113,7 @@ CommandConversions:
   LDX $E0           ; misc. scratch RAM
   PHX               ; store/backup
   REP #$10          ; 16-bit X/Y
-  JSL $C36128       ; convert menu slot based on relics, A: Cmd ID
+  JSL Long6172      ; convert menu slot based on relics, A: Cmd ID
   SEP #$10          ; 8-bit X/Y
   PLX               ; get backup scratch RAM
   STX $E0           ; restore scratch RAM
