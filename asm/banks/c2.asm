@@ -2043,10 +2043,8 @@ Autocrossbow:
   LDA #$FF             ; max hitrate (100%)
   STA $11A8            ; set ^
 .exit
+ToolsRTS:
   RTS
-
-org $C22B2F : ToolsRTS:
-
 
 ; #########################################################################
 ; Damage Formulas
