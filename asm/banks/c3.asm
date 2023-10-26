@@ -799,10 +799,10 @@ CmdPalette:
   CMP #$0D           ; "Sketch"
   BNE .white         ; enable if not ^ (or other previous)
   LDA $11C6          ; right hand equipment slot
-  JSL $C2FBFD        ; C: Not a brush
+  JSL C2_BrushHand   ; C: Not a brush
   BCC .white         ; branch if is brush
   LDA $11C7          ; left hand equipment slot
-  JSL $C2FBFD        ; C: Not a brush
+  JSL C2_BrushHand   ; C: Not a brush
   BCS .gray          ; branch if ^
 .white
   LDA #$20           ; user color palette (white)
