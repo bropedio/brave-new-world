@@ -8,7 +8,6 @@ incsrc ram.asm
 ; Local access to RNG routine
 
 org $C0062E : JSL Random : RTS
-org $C00636 : JSL Random ; [TODO: Remove -- redundant with above]
 
 ; #########################################################################
 ; RNG
@@ -204,16 +203,16 @@ org $C0BE03
 
 org $C0D613
 Level18:
-  LDA $1D4D        ; config settings
-  AND #$08         ; "Experience Enabled"
-  BNE .lvlup       ; branch if ^ (else, A=0)
+  LDA $1D4D          ; config settings
+  AND #$08           ; "Experience Enabled"
+  BNE .lvlup         ; branch if ^ (else, A=0)
 .finish
-  JMP $9F35        ; A will be minimum new level
+  JMP $9F35          ; A will be minimum new level
 .lvlup
-  LDA $EB          ; event param
-  TAX              ; X = character #
-  LDA RejoinLvl,X  ; A = rejoin level
-  BRA .finish      ; set new level
+  LDA $EB            ; event param
+  TAX                ; X = character #
+  LDA.l RejoinLvl,X  ; A = rejoin level
+  BRA .finish        ; set new level
 
 RejoinLvl:
   db $15 ; Terra
@@ -231,14 +230,9 @@ RejoinLvl:
   db $15 ; Gogo
   db $15 ; Umaro
 
-; Fill remaining (now unused) bytes
-padbyte $FF
-pad $C0D636
-
 ; -------------------------------------------------------------------------
 ; Helper for Respec general action
 
-org $C0D636
 RespecELs:
   LDA #$16         ; length of character base stats data
   STA $4202        ; set multiplier
@@ -271,8 +265,6 @@ RespecELs:
   STZ $21          ; zero scratch RAM
   LDA $1608,Y      ; character level
   JMP $9F4A        ; run level averaging to set new max HP/MP and check
-  LDA #$02         ; [unused] TODO Remove this
-  JMP $9B5C        ; [unused] TODO Remove this
 
 ; -------------------------------------------------------------------------
 ; Esper Junctions (Equip Bonuses)
@@ -299,7 +291,7 @@ RespecELs:
 ; $0x: Vigor    $0x: Stamina     $xx: Defense  $xx: Mdef         $0x: Evade
 ; $0x: Vigor    $0x: Stamina     $xx: Defense  $xx: Mdef         $0x: Evade
 
-org $C0D690
+EBonus:
   dw $0000                ; Ramuh: Status immunity 1/2
   db $00                  ; Ramuh: Innate status
   db $00                  ; Ramuh: Damage & HP%/MP% bonuses
@@ -340,7 +332,6 @@ org $C0D690
 ; -------------------------------------------------------------------------
 ; Esper Equip Bonus application
 
-org $C0D79E
 EsperBonuses:
   LDA $15FB,X       ; equipped esper
   BPL .chk_bonus    ; branch if not null ^
@@ -355,11 +346,16 @@ EsperBonuses:
   NOP               ; wait for multiplication
   LDA $004216       ; esper data offset
   TAX               ; index it ^
-  LDA $C0D690,X     ; Status protection
+  LDA.l EBonus,X    ; Status protection
   TSB $11D2         ; add to equipment status protection
-  LDA $C0D692,X     ; Innate statuses and percent bonuses
-  JSR EarringFix    ; hook to extend handling in subroutine
-  LDA $C0D695,X     ; Stat bonuses
+  LDA.l EBonus+2,X  ; Innate statuses and percent bonuses
+  TSB $11D4         ; add to equipment innate statuses/etc
+  SEP #$20          ; 8-bit A
+  XBA               ; A = 11D5 bits 
+  AND #$02          ; isolate earring bit
+  TSB $11D7         ; set earring bit
+  REP #$20          ; 16-bit A
+  LDA.l EBonus+5,X  ; Stat bonuses
   LDY #$0006        ; stat iterator (4 stats)
 .loop
   PHA               ; store stat bonuses
@@ -372,7 +368,7 @@ EsperBonuses:
   DEY #2            ; decrement iterator
   BPL .loop         ; loop through all 4 core stats
   SEP #$20          ; 8-bit A
-  LDA $C0D699,X     ; Evade & Mblock
+  LDA.l EBonus+9,X  ; Evade & Mblock
   PHA               ; store ^
   AND #$0F          ; bottom nibble TODO: Missing CLC
   ADC $11A8         ; add to equipment Evade stat
@@ -382,15 +378,15 @@ EsperBonuses:
   LSR #4            ; shift MBlock into place
   ADC $11AA         ; add to equipment MBlock stat
   STA $11AA         ; update ^
-  LDA $C0D694,X     ; Elemental resistances
+  LDA.l EBonus+4,X  ; Elemental resistances
   TSB $11B9         ; add to equipment resistances
-  LDA $C0D697,X     ; Defense TODO: Missing CLC, but probably no bug
+  LDA.l EBonus+7,X  ; Defense TODO: Missing CLC, but probably no bug
   ADC $11BA         ; add to equipment defense
   BCC .noCap1       ; branch if no overflow
   LDA #$FF          ; else use max 255
 .noCap1
   STA $11BA         ; update equipment defense
-  LDA $C0D698,X     ; M.Def TODO: Missing CLC
+  LDA.l EBonus+8,X  ; M.Def TODO: Missing CLC
   ADC $11BB         ; add to equipment M.Def
   BCC .noCap2       ; branch if no overflow
   LDA #$FF          ; else use max 255
@@ -403,20 +399,9 @@ EsperBonuses:
   AND #$3F          ; [displaced] mask +% effects
   RTL
 
-org $C0D827
-EarringFix:         ; TODO: Move this code in-line
-  TSB $11D4         ; [displaced] add to equipment innate statuses/etc
-  SEP #$20          ; 8-bit A
-  XBA               ; A = 11D5 bits 
-  AND #$02          ; isolate earring bit
-  TSB $11D7         ; set earring bit
-  REP #$20          ; 16-bit A
-  RTS
-
 ; -------------------------------------------------------------------------
 ; Informative Miss Helpers
 
-org $C0D835
 MaybeNull:        ; 33 bytes
   LDA $11A4       ; attack flags
   AND #$0004      ; does attack lift status?
@@ -425,10 +410,6 @@ MaybeNull:        ; 33 bytes
   RTL
 SetKill:
   LDA $3AA1,Y     ; check immune to instant death bit
-  BRA BitSet
-SetFrac:          ; TODO: This label is unused now
-  LDA $3C80,Y     ; check fractional dmg immunity bit
-BitSet:
   BIT #$04        ; immune to instant death (or fractional)
   BEQ SetEnd      ; if not immune, exit
 SetNull:
@@ -539,7 +520,6 @@ StatusHelp:       ; 20 bytes
 ; strike will behave as though these statuses were not set.
 ; Statuses: Dark, Mute, Shell, Safe, Sleep, Muddle, Berserk, Freeze, Stop
 
-org $C0D8F0
 StatusRemove:
   CPY #$08             ; is target a monster?
   BCC .skip            ; branch if character
@@ -576,7 +556,6 @@ StatusFinHelp:         ; 33 bytes
 ; -------------------------------------------------------------------------
 ; Helper for Poison Tick Adjustments (from C2)
 
-org $C0D930
 TickLogic:
   STA $BD         ; set damage increment
   BEQ .incr       ; initialize tick to 100%
@@ -588,13 +567,11 @@ TickLogic:
 .incr
   INC #2          ; add 100% more damage
   RTL
-warnpc $C0D93E+1
 
 ; -------------------------------------------------------------------------
 ; Helper for North Cross targeting
 ; (runs immediately before status phase)
 
-org $C0D940
 NorthCrossMiss:
   PHP
   LDA $11A9              ; special effect
@@ -639,13 +616,9 @@ RemoveStatuses:
   TRB !fail           ; remove "fail" message (if set)
   PLP                 ; restore flags
   RTS
-warnpc $C0D990+1
-
 
 ; -------------------------------------------------------------------------
 ; Helpers for Palidor Redux (in C2)
-
-org $C0D990
 
 WaitTimer:
   LDA $3204,X            ; load 3204,X and 3205,X
@@ -687,7 +660,6 @@ ClearWaitQ:
 ; -------------------------------------------------------------------------
 ; Helper for X Fight Retargeting Fix (in C2)
 
-org $C0D9D0
 HandleXFight:            ; 27 bytes
   LDA #$20               ; "First strike of turn"
   TRB $B2                ; test and clear
@@ -712,7 +684,6 @@ HandleXFight:            ; 27 bytes
 ; the accompanying weapon strike had no targets to
 ; strike.
 
-org $C0D9F0
 ProcFix:               ; 12 bytes
   LDA $B8              ; character targets
   ORA $B9              ; enemy targets
@@ -746,12 +717,10 @@ DefendBetter:          ; [13 bytes]
   LSR                  ; 96 (lower cover threshold / 255)
 .done
   RTL
-warnpc $C0DA17+1
 
 ; -------------------------------------------------------------------------
 ; Helpers for "Half Battle Power" patch
 
-org $C0DA20
 GetBushPwr:
   REP #$20        ; 16-bit A [moved]
   PHA             ; save power so far
@@ -784,6 +753,24 @@ GetPwrFork:
 .exit
   LDA $B5         ; [moved]
   RTL
+
+GetBatPwr:
+  PHP             ; store flags (including Z)
+  LDA $3ED8,X     ; character X's ID
+  STA $004202     ; prep multiplication
+  LDA #$16        ; size of character startup block
+  STA $004203     ; start mutliplication
+  NOP #3          ; wait for processor
+  REP #$30        ; 16-bit X/Y,A
+  LDA $004216     ; get product
+  PHX             ; save character index 
+  TAX             ; index to character data
+  TDC             ; zero A/B
+  SEP #$20        ; 8-bit A
+  LDA $ED7CAA,X   ; character battle power
+  PLX             ; restore character index
+  PLP             ; restore flags (including Z)
+  RTS
 
 ; -------------------------------------------------------------------------
 ; Gau Veldt Freebies
@@ -829,32 +816,8 @@ FreeForms:
   db $98              ; Formations 120-127
   db $11              ; Formations 128-135
 
-
-; -------------------------------------------------------------------------
-; Helper for "Half Battle Power" patch
-
-org $C0DB01
-GetBatPwr:
-  PHP             ; store flags (including Z)
-  LDA $3ED8,X     ; character X's ID
-  STA $004202     ; prep multiplication
-  LDA #$16        ; size of character startup block
-  STA $004203     ; start mutliplication
-  NOP #3          ; wait for processor
-  REP #$30        ; 16-bit X/Y,A
-  LDA $004216     ; get product
-  PHX             ; save character index 
-  TAX             ; index to character data
-  TDC             ; zero A/B
-  SEP #$20        ; 8-bit A
-  LDA $ED7CAA,X   ; character battle power
-  PLX             ; restore character index
-  PLP             ; restore flags (including Z)
-  RTS
-
 ; -------------------------------------------------------------------------
 
-org $C0DE5E
 SetMPDmgFlag:
   ORA #$01           ; [moved] Add "enable dmg numeral" flag
   PHA                ; store flags so far
@@ -904,12 +867,10 @@ PaletteMP:
   STA $0303,Y        ; store palette [?]
   STA $0307,Y        ; store palette [?]
   RTL
-warnpc $C0DEA0+1
 
 ; -------------------------------------------------------------------------
 ; Helper for Gau Targeting (single target across field) support
 
-org $C0DEA0
 SpreadRandom:        ; 24 bytes
   LDA $BB            ; targeting byte (vanilla code)
   AND #$2C           ; "multi" flags or "manual" flag
@@ -933,7 +894,6 @@ SpreadRandom:        ; 24 bytes
 ; Delay check for added "Steal" until special effect routine 
 ; so other weapon special effects are preserved.
 
-org $C0DF6B
 MugHelper:
   PHP                   ; store M/X flags
   SEP #$20              ; 8-bit A
@@ -960,8 +920,10 @@ MugHelper:
   PLP                   ; restore M/X flags
   LDA $3A48             ; missed flag (vanilla code)
   RTL
-warnpc $C0DFA0+1
 
+; -------------------------------------------------------------------------
+
+warnpc $C0DFA0+1        ; end of large freespace
 
 ; #########################################################################
 ; XOR Shift RNG Algorithm (replaces RNG Table)
