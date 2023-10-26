@@ -672,6 +672,7 @@ CastTarget:
 ; largely to save space.
 
 org $C4F1D0
+
 ScanHPMP:
   PHP                 ; store flags
   LDA #$30            ; "HP .../..." message ID
@@ -754,12 +755,10 @@ CheckEach:
   ASL                 ; shift bit to check
   BNE .loop           ; loop if still bits left
   RTS
-warnpc $C4F26A+1
 
 ; ------------------------------------------------------------------------
 ; Helper for Runic Stance patch
 
-org $C4F26A
 StanceCheck:     ; 21 bytes
   LDA ($78),Y    ; attacker index (vanilla code)
   ASL            ; index * 2
@@ -775,63 +774,10 @@ StanceCheck:     ; 21 bytes
   CMP #$04       ; in character range (abort if carry set)
 .abort
   RTL
-warnpc $C4F27F+1
 
 ; ------------------------------------------------------------------------
-; TODO: Remove all code below through the warnpc, as it is unused
-; $C4F27F - $C4F2DC: Now free space
+; Freespace
 
-org $C4F27F
-  dw $F2C8         ; partial JSR code
-  PLA              ; restore status byte
-  LDA $3EF8,x      ; status-3
-  BIT #$02         ; "Regen"
-  PHA              ; store status byte
-  JSR TryScan      ; display status message if ^
-  PLA              ; restore status byte
-  BIT #$04         ; "Slow"
-  PHA              ; store status byte
-  JSR TryScan      ; display status message if ^
-  PLA              ; restore status byte
-  BIT #$08         ; "Haste"
-  PHA              ; store status byte
-  JSR TryScan      ; display status message if ^
-  PLA              ; restore status byte
-  BIT #$10         ; "Stop"
-  PHA              ; store status byte
-  JSR TryScan      ; display status message if ^
-  PLA              ; restore status byte
-  BIT #$20         ; "Shell"
-  PHA              ; store status byte
-  JSR TryScan      ; display status message if ^
-  PLA              ; restore status byte
-  BIT #$40         ; "Safe"
-  PHA              ; store status byte
-  JSR TryScan      ; display status message if ^
-  PLA              ; restore status byte
-  BIT #$80         ; "Reflect"
-  PHA              ; store status byte
-  JSR TryScan      ; display status message if ^
-  PLA              ; restore status byte
-  LDA $3EF9,x      ; status-4
-  BIT #$04         ; "Death Protection"
-  PHA              ; store status byte
-  JSR TryScan      ; display status message if ^
-  PLA              ; restore status byte
-  BIT #$80         ; "Float"
-  PHA              ; store status byte
-  JSR TryScan      ; display status message if ^
-  PLA              ; restore status byte
-  RTL
-
-TryScan:
-  BEQ .next
-  LDA #$04         ; "message" animation type
-  PHK              ; push $C4 onto stack
-  PER .next-1      ; ensure JML below returns
-  PEA $00CA        ; use RTL at $C200CB
-  JML $C26411      ; queue message animation
-.next
-  INC $2D6F        ; point to next message ID
-  RTS
 warnpc $C4F2DB+1
+padbyte $FF
+pad $C4F2DB
