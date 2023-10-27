@@ -2605,11 +2605,16 @@ MagicFunction2:
 ; Colosseum Item Row drawing helpers
 ; Include prize item on line with item row
 
-ItemNameFork:
+IsColosseum:
   LDA $26                 ; current system op
   CMP #$71                ; "Init Colosseum Item Selection"
-  BEQ .colosseum_menu     ; branch if ^
+  BEQ .exit               ; branch if ^
   CMP #$72                ; "Sustain Colosseum Item Selection"
+.exit
+  RTS
+
+ItemNameFork:
+  JSR IsColosseum         ; set zero flag if is colosseum item menu
   BEQ .colosseum_menu     ; branch if ^
   JSR $80B9               ; else, do regular "Item Menu" rows
   JMP $7FD3               ; display text and item type
@@ -2787,10 +2792,7 @@ check_reward_item:
   RTS               ; go on
 
 Colosseum_Cursor:
-  LDA $26             ; current system op
-  CMP #$71            ; "Init Colosseum Item Selection"
-  BEQ .colosseum_menu ; branch if ^
-  CMP #$72            ; "Sustain Colosseum Item Selection"
+  JSR IsColosseum     ; set zero flag if is colosseum item menu
   BEQ .colosseum_menu ; branch if ^
   JMP $7D1C           ; jump and init menu navigation data
 .colosseum_menu
