@@ -1030,9 +1030,9 @@ org $C37FD0 : JMP ItemNameFork ; hook for colosseum item row
 
 ; #########################################################################
 ; Load Item Descriptions and Draw Item Count
-; BNW - Remove Inventory Count
+; BNW - Remove Inventory Count by jumping out of routine early
 
-org $C382FB : db $4C
+org $C382FB : JMP $5738
 
 ; #########################################################################
 ; Item Menu Stat Text Data (Gear)
@@ -2720,24 +2720,19 @@ string_bet:
 
 load_item_desc:
   JSR $8308          ; Set desc ptrs
-  TDC                ; Clear A
-  LDA $4D            ; load column position
-  CMP #$01           ; is reward column?
-  BEQ .reward        ; branch if so
-  LDA $4B            ; Cursor slot
-  LSR                ; /2 (cursor slot must be /2 due to 2 column menu)
-  TAY                ; Index it
-  LDA $0250,Y        ; Item in slot
-.load
-  JSR $5738          ; Load description
-  RTS
-.reward
+  TDC                ; zero A/B
   LDA $4B            ; cursor slot
-  DEC $4B            ; subtract $01 and make pair number
-  LSR                ; /2 (like above)
+  LSR                ; / 2 to get row index
   TAY                ; index it
-  LDA $0D40,Y        ; reward in slot
+  LDA $4D            ; column position (wager | prize)
+  BEQ .wager         ; branch if left-side column
+.prize
+  LDA !prizes,Y      ; reward in slot
   BRA .load          ; branch and load desc.
+.wager
+  LDA !colo_items,Y  ; Item in slot
+.load
+  JMP $5738          ; Load description
 
 Set_Arrow:
   LDA #$75           ; load new colosseum limit
@@ -2777,7 +2772,7 @@ check_reward_item:
   BEQ .end          ; branch
   STY $F0           ; save actual Y index in $F0
   PLY               ; restore Y
-  STA $0D40,Y       ; save reward item id (more dummy RAM?)
+  STA !prizes,Y     ; save reward item id (more dummy RAM?)
   REP #$20          ; 16-bit A
   TXA               ; transfer X to A
   LSR #2            ; /4
@@ -2842,7 +2837,7 @@ Clear_0D40:
   STZ $26         ; Next: Fade-out
   LDX $00         ; clear x
 .clear_0D40
-  STZ $0D40,X     ; zero buffer
+  STZ !prizes,X   ; zero buffer
   INX
   CPX #$0100
   BNE .clear_0D40
