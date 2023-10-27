@@ -2314,22 +2314,12 @@ ColoPad:
   STA $0205      ; Set item bet
   JSR $0EB2      ; Sound: Click
   LDA #$75       ; C3/ADB7
-  JSR Clear_0D40 ; go to Subroutine that clear WRAM if push A
+  STA $27        ; Queue: Matchup
+  STZ $26        ; Next: Fade-out
   RTS
 warnpc $C3AD0E+1
-org $C3AD0E
-.x
-org $C3AD14
-.check_b
-  LDA $09        ; No-autofire keys
-  BIT #$80       ; Pushing B?
-  BEQ $0C        ; Exit if not
-  JSR $0EA9      ; Sound: Cursor
-  LDA #$FF       ; Empty item
-  STA $0205      ; Clear item bet
-  JSR Clear_0D40 ; go to Subroutine that clear WRAM if push B
-  RTS
-warnpc $C3AD27+1
+org $C3AD0E : .x
+org $C3AD14 : .check_b
 
 ; -------------------------------------------------------------------------
 ; Initial drawing of colosseum item list
@@ -2719,18 +2709,14 @@ string_bet:
 ; New Helpers for condensed colosseum menu
 
 load_item_desc:
-  JSR $8308          ; Set desc ptrs
+  JSR $8308          ; set desc ptrs
   TDC                ; zero A/B
   LDA $4B            ; cursor slot
-  LSR                ; / 2 to get row index
-  TAY                ; index it
-  LDA $4D            ; column position (wager | prize)
-  BEQ .wager         ; branch if left-side column
-.prize
-  LDA !prizes,Y      ; reward in slot
-  BRA .load          ; branch and load desc.
-.wager
-  LDA !colo_items,Y  ; Item in slot
+  LSR                ; A: row index, C: column index (0/1)
+  TAX                ; index row
+  LDA !colo_items,X  ; item in slot
+  BCC .load          ; branch if left-side column
+  JSR GetPrize       ; get prize for this wager
 .load
   JMP $5738          ; Load description
 
@@ -2738,30 +2724,33 @@ load_item_desc:
 ; Loop go on seeking until we find an item that returns a reward and
 ; then store both the ID and Prize in buffers
 
+GetPrize:
+  REP #$20          ; 16-bit A
+  ASL #2            ; wager item x4
+  TAX               ; index into colosseum data
+  SEP #$20          ; 8-bit A
+  TDC               ; zero B
+  LDA $DFB602,X     ; prize item ID
+  RTS
+
 Set_Arrow:
   LDA #$75          ; load new colosseum limit
   STA $5C           ; set ^
-  LDA #$FF        ; max scrollbar speed
+  LDA #$FF          ; max scrollbar speed
   STA $7E357A       ; set ^
   TDC : TAY : TAX   ; zero A/B,X,Y
 .loop
   PHX               ; store current item slot
   LDA $1869,X       ; load item in slot
-  REP #$20          ; 16-bit A
-  PHA               ; store item ID (16-bit)
-  ASL #2            ; x4
-  TAX               ; index it
-  SEP #$20          ; 8-bit A
-  TDC               ; clear B
-  LDA $DFB602,X     ; colosseum prize
-  PLX               ; get item ID (16-bit)
+  PHA               ; store item on stack
+  JSR GetPrize      ; get prize item ID
   CMP #$BC          ; "cannot be wagered"
   BEQ .next         ; continue loop if ^
-  STA !prizes,Y     ; save reward item id
-  TXA               ; item ID
-  STA !colo_items,Y ; save A (item reward ID)
+  LDA $01,S         ; get wager item ID
+  STA !colo_items,Y ; save it ^
   INY               ; point to next condensed list index
 .next
+  PLA               ; clean up wager item ID
   PLX               ; restore item slot
   INX               ; next item slot
   CPX #$0100        ; have we checked all item slots?
@@ -2773,15 +2762,15 @@ Colosseum_Cursor:
   BEQ .colosseum_menu ; branch if ^
   JMP $7D1C           ; jump and init menu navigation data
 .colosseum_menu
-; Load navigation data for Colosseum
-  LDY #Col_Navi_Data  ; C3/7D2B
+  LDY #Col_Navi_Data  ; pointer to nav data
   JMP $05FE           ; Load navig data
-; Navigation data forColosseum
+
 handle_D_Pad:
   JSR $81C7           ; Handle D-Pad
 finger_pos:
-  LDY #Col_Curs_Pos   ; C3/7D30
+  LDY #Col_Curs_Pos   ; pointer to cursor positions
   JMP $0648           ; Relocate cursor
+
 ; Navigation data & Cursor positions for Colosseum
 Col_Navi_Data:
   db $01              ; Wraps horizontally
@@ -2815,15 +2804,6 @@ Handle_A:
   JMP ColoPad_x       ; play buzzer sound, pixelate screen
 
 Clear_0D40:
-  STA $27         ; Queue menu exit
-  STZ $26         ; Next: Fade-out
-  LDX $00         ; clear x
-.clear_0D40
-  STZ !prizes,X   ; zero buffer
-  INX
-  CPX #$0100
-  BNE .clear_0D40
-  RTS
 
 ; ------------------------------------------------------------------------
 ; EL/EP/Spell bank text data and helpers
