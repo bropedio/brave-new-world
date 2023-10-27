@@ -2298,28 +2298,12 @@ org $C3ACEA
 
 ; -------------------------------------------------------------------------
 ; Handle pressing A (and B) in Colosseum menu
-; Largely rewritten as part of "shrinked-colosseum.asm"
+; If pressing A in the right column (prizes) always buzz. Added
+; as part of the "shrinked-colosseum.asm" patch.
 
-org $C3ACF0
-ColoPad:
-  LDA $08        ; No-autofire keys
-  BIT #$80       ; Pushing A?
-  BEQ .check_b   ; Branch if not
-  JMP Handle_A
-.rts
-  TAX            ; Index it
-  LDA !colo_items,X ; Item in slot
-  CMP #$FF       ; None?
-  BEQ .x         ; Fail if so
-  STA $0205      ; Set item bet
-  JSR $0EB2      ; Sound: Click
-  LDA #$75       ; C3/ADB7
-  STA $27        ; Queue: Matchup
-  STZ $26        ; Next: Fade-out
-  RTS
-warnpc $C3AD0E+1
-org $C3AD0E : .x
-org $C3AD14 : .check_b
+org $C3ACF9
+  LSR            ; $4B becomes: C: prize column, A: row index
+  JSR GetWager   ; get wager ID, if in wager column
 
 ; -------------------------------------------------------------------------
 ; Initial drawing of colosseum item list
@@ -2790,20 +2774,15 @@ Col_Curs_Pos:
   dw $b608,$b66F
   dw $c208,$c26F
 
-; New code if pushing A in colosseum menu
+; New helper for pushing A in colosseum menu
 
-Handle_A:
-  TDC                 ; Clear A
-  LDA $4D             ; load column position
-  CMP #$01            ; is reward column?
-  BEQ .error
-  LDA $4B             ; Selected slot
-  LSR
-  JMP ColoPad_rts     ; advance to matchup if prize exists
-.error
-  JMP ColoPad_x       ; play buzzer sound, pixelate screen
-
-Clear_0D40:
+GetWager:
+  TAX                 ; row index
+  LDA !colo_items,X   ; wager item in row
+  BCC .done           ; branch if in wager column
+  LDA #$FF            ; else, treat as "empty" for buzz
+.done
+  RTS
 
 ; ------------------------------------------------------------------------
 ; EL/EP/Spell bank text data and helpers
