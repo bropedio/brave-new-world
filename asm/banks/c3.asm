@@ -2619,7 +2619,7 @@ ItemNameFork:
   JSR $80B9               ; else, do regular "Item Menu" rows
   JMP $7FD3               ; display text and item type
 .colosseum_menu
-  JSR Set_Arrow            ; print arrow if prize exists
+  JSR Set_Arrow           ; print arrow if prize exists
   JSR colosseum_setup     ; setup colosseum variables
   JSR string_init         ; init the string
   JSR string_bet          ; display bet item
@@ -2734,56 +2734,38 @@ load_item_desc:
 .load
   JMP $5738          ; Load description
 
-Set_Arrow:
-  LDA #$75           ; load new colosseum limit
-  STA $5C            ; set
-  REP #$20           ; 16-bit A
-  LDA #$00FF         ;
-  STA $7E357A        ; [?]
-  SEP #$20           ; 8-bit A
-  JMP check_reward_item
-
 ; ------------------------------------------------------------------------
-; This routine makes a kind of "mirroring" effect on the items that
-; return a reward in the colosseum menu.
-;
-; Loop go on seeking untill it find an item that return a reward and
-; and than print the progression ID in RAM thanks to loop2
+; Loop go on seeking until we find an item that returns a reward and
+; then store both the ID and Prize in buffers
 
-check_reward_item:
-  LDY $00           ; clear Y
-.loop2
-  PHY               ; save Y
-  LDY $F0           ; load Y
+Set_Arrow:
+  LDA #$75          ; load new colosseum limit
+  STA $5C           ; set ^
+  LDA #$FF        ; max scrollbar speed
+  STA $7E357A       ; set ^
+  TDC : TAY : TAX   ; zero A/B,X,Y
 .loop
-  TDC               ; clear A
-  LDA $1869,Y       ; load item ID in slot
+  PHX               ; store current item slot
+  LDA $1869,X       ; load item in slot
   REP #$20          ; 16-bit A
+  PHA               ; store item ID (16-bit)
   ASL #2            ; x4
   TAX               ; index it
-  PHX               ; save X (in case you have a reward item)
   SEP #$20          ; 8-bit A
-  INY               ; increase Y (for next item)
+  TDC               ; clear B
   LDA $DFB602,X     ; colosseum prize
-  PLX               ; load X
-  CMP #$BC          ; can you have a reward? (empty item?)
-  BEQ .loop         ; branch if not
-  CPY #$0100        ; compare if you have check all the reward item
-  BEQ .end          ; branch
-  STY $F0           ; save actual Y index in $F0
-  PLY               ; restore Y
-  STA !prizes,Y     ; save reward item id (more dummy RAM?)
-  REP #$20          ; 16-bit A
-  TXA               ; transfer X to A
-  LSR #2            ; /4
-  SEP #$20          ; 8-bit A
+  PLX               ; get item ID (16-bit)
+  CMP #$BC          ; "cannot be wagered"
+  BEQ .next         ; continue loop if ^
+  STA !prizes,Y     ; save reward item id
+  TXA               ; item ID
   STA !colo_items,Y ; save A (item reward ID)
-  INY               ; increment Y
-  BRA .loop2        ; go on
-.end
-  STZ $F0           ; clear $F0
-  STZ $F1           ; clear $F1
-  PLY               ; (no use, just to restore the stack)
+  INY               ; point to next condensed list index
+.next
+  PLX               ; restore item slot
+  INX               ; next item slot
+  CPX #$0100        ; have we checked all item slots?
+  BNE .loop         ; loop if until ^
   RTS               ; go on
 
 Colosseum_Cursor:
