@@ -485,7 +485,7 @@ org $C35203 : NOP #6 ; skip drawing "Lore" title
 ; Draw Bushido Menu
 
 ; -------------------------------------------------------------------------
-; No longer draw "Bushido" meny title
+; No longer draw "Bushido" menu title
 
 org $C352E8 : NOP #6 ; skip drawing "Bushido" title
 
@@ -493,7 +493,7 @@ org $C352E8 : NOP #6 ; skip drawing "Bushido" title
 ; Add number prefix to bushido names, to help player see which tech
 ; aligns with each skill in the bushido meter.
 
-org $C35351 : JSR BushidoNum ;load name with number prefix
+org $C35351 : JSR BushidoNum ; load name with number prefix
 
 ; #########################################################################
 ; Draw Rage Menu

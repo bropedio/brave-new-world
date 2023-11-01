@@ -141,6 +141,7 @@ org $C17D25 : NOP #3 ; [?]
 !b_max = #$07
 
 org $C17D5F
+BushidoGauge:
   TDC : TAX         ; A=0000, X=0000
   LDA $2020         ; known swdtechs
   INC               ; +1
@@ -153,9 +154,10 @@ org $C17D5F
   BNE .next         ; branch if still known
   LDA #$25          ; else, load gray palette
 .next
-  INX #2            ; X-=2
+  INX #2            ; X+=2
   CPX #$0010        ; done 8 numbers?
   BNE .init         ; loop till done
+
   LDA $0E           ; frame counter
   AND #$03          ; 0-3
   BNE .gauge        ; branch 3/4 frames
@@ -174,15 +176,15 @@ org $C17D5F
   TDC               ; else, A=0000
   STA $7B82         ; reset gauge
 .set
-  STA $36           ; set "active" bushido count
+  INC : TAY         ; set iterator
   TDC               ; A=0000
-  TAX : TAY         ; X,Y=0000
+  TAX               ; X=0000
   LDA #$29          ; yellow palette
 .yellow
   STA $5DDA,X       ; set ^
   INX #2            ; next tile index
-  DEC $36           ; decrement tiles to update
-  BPL .yellow       ; loop till all are yellow
+  DEY               ; decrement tiles to update
+  BNE .yellow       ; loop till all are yellow (reduce Y to zero)
   LDA $7B82         ; gauge value (255 max)
   BPL .low_half     ; branch if < 128
   PHA               ; store gauge value
