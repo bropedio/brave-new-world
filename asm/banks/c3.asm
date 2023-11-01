@@ -484,7 +484,16 @@ org $C35203 : NOP #6 ; skip drawing "Lore" title
 ; #########################################################################
 ; Draw Bushido Menu
 
+; -------------------------------------------------------------------------
+; No longer draw "Bushido" meny title
+
 org $C352E8 : NOP #6 ; skip drawing "Bushido" title
+
+; -------------------------------------------------------------------------
+; Add number prefix to bushido names, to help player see which tech
+; aligns with each skill in the bushido meter.
+
+org $C35351 : JSR BushidoNum ;load name with number prefix
 
 ; #########################################################################
 ; Draw Rage Menu
@@ -2164,6 +2173,7 @@ EqpOptsTxt:
   dw Relic2Txt    ; Relic 2 ; TODO: Pointer unused
 
 ; Positioned text for Equip and Relic menus
+; TODO: Remove spaces here -- instead write full empty string first
 RHandTxt:   dw !rh_coords : db " R-hand      ",$00
 LHandTxt:   dw !lh_coords : db " L-hand      ",$00
 HeadTxt:    dw !head_pos  : db " Head        ",$00
@@ -2178,6 +2188,20 @@ EmptyTxt:  dw $78BB : db "EMPTY",$00
 
 ; -------------------------------------------------------------------------
 ; Freespace
+
+!t_one = #$B5
+!t_dot = #$C5
+
+BushidoNum:
+  LDX #$9E8B     ; WRAM destination
+  STX $2181      ; set ^
+  PHA            ; store bushido number
+  CLC            ; clear carry for ADC
+  ADC !t_one     ; add offset for "1" tile
+  STA $2180      ; write number
+  LDA !t_dot     ; "."
+  STA $2180      ; write ^
+  JMP $846E      ; jump to finish loading name tiles
 
 warnpc $C3A34D+1
 padbyte $FF
