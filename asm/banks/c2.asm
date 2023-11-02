@@ -20,9 +20,7 @@ CounterFlags:
   JSR MayReset     ; determine whether to clear 33FC-33FD
   STA $33FE        ; clear bytes tracking "was attacked"
   STA $33FF        ; clear bytes tracking "was attacked"
-warnpc $C2008F
-padbyte $EA
-pad $C2008E
+%nop($C2008E)
 
 ; #########################################################################
 ; Conventional Turn Postprocessing ($C200F9)
@@ -68,7 +66,7 @@ org $C201AA
 .valid
   STX $3406            ; entity is first in line for action queue
   RTS                  ; this RTS is a branch destination
-warnpc $C201D9+1
+warnpc $C201D9
 
 ; #########################################################################
 ; Set executed command in Mimic Variables ($C2021E)
@@ -106,7 +104,7 @@ AtmaOver:
   CLC : ADC $F0     ; add to final damage
   STA $F0           ; update final damage
   RTS
-warnpc $C202B8+1
+warnpc $C202B8
 
 ; -------------------------------------------------------------------------
 ; Zantetsuken helper
@@ -119,7 +117,7 @@ KillZombie:
   CMP #$80          ; C: 50% chance [TODO: Use random(0..2) function]
   JMP Undead_Killer ; jump to another helper
 
-warnpc $C202DC+1
+warnpc $C202DC
 
 ; #########################################################################
 ; Adding Command to Wait Queue + Swap Roulette to Enemy Roulette
@@ -313,7 +311,7 @@ CmdFuncs:
   dw MuddleSketch ; Sketch
   dw $FFFF        ; Currently unused
   dw $FFFF        ; Currently unused
-warnpc $C204F6+1
+warnpc $C204F6
 
 ; ########################################################################
 ; Uncontrollable/Muddle Random Attack Selections
@@ -329,9 +327,7 @@ UmaroRow:
   TSB $11A2       ; set ignore defense (vanilla)
   TRB $B3         ; clear "ignore row" flag
   RTS
-
-padbyte $FF ; had been used as an item command helper, now unused
-pad $C20560
+%free($C20560) ; had been used as an item command helper, now unused
 
 ; ------------------------------------------------------------------------
 ; Changes the odds each dance step shows up.
@@ -475,7 +471,7 @@ GolemRestrict:
   STZ $11A1        ; remove elemental properties
 .exit
   RTS
-warnpc $C20AFF+1
+warnpc $C20AFF
 
 ; ------------------------------------------------------------------------
 ; Helpers for Periodic Effects/Damage
@@ -516,7 +512,7 @@ Tick_Calc:
   PLA              ; restore A
   RTS
 
-warnpc $C20B4A+1
+warnpc $C20B4A
 
 ; ########################################################################
 ; Palidor Postprocess ($C20B4A)
@@ -603,7 +599,7 @@ org $C20BD3
 .exit
   PLP
   RTS
-warnpc $C20C2E
+warnpc $C20C2D
 
 ; ########################################################################
 ; Damage Modification (per-target)
@@ -707,7 +703,7 @@ TargetDamageMod:
 .exit
   PLP              ; restore 8-bit A
   RTS
-warnpc $C20D39+1
+warnpc $C20D39
 
 org $C20D39
 InvertMulti:
@@ -747,7 +743,7 @@ AtmaWpn:
   NOP             ; [unused space]
 .exit
   PLY             ; restore attacker index
-warnpc $C20E61+1
+warnpc $C20E61
 
 ; ########################################################################
 ; Equipment Check Function
@@ -952,7 +948,7 @@ ToggleMorphByte:
 .morphed
   STA $3EE2        ; set morphed actor to null or X
   RTS
-warnpc $C2123B+1
+warnpc $C2123B
 
 
 ; #########################################################################
@@ -1208,7 +1204,7 @@ org $C21955
 HalfSelf:
   JSR HalfTurn      ; reset ATB to 50%
   BRA SelfHit       ; execute self-hit
-warnpc $C2195B+1
+warnpc $C2195B
 
 ; #########################################################################
 ; Runic (command)
@@ -1229,7 +1225,7 @@ org $C2196B
   TYX               ; setup indexes properly for self-hit
   BRA HalfSelf      ; flag half-turn self-hit
   NOP
-warnpc $C21977
+warnpc $C21976
 
 ; #########################################################################
 ; Code Pointers for Commands
@@ -1265,7 +1261,7 @@ MPLowCounter:
   CMP $3BF4,Y       ; HP
 .exit
   RTS
-warnpc $C21BD7+1
+warnpc $C21BD7
 
 ; -------------------------------------------------------------------------
 ; Script $FC, command $01,$02,$03
@@ -1318,7 +1314,7 @@ Command05:
 .exit
   RTS
 
-warnpc $C21C7F+1
+warnpc $C21C7F
 
 ; -------------------------------------------------------------------------
 ; Script $FC, command pointers ($C21D55)
@@ -1459,7 +1455,7 @@ org $C2232C
   ORA #$04          ; add "Image"
   STA $3DFD,Y       ; update status-to-clear-2
   BRA HitMiss_miss  ; branch to miss
-warnpc $C2233F+1
+warnpc $C2233F
 org $C2233F
 .magic_evd_fork
   LDA $3B55,Y       ; 255 - (MBlock *2) + 1
@@ -1468,7 +1464,7 @@ org $C2233F
 .no_img
   JSR HalveEvasion  ; get Evasion (halved in covering)
 
-warnpc $C22348+1
+warnpc $C22348
 org $C22348
   PHA          ; store hitrate
   NOP
@@ -1506,7 +1502,7 @@ MissType2:       ; 7 bytes
   ORA #$4000     ; add general "miss" flag
   CMP #$4000     ; return wih Z flag set if no miss flags
   RTS
-warnpc $C223B3
+warnpc $C223B2
 
 ; ------------------------------------------------------------------------
 ; End of vanilla Stamina Evasion check
@@ -1563,7 +1559,7 @@ ChooseAnimation:       ; 46 bytes
 .exit
   PLY                  ; restore Y
   RTS
-warnpc $C223ED+1
+warnpc $C223ED
 
 ; #########################################################################
 ; Initialize Many Things at Battle Start
@@ -1697,7 +1693,7 @@ InitializeATBTimers:
   BPL .loop      ; loop for all 10 possible entities
   PLP            ; restore flags
   RTS
-warnpc $C22602+1
+warnpc $C22602
 
 ; #########################################################################
 ; Permanent Immunity (via Equipment) Setup
@@ -1806,9 +1802,7 @@ HPLookup:           ; 4 bytes
   JSR $283C         ; get max HP after equipment/relic boosts
   RTL
 
-warnpc $C2283D
-padbyte $FF
-pad $C2283C
+%free($C2283C)
 
 ; -------------------------------------------------------------------------
 
@@ -1839,7 +1833,7 @@ LongUpdate:
   RTL
   NOP #4
 GenjiSkip:
-warnpc $C2288E
+warnpc $C2288D
 
 ; -------------------------------------------------------------------------
 ; Hook to set Overcast for Ghost Ring
@@ -1960,9 +1954,7 @@ LongByteMod:
 
 ; -------------------------------------------------------------------------
 
-warnpc $C22A37+1
-padbyte $FF
-pad $C22A37
+%free($C22A37)
 
 ; #########################################################################
 ; Load Item Properties
@@ -2130,7 +2122,7 @@ Chainsaw2:
   JMP ChainEffect2   ; add "death" to statuses to set
 .rts
   RTS
-warnpc $C22C21+1
+warnpc $C22C21
 
 ; #########################################################################
 ; Get Sketcher Level
@@ -2199,9 +2191,7 @@ LaterBattleInit:
   CMP #$0E              ; is it Banon or higher?
   REP #$20              ; 16-bit A
   TAX                   ; move to X
-padbyte $EA
-pad $C230BC
-warnpc $C230BC+1
+%nop($C230BC)
 
 ; #########################################################################
 ; Entity Executes One Hit
@@ -2250,7 +2240,7 @@ org $C233E5                         ; overwrites unused Imp Critical code
   LDA $11A7                         ; special flags 4
   BIT #$20                          ; "never critical"
   BNE .none                         ; if ^, skip critical handling
-padbyte $EA : pad $C233F2
+%nop($C233F2)
 
 org $C23414 : .none
 
@@ -2268,7 +2258,7 @@ org $C2343C
   LDA $3018,Y          ; entity mask
   TRB $A4              ; remove from targets
   BEQ .next            ; branch if missed
-warnpc $C2344F
+warnpc $C2344E
 org $C2346C
 .next
   DEY #2               ; next entity
@@ -2361,9 +2351,7 @@ DisableCounter:
   STZ $11A6           ; vanilla code
   STZ $341A           ; disable counterattacks
   RTS
-
-padbyte $FF
-pad $C23733
+%free($C23733)
 
 ; #########################################################################
 ; Pick Random Esper
@@ -2408,7 +2396,7 @@ org $C238AB
   CMP #$06              ; "Mug" ID
   BEQ XKillAbort        ; abort if "Mug"
   NOP
-warnpc $C238B6+1
+warnpc $C238B6
 
 ; -------------------------------------------------------------------------
 org $C238D2 : JSR DisableCounter ; disable counters for X-Kill/Cleave
@@ -2630,9 +2618,7 @@ EffectFail:
 
 ; -------------------------------------------------------------------------
 
-warnpc $C23B29+1
-padbyte $FF
-pad $C23B29
+%free($C23B29)
 
 ; #########################################################################
 ; Sketch Effect (modified at end to use EffectFail better
@@ -2717,7 +2703,7 @@ StatusMiss:
   JSL StatusHelp
 .exit
   RTS             ; if Carry set, attack misses
-warnpc $C23C04+1
+warnpc $C23C04
 
 ; #########################################################################
 ; Rippler Effect (now freespace)
@@ -2734,7 +2720,7 @@ RiggedColosseum:
   STA $0205         ; clear wager item (so not billed)
 .rts
   RTS
-warnpc $C23C12+1
+warnpc $C23C12
 
 ; -------------------------------------------------------------------------
 org $C23C22
@@ -2783,14 +2769,13 @@ ScanEffect:
   TYX           ; put target index in X
   LDA #$27      ; scan command id
   JMP $4E91     ; queue scan command in global action queue
-warnpc $C23C6E+1
-padbyte $FF
-pad $C23C6E
+%free($C23C6E)
 
 ; #########################################################################
 ; Suplex Effect (now fractional immunity) [informative miss]
 ; Clear old fractional routine
-padbyte $FF : org $C23C6E : pad $C23C75
+org $C23C6E
+%free($C23C75)
 
 ; #########################################################################
 ; Air Anchor Routine (now freespace)
@@ -2810,7 +2795,7 @@ PreDanceCmd:
   JMP DanceCmd     ; else, do full Dance cmd
 .exit
   JMP DanceCmd2    ; do Dance cmd w/o setting Dance status
-warnpc $C23C90+1
+warnpc $C23C90
 
 ; #########################################################################
 ; Pep Up Routine (now freespace)
@@ -2866,7 +2851,7 @@ SmartToot2:       ; 34 bytes
 .finish
   JSL TootHelp3
   RTS
-warnpc $C23DA9
+warnpc $C23DA8
 
 ; #########################################################################
 ; Metamorph Chance (unused in BNW, so now freespace)
@@ -2916,7 +2901,7 @@ SwitchBlade:
 LongSpecial:            ; 4 bytes
   JSR $387E             ; long access to special effect routine
   RTL
-warnpc $C23EA0+1
+warnpc $C23EA0
 
 ; #########################################################################
 ; Step Mine (unchanged)
@@ -2981,9 +2966,7 @@ Shock:
   LSR $11B0      ; else, halve damage
 .exit
   RTS
-warnpc $C23F10
-padbyte $FF
-pad $C23F0F
+%free($C23F0F)
 
 ; -------------------------------------------------------------------------
 ; Helper for Net spellproc targeting exception
@@ -3025,7 +3008,7 @@ MPCrit:
   JMP $464C        ; Set bit on $3204,Y and return
 .exit
   RTS              ; Target of the branches in preceding code
-warnpc $C23F54+1
+warnpc $C23F54
 
 ; #########################################################################
 ; Holy Wind Effect
@@ -3094,11 +3077,7 @@ AllyCounter:
   LDA $3AA0,X     ; [displaced] (only needed for AllyCounter)
   RTS
 
-; -------------------------------------------------------------------------
-
-warnpc $C23FFC+1
-padbyte $FF
-pad $C23FFC
+%free($C23FFC)
 
 ; #########################################################################
 ; Exploder Effect
@@ -3162,7 +3141,7 @@ PostCheckHelp:           ; replace 11 bytes
   LDA $A4                ; remaining targets
   JSR $522A              ; pick another target
   RTL
-warnpc $C24158+1
+warnpc $C24158
 
 ; #########################################################################
 ; Dice Effect
@@ -3229,16 +3208,14 @@ RollDie:              ; 19 bytes
   XBA                 ; move new multiplier to B
   PLA                 ; restore zero-based roll
   RTS
-warnpc $C241E6+1
+warnpc $C241E6
 
 
 ; #########################################################################
 ; Old Revenge Routine (now freespace)
 
 org $C241E6
-warnpc $C241F6+1
-padbyte $FF
-pad $C241F6
+%free($C241F6)
 
 ; #########################################################################
 ; Rewrite Palidor once-per-strike handler. Now, remove dead targets.
@@ -3264,7 +3241,7 @@ PalidorStrike:
 PaliHide:              ; 6 bytes
   JSR $464C            ; sets "Palidor target" bit in $3204,Y (vanilla)
   JMP $1F00            ; sets "hide" status on target
-warnpc $C2421B+1
+warnpc $C2421B
 
 ; #########################################################################
 ; Spiraler (per-strike special effect)
@@ -3286,7 +3263,7 @@ Chakra:
   JMP ChakraHelp ; jump to helper
   NOP #2         ; [unused space]
   RTS            ; preserved in case it's branched to from elsewhere
-warnpc $C2424B+1
+warnpc $C2424B
 
 ; #########################################################################
 ; Mantra (per-strike special effect)
@@ -3306,7 +3283,7 @@ Mantra:
   LDA $3018,Y    ; attacker bitmask
   TRB $A4        ; miss caster
   RTS
-warnpc $C24280+1
+warnpc $C24280
 
 ; #########################################################################
 ; Suplex Random Targeting Effect (now freespace)
@@ -3337,9 +3314,7 @@ ChakraHelp:
 
 ; -------------------------------------------------------------------------
 
-warnpc $C242E1+1
-padbyte $FF
-pad $C242E1
+%free($C242E1)
 
 ; #########################################################################
 ; Special Effect (per-strike) Jump Table [C242E1]
@@ -3431,7 +3406,7 @@ SmartToot:        ; (from 44D1)
 .pea
   PLY             ; restore Y to target's index
   RTS
-warnpc $C24480
+warnpc $C2447F
 
 ; -------------------------------------------------------------------------
 ; Initialize intermediate status-to-set bytes (partly rewritten)
@@ -3480,7 +3455,7 @@ MissType:
   XBA            ; transfer miss type to B
   JSR MissType2
   RTS
-warnpc $C244EB
+warnpc $C244EA
 
 ; -------------------------------------------------------------------------
 ; Hook "Toggle Status" helper into new handling
@@ -3585,7 +3560,7 @@ org $C2460E
   LDA #$4614           ; skip removing Dark, Mute, Sleep, Muddle, Berserk
 .clear
   JSR $4598            ; mark statuses in A to be cleared
-warnpc $C2461E
+warnpc $C2461D
 
 org $C2462F : ClearQueue: ; [label] clear queued actions
 
@@ -3744,9 +3719,7 @@ org $C24C68
 .react
   LDA $3269,X        ; top byte of reactive script pointer
   BMI .retort        ; branch if null ^
-warnpc $C24CA8
-padbyte $EA
-pad $C24CA7
+%nop($C24CA7)
 org $C24CB1
 .retort
 org $C24CBE
@@ -3812,7 +3785,7 @@ PoisonTicks:
   LDA #$1F        ; use max increment 31
 .valid
   STA $3E24,Y     ; save new increment value
-warnpc $C2504C+1
+warnpc $C2504C
 
 ; -------------------------------------------------------------------------
 org $C2505B : JSR Tick_Calc : NOP #2 ; Re-written formulas for periodic effects
@@ -3932,9 +3905,7 @@ HalfTurn:
 
 ; -------------------------------------------------------------------------
 
-warnpc $C25161+1
-padbyte $FF
-pad $C25161
+%free($C25161)
 
 ; #########################################################################
 ; Probabilities for Umaro and Side/Pincer/Back/Normal attacks
@@ -4047,7 +4018,7 @@ CmdModify:
   dw UpdateFightCursor ; Fight
   dw LeapDis           ; Leap
   NOP
-warnpc $C25301+1
+warnpc $C25301
 
 ; #########################################################################
 ; Fight and Mug Command Targeting Setup
@@ -4265,7 +4236,7 @@ ChkMenu:
   TSB $F8           ; set ^ in scratch RAM
 .exit
   RTS
-warnpc $C2544A+1
+warnpc $C2544A
 
 ; #########################################################################
 ; Menu Offsets - unchanged from vanilla
@@ -4308,7 +4279,7 @@ CmdBlanks:
   db $02 ; Magic
   db $17 ; X-Magic
   db $0C ; Lore
-warnpc $C2546E+1
+warnpc $C2546E
 
 ; ########################################################################
 ; Copy Item Properties into Buffer
@@ -4539,7 +4510,7 @@ PrepRunLoop:
   STA $3A3B       ; else, set difficulty to 10
   NOP #2
 .reg
-warnpc $C25CDC
+warnpc $C25CDB
 org $C25D04 : .next
 org $C25D0A : BCC .loop
 
@@ -4675,7 +4646,7 @@ Do_Esper_Lvl:
   REP #$20        ; 16-bit A
   JMP AddEL       ; handle esper levelups
   NOP #2          ; [padding]
-warnpc $C26133+1
+warnpc $C26133
 
 ; Esper bonus handling, completely rewritten
 
@@ -4740,9 +4711,7 @@ AddEL:
 ; --------------------------------------------------------------------------
 ; Freespace
 
-warnpc $C261B6+1
-padbyte $FF
-pad $C261B6
+%free($C261B6)
 
 ; #########################################################################
 ; Add Experience after Battle
@@ -5458,9 +5427,7 @@ StamCounter:
 ; -------------------------------------------------------------------------
 ; Freespace
 
-warnpc $C26800+1
-padbyte $FF
-pad $C26800
+%free($C26800)
 
 ; #########################################################################
 ; Upper C2 Condensed Graphics
@@ -5739,9 +5706,7 @@ HelpExplode:
 ; -------------------------------------------------------------------------
 ; Freespace
 
-warnpc $C2A800+1
-padbyte $FF
-pad $C2A800
+%free($C2A800)
 
 ; #########################################################################
 ; Slot Reel Layout
@@ -6225,6 +6190,5 @@ GroundDmg:
 ; -------------------------------------------------------------------------
 ; Freespace
 
-warnpc $C2FC6D+1
-padbyte $FF
-pad $C2FC6D
+%free($C2FC6D)
+
