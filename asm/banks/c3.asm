@@ -49,6 +49,13 @@ org $C311AD : NOP #2
 org $C3140D : JSR FrameCounter ; hook to increment RNG frame counter
 
 ; #########################################################################
+; Initialize item list variables (Item / Colosseum)
+; Use helper to determine whether to load item menu navigation
+; data, or the new shrinked-colosseum navigation data.
+
+org $C31AFB : JMP Colosseum_Cursor
+
+; #########################################################################
 ; Initialize Skills Menu
 
 org $C31B61 : JSR StChr ; store character ID in $A3 (for esper restrict)
@@ -1028,9 +1035,9 @@ org $C37FD0 : JMP ItemNameFork ; hook for colosseum item row
 
 ; #########################################################################
 ; Load Item Descriptions and Draw Item Count
-; BNW - Remove Inventory Count
+; BNW - Remove Inventory Count by jumping out of routine early
 
-org $C382FB : db $4C
+org $C382FB : JMP $5738
 
 ; #########################################################################
 ; Item Menu Stat Text Data (Gear)
@@ -2286,6 +2293,41 @@ org $C3AC98
   dw $391D : db "Select party",$00
 
 ; #########################################################################
+; Initialize Colosseum item menu (Action 71)
+;
+; Use alternate cursor map for colosseum, rather than the same map
+; as for the Items menu. The new map supports two columns of items,
+; and different item spacing overall. (shrinked-colosseum.asm)
+
+org $C3ACB6 : JSR finger_pos ; Relocate cursor (7D25)
+
+; #########################################################################
+; Sustain Colosseum item menu (Action 72)
+
+; -------------------------------------------------------------------------
+; Use alternate D-Pad and Description handling for colosseum
+; (shrinked-colosseum.asm)
+
+org $C3ACEA
+  JSR handle_D_Pad    ; Handle D-Pad
+  JSR load_item_desc  ; Load description
+
+; -------------------------------------------------------------------------
+; Handle pressing A (and B) in Colosseum menu
+; If pressing A in the right column (prizes) always buzz. Added
+; as part of the "shrinked-colosseum.asm" patch.
+
+org $C3ACF9
+  LSR            ; $4B becomes: C: prize column, A: row index
+  JSR GetWager   ; get wager ID, if in wager column
+
+; -------------------------------------------------------------------------
+; Initial drawing of colosseum item list
+; Use alternate routine to load item descriptions (shrinked-colosseum.asm)
+
+org $C3AD65 : JSR load_item_desc ; Load description
+
+; #########################################################################
 ; Sustain Main Shop Menu
 
 ; Modifies "buy item" list handling to update full details ("Shop Hack")
@@ -2553,16 +2595,21 @@ MagicFunction2:
 ; Colosseum Item Row drawing helpers
 ; Include prize item on line with item row
 
-ItemNameFork:
+IsColosseum:
   LDA $26                 ; current system op
   CMP #$71                ; "Init Colosseum Item Selection"
-  BEQ .colosseum_menu     ; branch if ^
+  BEQ .exit               ; branch if ^
   CMP #$72                ; "Sustain Colosseum Item Selection"
+.exit
+  RTS
+
+ItemNameFork:
+  JSR IsColosseum         ; set zero flag if is colosseum item menu
   BEQ .colosseum_menu     ; branch if ^
   JSR $80B9               ; else, do regular "Item Menu" rows
-  JSR $7FD9               ; display text
-  JMP $7FE6               ; display item type
+  JMP $7FD3               ; display text and item type
 .colosseum_menu
+  JSR Set_Arrow           ; print arrow if prize exists
   JSR colosseum_setup     ; setup colosseum variables
   JSR string_init         ; init the string
   JSR string_bet          ; display bet item
@@ -2582,7 +2629,7 @@ colosseum_setup:
   TDC                     ; zero A/B
   LDA $E5                 ; row index in menu
   TAY                     ; index it
-  LDA $1869,Y             ; item ID in slot
+  LDA !colo_items,Y       ; item ID in slot
   STA $0205               ; save item to bet
   JSR $B22C               ; setup Colosseum variables
   RTS
@@ -2656,7 +2703,102 @@ string_bet:
 .case_empty
   LDA #$FF                ; space character
   JSR string_fill         ; fill item name with spaces
-  RTS    
+  RTS
+
+; ------------------------------------------------------------------------
+; New Helpers for condensed colosseum menu
+
+load_item_desc:
+  JSR $8308          ; set desc ptrs
+  TDC                ; zero A/B
+  LDA $4B            ; cursor slot
+  LSR                ; A: row index, C: column index (0/1)
+  TAX                ; index row
+  LDA !colo_items,X  ; item in slot
+  BCC .load          ; branch if left-side column
+  JSR GetPrize       ; get prize for this wager
+.load
+  JMP $5738          ; Load description
+
+; ------------------------------------------------------------------------
+; Loop go on seeking until we find an item that returns a reward and
+; then store both the ID and Prize in buffers
+
+GetPrize:
+  REP #$20          ; 16-bit A
+  ASL #2            ; wager item x4
+  TAX               ; index into colosseum data
+  SEP #$20          ; 8-bit A
+  TDC               ; zero B
+  LDA $DFB602,X     ; prize item ID
+  RTS
+
+Set_Arrow:
+  LDA #$75          ; load new colosseum limit
+  STA $5C           ; set ^
+  LDA #$FF          ; max scrollbar speed
+  STA $7E357A       ; set ^
+  TDC : TAY : TAX   ; zero A/B,X,Y
+.loop
+  PHX               ; store current item slot
+  LDA $1869,X       ; load item in slot
+  PHA               ; store item on stack
+  JSR GetPrize      ; get prize item ID
+  CMP #$BC          ; "cannot be wagered"
+  BEQ .next         ; continue loop if ^
+  LDA $01,S         ; get wager item ID
+  STA !colo_items,Y ; save it ^
+  INY               ; point to next condensed list index
+.next
+  PLA               ; clean up wager item ID
+  PLX               ; restore item slot
+  INX               ; next item slot
+  CPX #$0100        ; have we checked all item slots?
+  BNE .loop         ; loop if until ^
+  RTS               ; go on
+
+Colosseum_Cursor:
+  JSR IsColosseum     ; set zero flag if is colosseum item menu
+  BEQ .colosseum_menu ; branch if ^
+  JMP $7D1C           ; jump and init menu navigation data
+.colosseum_menu
+  LDY #Col_Navi_Data  ; pointer to nav data
+  JMP $05FE           ; Load navig data
+
+handle_D_Pad:
+  JSR $81C7           ; Handle D-Pad
+finger_pos:
+  LDY #Col_Curs_Pos   ; pointer to cursor positions
+  JMP $0648           ; Relocate cursor
+
+; Navigation data & Cursor positions for Colosseum
+Col_Navi_Data:
+  db $01              ; Wraps horizontally
+  db $00              ; Initial column
+  db $00              ; Initial row
+  db $02              ; 1 column
+  db $0A              ; 10 rows
+Col_Curs_Pos:
+  dw $5608,$566F
+  dw $6208,$626F
+  dw $6e08,$6e6F
+  dw $7a08,$7a6F
+  dw $8608,$866F
+  dw $9208,$926F
+  dw $9e08,$9e6F
+  dw $aa08,$aa6F
+  dw $b608,$b66F
+  dw $c208,$c26F
+
+; New helper for pushing A in colosseum menu
+
+GetWager:
+  TAX                 ; row index
+  LDA !colo_items,X   ; wager item in row
+  BCC .done           ; branch if in wager column
+  LDA #$FF            ; else, treat as "empty" for buzz
+.done
+  RTS
 
 ; ------------------------------------------------------------------------
 ; EL/EP/Spell bank text data and helpers
@@ -2897,7 +3039,6 @@ GaugeOn:
   LDA #$80          ; 'Show Delay' flag
   STA $1D4E         ; init config option
   RTS
-warnpc $C3F46A
 
 ; ---------------------------------------------------------
 ; Support more colors for drawing esper names
