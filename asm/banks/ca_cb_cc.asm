@@ -476,7 +476,8 @@ org $CB4E25 : db $B2,$88,$52,$01 ; JSR $CB5288
 ; First thing's first, deprecate the auction house with $FF byte padding
 ; TODO: Avoid writing and overwriting the same ROM space.
 
-org $CB4E5E : padbyte $FF : pad $CB5EC5
+org $CB4E5E
+%free($CB5EC5)
 
 ; ------------------------------------------------------------------------
 ; Change Ultros in the colosseum to the respec NPC
@@ -1076,8 +1077,7 @@ org $CB7A7C : db $B2,$E4,$52,$01   ; jump to subroutine: $CB52E4
 org $CB7107
   db $B2 : dl $1CCD44 ; JSR CoralHelper2
   db $FE              ; RTS
-  padbyte $FF
-  pad $CB711B
+%free($CB711B)
 
 ; Branch to Coral Helper 1
 org $CB712A
@@ -1547,11 +1547,11 @@ org $CCC665 : db $99,$82,$00,$00 ; Invoke party selection screen (2 groups)
 
 org $CCC69B : db $D5,$13,$0A     ; Set party 1 position before Kefka arrival
 org $CCC6AA : db $D5,$15,$0A     ; Set party 2 position before Kefka arrival
-org $CCC6B3 : padbyte $FD : pad $CCC6C2 ; NOP party 3 handling
+org $CCC6B3 : %safepad($CCC6C2,$FD) ; NOP party 3 handling
 
 org $CCC85D : db $D5,$13,$0A     ; Set party 1 position after Kefka arrival
 org $CCC86C : db $D5,$15,$0A     ; Set party 2 position after Kefka arrival
-org $CCC875 : padbyte $FD : pad $CCC884 ; NOP party 3 handling
+org $CCC875 : %safepad($CCC884,$FD) ; NOP party 3 handling
 
 ; ------------------------------------------------------------------------
 ; Change Arvis' caption to act as an unequipper after the Battle of Narshe
