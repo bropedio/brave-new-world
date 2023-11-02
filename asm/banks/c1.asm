@@ -734,9 +734,7 @@ FlashOnce:
   LDA $7AF0          ; default palette index
   JMP $9BA1          ; set monster palette index ^
 
-warnpc $C19BA0+1
-padbyte $FF
-pad $C19BA0
+%free($C19BA0)
 
 org $C19BAD : LDA #$06 ; longer flash duration (was $04)
 
