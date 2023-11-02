@@ -15,8 +15,8 @@ hirom
 ;     now: $00 = hide reward / $XX = color palette
 ; -----------------------------------------------------------------------------
 
-!open  = $20     ; white text color
-!closed = $34     ; yellow text color
+!open   = !tile_arrow
+!closed = !tile_trade
 !hidden = $00
 !i = 0
 
