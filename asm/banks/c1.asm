@@ -129,8 +129,99 @@ org $C17D25 : NOP #3 ; [?]
 
 ; ########################################################################
 ; Bushido Menu
+;
+; Rewrite bushido gauge routine to free up space
+; C2A860 maybe now has 15 free bytes
+; TODO: See if C14A21 and $C1487E are needed at all?
+; Modified to speed up meter as techs are learned
+; Max gauge speed capped at 7
 
-org $C17D8A : JSR SwdTechMeter ; add handling for bushido meter scroll
+!b_max = #$07
+
+org $C17D5F
+BushidoGauge:
+  TDC : TAX         ; A=0000, X=0000
+  LDA $2020         ; known swdtechs
+  INC               ; +1
+  STA $36           ; save first unknown swdtech index
+  TAY               ; and use ^ for iterator
+  LDA #$21          ; white palette (known techs)
+.init
+  STA $5DDA,X       ; set bushido palette
+  DEY               ; check for first gray (unknown) tech
+  BNE .next         ; branch if still known
+  LDA #$25          ; else, load gray palette
+.next
+  INX #2            ; X+=2
+  CPX #$0010        ; done 8 numbers?
+  BNE .init         ; loop till done
+
+  LDA $0E           ; frame counter
+  AND #$03          ; 0-3
+  BNE .gauge        ; branch 3/4 frames
+  LDA !b_max        ; load max_speed
+  CMP $36           ; compare to # unlocked skills
+  BCC .max          ; branch if max is lower
+  LDA $36           ; load # of unlocked skills
+.max
+  ADC $7B82         ; add to gauge (+1 carry)
+  STA $7B82         ; store it
+.gauge
+  LDA $7B82         ; get gauge value (255 max)
+  LSR #5            ; / 32
+  CMP $36           ; at end of gauge
+  BNE .set          ; branch if not ^
+  TDC               ; else, A=0000
+  STA $7B82         ; reset gauge
+.set
+  INC : TAY         ; set iterator
+  TDC               ; A=0000
+  TAX               ; X=0000
+  LDA #$29          ; yellow palette
+.yellow
+  STA $5DDA,X       ; set ^
+  INX #2            ; next tile index
+  DEY               ; decrement tiles to update
+  BNE .yellow       ; loop till all are yellow (reduce Y to zero)
+  LDA $7B82         ; gauge value (255 max)
+  BPL .low_half     ; branch if < 128
+  PHA               ; store gauge value
+  LDA #$FF          ; pretend full gauge
+  JSR BigGauge      ; draw four full tiles
+  PLA               ; restore gauge value
+  JSR BigGauge      ; draw tiles based on gauge fill
+  BRA .exit         ; branch
+.low_half
+  JSR BigGauge      ; draw tiles based on gauge fill
+  LDX #F0s-ATBTiles ; get offset to new F0/F0/F0/F0 tile group
+  JSR BigGauge2     ; draw 4 empty gauge tiles
+.exit
+  INC $7B81         ; set some flag [?]
+  RTS
+
+BigGauge:
+  AND #$7C          ; isolate progress towards full, minus lower 2 bits
+  TAX               ; index it
+BigGauge2:
+  LDA #$04          ; how many tiles to draw
+  STA $36           ; store in scratch
+.loop
+  LDA.l ATBTiles,X  ; get gauge tile
+  STA $7A73,Y       ; set it ^
+  LDA #$35          ; tile properties (color?)
+  STA $7A74,Y       ; set ^
+  INX               ; next source tile
+  INY #2            ; next destination tile
+  DEC $36           ; decrement iterator
+  BNE .loop         ; move 4 tiles
+  RTS
+F0s:
+  db $F0,$F0,$F0,$F0
+
+; ------------------------------------------------------------------------
+; Some freespace here
+
+%free($C17E05)
 
 ; ########################################################################
 ; Slots Battle Menu
@@ -479,7 +570,7 @@ GaugeValue:
   LDA #$F0         ; else, use fully empty F0
   RTS
 .done
-  LDA $C168AC,X    ; gauge value
+  LDA.l ATBTiles,X ; gauge value
   RTS
 
 ; -------------------------------------------------------------------------
@@ -691,6 +782,11 @@ warnpc $C16898
 org $C16898
 drawMaxHP:
   LDA #$C0         ; Draw a "/" as HP divider
+
+; #######################################################################
+; ATB Gauge Tile Lookup
+
+org $C168AC : ATBTiles:
 
 ; #######################################################################
 ; Battle Dynamics Commands Jump Table
@@ -905,9 +1001,16 @@ org $C1CD53 : JSL Random
 org $C1CECF : JSL Random
 
 ; ######################################################################
-; Freespace (stats at $C1FFE5)
+; Unknown Battle Event Jump Table
+; Point multiple RTS jumps to the same RTS op to save 1 byte of space
 
-org $C1FFE5
+org $C1FDC2 : dw C1JmpRTS
+org $C1FFE2 : C1JmpRTS:
+
+; ######################################################################
+; Freespace (starts at $C1FFE3, now that unused RTS jump is gone)
+
+org $C1FFE3
 
 ; ----------------------------------------------------------------------
 ; During NMI, if Select button pressed, swap gauge display
@@ -917,18 +1020,13 @@ CheckSel:
   JMP $0B73      ; [displaced]
 
 ; ----------------------------------------------------------------------
-SwdTechMeter:
-  INC $7B82      ; increment meter position
-  LDA $7B82      ; get new meter postion
-  ADC $36        ; adds known Bushid count (to speed up)
-  STA $7B82      ; update meter position
-  RTS
-
-; ----------------------------------------------------------------------
 ; Runic Stance helper
 
 RunicPrep:
   JSR $BAAA      ; regular runic prep animation 
   JMP $914D      ; set sprite to "ready"
-warnpc $C20000
+
+; ----------------------------------------------------------------------
+
+%free($C20000)
 
