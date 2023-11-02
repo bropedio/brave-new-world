@@ -61,8 +61,9 @@ warnpc !warn
 ; DFB600-DFB9FF: Colosseum Data (256 items, 4 bytes each) 
 ; -----------------------------------------------------------------------------
 
-!open   = #$20     ; white text color
-!closed = #$34     ; yellow text color
+!open   = $20     ; white text color
+!closed = $34     ; yellow text color
+!hidden = $00
 
 org $DFB603 : db !open      ; Healing Shiv
 org $DFB607 : db !open      ; Mythril Dirk
@@ -105,7 +106,7 @@ org $DFB697 : db !open      ; Tanto
 org $DFB69B : db !open      ; Kunai
 org $DFB69F : db !open      ; Sakura
 org $DFB6A3 : db !open      ; Ninjato
-org $DFB6A7 : db $00        ; Kagenui
+org $DFB6A7 : db !hidden    ; Kagenui
 org $DFB6AB : db !open      ; Orochi
 org $DFB6AF : db !open      ; Hanzo
 org $DFB6B3 : db !open      ; Kotetsu

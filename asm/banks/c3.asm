@@ -2302,6 +2302,13 @@ org $C3ACF9
 org $C3AD65 : JSR load_item_desc ; Load description
 
 ; #########################################################################
+; Colosseum Character Select Screen
+;
+; Flip assumption about $0209 ($00 now means "hide" instead of "show")
+
+org $C3B258 : BNE $03 ; change BEQ to BNE
+
+; #########################################################################
 ; Sustain Main Shop Menu
 
 ; Modifies "buy item" list handling to update full details ("Shop Hack")
@@ -2638,7 +2645,7 @@ position_advance:
 
 string_reward:
   LDA $0209               ; mask flag
-  BNE .case_mask          ; branch if hidden prize
+  BEQ .case_mask          ; branch if hidden prize ($00 now means "hidden")
   LDA $0205               ; bet item ID
   CMP #$FF                ; null?
   BEQ .case_empty         ; branch if empty item
@@ -2669,6 +2676,8 @@ string_delimiter:
   RTS
 
 string_bet:
+  LDA $0209               ; load color palette
+  STA $29                 ; store it
   LDA $0205               ; item ID to bet
   CMP #$FF                ; null?
   BEQ .case_empty         ; branch if ^
