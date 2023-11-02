@@ -162,7 +162,7 @@ LoreHelp:
   XBA             ; get targeting byte
   STA $7A84       ; save ^
   JMP ItemJump    ; leverage item code for targeting fork
-warnpc $C181EB+1
+%free($C181EB)
 
 ; #########################################################################
 ; Sustain Lore Menu
