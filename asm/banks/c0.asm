@@ -2,8 +2,6 @@ hirom
 
 ; C0 Bank
 
-incsrc ram.asm
-
 ; #########################################################################
 ; Local access to RNG routine
 
@@ -27,8 +25,7 @@ FancyWalking:
   STA $57
   STZ $078E
   RTS
-padbyte $FF : pad $C04978
-warnpc $C04978+1
+%free($C04978)
 
 ; #########################################################################
 ; Movement Helpers (Auto-Dash)
@@ -154,8 +151,7 @@ CharName:
 Advance:
   JMP $9B5C        ; advance script
 
-padbyte $EA : pad $C0A07C
-warnpc $C0A07C+1
+%nop($C0A07C)
 
 ; #########################################################################
 ; HP and MP Addition/Subtraction Actions
@@ -859,7 +855,7 @@ MugHelper:
 
 ; -------------------------------------------------------------------------
 
-warnpc $C0DFA0+1        ; end of large freespace
+warnpc $C0DFA0          ; end of large freespace
 
 ; #########################################################################
 ; XOR Shift RNG Algorithm (replaces RNG Table)
@@ -913,8 +909,7 @@ EleModLoop:
   INC $EE
   DEC $EE          ; check if no remaining attack elems
   RTL
-padbyte $FF
-pad $C0FD84
+%free($C0FD84)
 
 ; #########################################################################
 ; Freespace
