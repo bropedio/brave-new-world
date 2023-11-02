@@ -2,8 +2,6 @@ hirom
 
 ; C0 Bank
 
-incsrc ram.asm
-
 ; #########################################################################
 ; Local access to RNG routine
 
