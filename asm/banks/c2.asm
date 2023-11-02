@@ -5415,8 +5415,7 @@ warnpc $C28A45+1
 ; New freespace due to compression optimization
 ; Note: Probably should keep available for changes to compressed code
 
-padbyte $FF
-pad $C28A70
+%free($C28A70)
 
 ; #########################################################################
 ; Freespace
