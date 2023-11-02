@@ -26,8 +26,7 @@ FancyWalking:
   STA $57
   STZ $078E
   RTS
-padbyte $FF : pad $C04978
-warnpc $C04978+1
+%free($C04978)
 
 ; #########################################################################
 ; Movement Helpers (Auto-Dash)
@@ -153,8 +152,7 @@ CharName:
 Advance:
   JMP $9B5C        ; advance script
 
-padbyte $EA : pad $C0A07C
-warnpc $C0A07C+1
+%nop($C0A07C)
 
 ; #########################################################################
 ; HP and MP Addition/Subtraction Actions
@@ -228,8 +226,7 @@ RejoinLvl:
   db $15 ; Umaro
 
 ; Fill remaining (now unused) bytes
-padbyte $FF
-pad $C0D636
+%free($C0D636)
 
 ; -------------------------------------------------------------------------
 ; Helper for Respec general action
@@ -584,7 +581,7 @@ TickLogic:
 .incr
   INC #2          ; add 100% more damage
   RTL
-warnpc $C0D93E+1
+warnpc $C0D93E
 
 ; -------------------------------------------------------------------------
 ; Helper for North Cross targeting
@@ -635,7 +632,7 @@ RemoveStatuses:
   TRB !fail           ; remove "fail" message (if set)
   PLP                 ; restore flags
   RTS
-warnpc $C0D990+1
+warnpc $C0D990
 
 
 ; -------------------------------------------------------------------------
@@ -742,7 +739,7 @@ DefendBetter:          ; [13 bytes]
   LSR                  ; 96 (lower cover threshold / 255)
 .done
   RTL
-warnpc $C0DA17+1
+warnpc $C0DA17
 
 ; -------------------------------------------------------------------------
 ; Helpers for "Half Battle Power" patch
@@ -852,7 +849,7 @@ PaletteMP:
   STA $0303,Y        ; store palette [?]
   STA $0307,Y        ; store palette [?]
   RTL
-warnpc $C0DEA0+1
+warnpc $C0DEA0
 
 ; -------------------------------------------------------------------------
 ; Helper for Gau Targeting (single target across field) support
@@ -908,7 +905,7 @@ MugHelper:
   PLP                   ; restore M/X flags
   LDA $3A48             ; missed flag (vanilla code)
   RTL
-warnpc $C0DFA0+1
+warnpc $C0DFA0
 
 
 ; #########################################################################
@@ -963,8 +960,7 @@ EleModLoop:
   INC $EE
   DEC $EE          ; check if no remaining attack elems
   RTL
-padbyte $FF
-pad $C0FD84
+%free($C0FD84)
 
 ; #########################################################################
 ; Freespace

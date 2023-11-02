@@ -8,6 +8,10 @@ macro safepad (offset, byte)
   pad <offset>
 endmacro
 
+macro nop (offset)
+  %safepad(<offset>,$EA)
+endmacro
+
 macro free (offset)
   %safepad(<offset>,$FF)
 endmacro
