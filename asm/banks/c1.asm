@@ -216,9 +216,9 @@ org $C18A0C      ; skip setting status update flag (until command code)
 ; Helper for xsummon in freespace
 
 SpliceEsperSelect:
-    INC $7AE9       ; increment x-magic spell queue size
-    STA $2BAF,Y     ; [displaced]
-    RTS
+  INC $7AE9       ; increment x-magic spell queue size
+  STA $2BAF,Y     ; [displaced]
+  RTS
 
 ; ------------------------------------------------------------------------
 
