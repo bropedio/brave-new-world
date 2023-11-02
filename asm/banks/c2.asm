@@ -5404,11 +5404,19 @@ StamCounter:
 %free($C26800)
 
 ; #########################################################################
-; Upper C2 Condensed Graphics
-; Modified to catch some RNG uses of the C0FD00 routine
+; Upper C2 Condensed Graphics and Code
+; See Bank F0 for uncompressed ASM changes
 
-org $C26D2F : JSL Random   ; this is moved to 7E/5639 (used in title screen)
-org $C2806F : db $22       ; this is converted to two separate RNG calls (7E/6F89, 7E/6F90)
+org $C2686C
+  incbin ../../temp/intro.compressed
+warnpc $C28A45+1
+
+; -------------------------------------------------------------------------
+; New freespace due to compression optimization
+; Note: Probably should keep available for changes to compressed code
+
+padbyte $FF
+pad $C28A70
 
 ; #########################################################################
 ; Freespace
