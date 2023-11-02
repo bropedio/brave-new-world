@@ -2,10 +2,14 @@
 ; Macros
 ; ========================================================================
 
-macro free (offset)
+macro safepad (offset, byte)
   warnpc <offset>
-  padbyte $FF
+  padbyte <byte>
   pad <offset>
+endmacro
+
+macro free (offset)
+  %safepad(<offset>,$FF)
 endmacro
 
 ; ========================================================================
