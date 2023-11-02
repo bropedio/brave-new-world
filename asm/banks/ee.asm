@@ -307,14 +307,6 @@ StatusATB:
 .store
   RTL
 
-; TODO: Remove code below -- no longer used
-  LDA #$39         ; Select palette #7           HASTE
-  BRA .store2      ; Store palette
-  LDA #$35         ; Select palette #6           NORMAL
-.store2
-  RTL
-; TODO: Remove code above -- no longer used
-
 LeftCap:
   LSR A
   AND #$FC
@@ -370,6 +362,6 @@ NormDraw:
   STA $4E
   TDC
   RTL
-warnpc $EEB200+1
+warnpc $EEB200
 
 

@@ -396,13 +396,6 @@ org $CB30DB
   db $D4,$4D,$FE    ; Set event bit $24D, then return
 
 ; ------------------------------------------------------------------------
-; Prevents Shadow from randomly running off (3/5)
-; TODO: This is wrong, but inconsequential, since it overwrites unused
-; code from the Grand Stairway above
-
-org $CB3143 : db $B8
-
-; ------------------------------------------------------------------------
 ; Move the dialogue between Kefka and the party at the Sealed Gate to before the battle
 
 org $CB3AA8
@@ -462,14 +455,6 @@ org $CB4B03 : db $80,$ED      ; Adds an X-Ether to party inventory
 org $CB4B42 : db $80,$EE      ; Adds an Elixir to party inventory
 
 ; ------------------------------------------------------------------------
-; Prevents Shadow from randomly running off (4/5)
-; TODO: This code is wrong, but was previously overwritten by the floating
-; chests changes above, so had no effect. Leaving here for reference, for
-; now.
-;
-; org $CB4A85 : db $B8
-
-; ------------------------------------------------------------------------
 ; Emperor Gestahl's portrait dialogue change
 
 org $CB4B6F : db $81
@@ -489,10 +474,10 @@ org $CB4E25 : db $B2,$88,$52,$01 ; JSR $CB5288
 ; Freespace, essentially
 ;
 ; First thing's first, deprecate the auction house with $FF byte padding
-; TODO: Avoid writing and overwriting the same ROM space. This free space
-; TODO: should be documented but left untouched by any padding.
+; TODO: Avoid writing and overwriting the same ROM space.
 
-org $CB4E5E : padbyte $FF : pad $CB5EC5
+org $CB4E5E
+%free($CB5EC5)
 
 ; ------------------------------------------------------------------------
 ; Change Ultros in the colosseum to the respec NPC
@@ -1092,8 +1077,7 @@ org $CB7A7C : db $B2,$E4,$52,$01   ; jump to subroutine: $CB52E4
 org $CB7107
   db $B2 : dl $1CCD44 ; JSR CoralHelper2
   db $FE              ; RTS
-  padbyte $FF
-  pad $CB711B
+%free($CB711B)
 
 ; Branch to Coral Helper 1
 org $CB712A
@@ -1563,11 +1547,11 @@ org $CCC665 : db $99,$82,$00,$00 ; Invoke party selection screen (2 groups)
 
 org $CCC69B : db $D5,$13,$0A     ; Set party 1 position before Kefka arrival
 org $CCC6AA : db $D5,$15,$0A     ; Set party 2 position before Kefka arrival
-org $CCC6B3 : padbyte $FD : pad $CCC6C2 ; NOP party 3 handling
+org $CCC6B3 : %safepad($CCC6C2,$FD) ; NOP party 3 handling
 
 org $CCC85D : db $D5,$13,$0A     ; Set party 1 position after Kefka arrival
 org $CCC86C : db $D5,$15,$0A     ; Set party 2 position after Kefka arrival
-org $CCC875 : padbyte $FD : pad $CCC884 ; NOP party 3 handling
+org $CCC875 : %safepad($CCC884,$FD) ; NOP party 3 handling
 
 ; ------------------------------------------------------------------------
 ; Change Arvis' caption to act as an unequipper after the Battle of Narshe
@@ -1605,4 +1589,3 @@ org $CCE5EC
 
 org $CCE5F1 : db $4B,$86,$02,$FE   ; Display caption #645
 
-; EOF

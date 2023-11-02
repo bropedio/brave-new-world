@@ -20,9 +20,7 @@ CounterFlags:
   JSR MayReset     ; determine whether to clear 33FC-33FD
   STA $33FE        ; clear bytes tracking "was attacked"
   STA $33FF        ; clear bytes tracking "was attacked"
-warnpc $C2008F
-padbyte $EA
-pad $C2008E
+%nop($C2008E)
 
 ; #########################################################################
 ; Conventional Turn Postprocessing ($C200F9)
@@ -68,7 +66,7 @@ org $C201AA
 .valid
   STX $3406            ; entity is first in line for action queue
   RTS                  ; this RTS is a branch destination
-warnpc $C201D9+1
+warnpc $C201D9
 
 ; #########################################################################
 ; Set executed command in Mimic Variables ($C2021E)
@@ -106,21 +104,20 @@ AtmaOver:
   CLC : ADC $F0     ; add to final damage
   STA $F0           ; update final damage
   RTS
-warnpc $C202B8+1
+warnpc $C202B8
 
 ; -------------------------------------------------------------------------
 ; Zantetsuken helper
 ; Undead killer weapon effect enters here due to 50% proc rate
 
 org $C202BC
-  LDA #$EE          ; "Cleave" animation ID [TODO: No longer used]
 KillZombie:
   XBA               ; store in B
   JSR $4B5A         ; random(0..256)
   CMP #$80          ; C: 50% chance [TODO: Use random(0..2) function]
   JMP Undead_Killer ; jump to another helper
 
-warnpc $C202DC+1
+warnpc $C202DC
 
 ; #########################################################################
 ; Adding Command to Wait Queue + Swap Roulette to Enemy Roulette
@@ -213,12 +210,12 @@ UncontrollableCmds:
   LDX $F4            ; N: "Uncontrollable but not Berserked"
   BMI .no_bserk      ; branch if ^
   JSR $5217          ; X: index to bitmask, A: command bit in bitmask
-  AND ZombieCmds,X   ; command allowed when Berserked/Zombied
+  AND.l ZombieCmds,X  ; command allowed when Berserked/Zombied
   BEQ .skip2         ; branch if not ^
   BRA .skip3         ; else, branch
 .no_bserk
   JSR $5217          ; X: index to bitmask, A: command bit in bitmask
-  AND MuddleCmds,X   ; command allowed when Muddled/Charmed/Colosseum
+  AND.l MuddleCmds,X  ; command allowed when Muddled/Charmed/Colosseum
   BNE .skip3         ; branch if ^
 .skip2
   LDA #$FF           ; "null" command
@@ -229,7 +226,7 @@ UncontrollableCmds:
   LDA $01,S          ; current command
   LDX #$0B           ; prep next loop
 .special_loop
-  CMP SpecialCmds,X  ; matches command requiring special function
+  CMP.l SpecialCmds,X ; matches command requiring special function
   BNE .next          ; branch to next if not ^
   TXA                ; table index
   ASL                ; x2
@@ -314,7 +311,7 @@ CmdFuncs:
   dw MuddleSketch ; Sketch
   dw $FFFF        ; Currently unused
   dw $FFFF        ; Currently unused
-warnpc $C204F6+1
+warnpc $C204F6
 
 ; ########################################################################
 ; Uncontrollable/Muddle Random Attack Selections
@@ -330,9 +327,7 @@ UmaroRow:
   TSB $11A2       ; set ignore defense (vanilla)
   TRB $B3         ; clear "ignore row" flag
   RTS
-
-padbyte $FF ; had been used as an item command helper, now unused
-pad $C20560
+%free($C20560) ; had been used as an item command helper, now unused
 
 ; ------------------------------------------------------------------------
 ; Changes the odds each dance step shows up.
@@ -476,8 +471,7 @@ GolemRestrict:
   STZ $11A1        ; remove elemental properties
 .exit
   RTS
-  db $34,$0D       ; TODO: Remove this unused code fragment ASAP
-warnpc $C20AFF+1
+warnpc $C20AFF
 
 ; ------------------------------------------------------------------------
 ; Helpers for Periodic Effects/Damage
@@ -513,15 +507,12 @@ Tick_Calc:
 
 .end
   PHA              ; store A
-  SEP #$20         ; 8-bit A
-  LDA $11A7        ; special byte 3
-  ORA #$80         ; add "Periodic" flag (new flag in BNW)
-  STA $11A7        ; update special byte 3 TODO: Use TSB instead
-  REP #$20         ; 16-bit A
+  LDA #$0080       ; "Periodic" flag (new flag in BNW)
+  TSB $11A7        ; set ^ in special byte 3
   PLA              ; restore A
   RTS
 
-warnpc $C20B4A+1
+warnpc $C20B4A
 
 ; ########################################################################
 ; Palidor Postprocess ($C20B4A)
@@ -608,7 +599,7 @@ org $C20BD3
 .exit
   PLP
   RTS
-warnpc $C20C2E
+warnpc $C20C2D
 
 ; ########################################################################
 ; Damage Modification (per-target)
@@ -694,7 +685,7 @@ TargetDamageMod:
   LDA $B2          ; attack bytes (looking at $B3)
   BPL .exit        ; exit if "Ignore Vanish" (sap/regen/poison)
 
-.self-dmg
+.self_dmg
   LDA $11A4        ; attack flags
   LSR              ; carry: "Healing"
   LDA $F0          ; damage so far
@@ -712,15 +703,7 @@ TargetDamageMod:
 .exit
   PLP              ; restore 8-bit A
   RTS
-warnpc $C20D39+1
-
-; TODO: Remove this unused code fragment vvvvvv
-org $C20D1A
-  BEQ $06
-  LDA $3B40,Y
-  JSR $A65A
-  db $C2,$20,$20,$EF,$0A
-; TODO: Remove this unused code fragment ^^^^^^
+warnpc $C20D39
 
 org $C20D39
 InvertMulti:
@@ -760,7 +743,7 @@ AtmaWpn:
   NOP             ; [unused space]
 .exit
   PLY             ; restore attacker index
-warnpc $C20E61+1
+warnpc $C20E61
 
 ; ########################################################################
 ; Equipment Check Function
@@ -965,7 +948,7 @@ ToggleMorphByte:
 .morphed
   STA $3EE2        ; set morphed actor to null or X
   RTS
-warnpc $C2123B+1
+warnpc $C2123B
 
 
 ; #########################################################################
@@ -1219,9 +1202,9 @@ org $C21908 : JSR CoinHelp
 
 org $C21955
 HalfSelf:
-  JSL HalfTurn      ; reset ATB to 50%
+  JSR HalfTurn      ; reset ATB to 50%
   BRA SelfHit       ; execute self-hit
-warnpc $C2195C
+warnpc $C2195B
 
 ; #########################################################################
 ; Runic (command)
@@ -1242,13 +1225,12 @@ org $C2196B
   TYX               ; setup indexes properly for self-hit
   BRA HalfSelf      ; flag half-turn self-hit
   NOP
-warnpc $C21977
+warnpc $C21976
 
 ; #########################################################################
 ; Code Pointers for Commands
 
 org $C219ED : dw PreDanceCmd ; changed to add Moogle Charm hook
-org $C21A15 : dw FullScan ; new scan command location
 
 ; #########################################################################
 ; AI Command Scripts
@@ -1279,10 +1261,7 @@ MPLowCounter:
   CMP $3BF4,Y       ; HP
 .exit
   RTS
-
-  JML $C3F598 : RTS ; TODO: This code can be removed, as it is unused
-
-warnpc $C21BD7+1
+warnpc $C21BD7
 
 ; -------------------------------------------------------------------------
 ; Script $FC, command $01,$02,$03
@@ -1335,7 +1314,7 @@ Command05:
 .exit
   RTS
 
-warnpc $C21C7F+1
+warnpc $C21C7F
 
 ; -------------------------------------------------------------------------
 ; Script $FC, command pointers ($C21D55)
@@ -1476,7 +1455,7 @@ org $C2232C
   ORA #$04          ; add "Image"
   STA $3DFD,Y       ; update status-to-clear-2
   BRA HitMiss_miss  ; branch to miss
-warnpc $C2233F+1
+warnpc $C2233F
 org $C2233F
 .magic_evd_fork
   LDA $3B55,Y       ; 255 - (MBlock *2) + 1
@@ -1485,7 +1464,7 @@ org $C2233F
 .no_img
   JSR HalveEvasion  ; get Evasion (halved in covering)
 
-warnpc $C22348+1
+warnpc $C22348
 org $C22348
   PHA          ; store hitrate
   NOP
@@ -1523,7 +1502,7 @@ MissType2:       ; 7 bytes
   ORA #$4000     ; add general "miss" flag
   CMP #$4000     ; return wih Z flag set if no miss flags
   RTS
-warnpc $C223B3
+warnpc $C223B2
 
 ; ------------------------------------------------------------------------
 ; End of vanilla Stamina Evasion check
@@ -1580,7 +1559,7 @@ ChooseAnimation:       ; 46 bytes
 .exit
   PLY                  ; restore Y
   RTS
-warnpc $C223ED+1
+warnpc $C223ED
 
 ; #########################################################################
 ; Initialize Many Things at Battle Start
@@ -1707,11 +1686,6 @@ InitializeATBTimers:
   LDA #$FF       ; set to max ATB
 .setatb
   ORA #$01       ; ensure not zero
-
-warnpc $C225F7+1 ; TODO: Remove padding here
-padbyte $EA
-pad $C225F7
-
   STA $3219,Y    ; save top byte of ATB timer
 .next
   REP #$20       ; 16-bit A
@@ -1719,7 +1693,7 @@ pad $C225F7
   BPL .loop      ; loop for all 10 possible entities
   PLP            ; restore flags
   RTS
-warnpc $C22602+1
+warnpc $C22602
 
 ; #########################################################################
 ; Permanent Immunity (via Equipment) Setup
@@ -1737,9 +1711,9 @@ org $C226A0 : AND #$FE78 ; allow "Stop" immunity (EE -> FE)
 org $C22708
 ToolSkeanSpells:
   LDX #$06                 ; iterator for list of Spells as Tools/Skeans
-  CMP Tool_Data_1,X        ; check if this tool matches ^
+  CMP.l Tool_Data_1,X      ; check if this tool matches ^
   BNE .skip                ; exit if not ^
-  SBC Tool_Data_2,X        ; else, get spell number TODO: Just LDA
+  SBC.l Tool_Data_2,X      ; else, get spell number TODO: Just LDA
 org $C22716 : .skip
 
 ; -------------------------------------------------------------------------
@@ -1828,9 +1802,7 @@ HPLookup:           ; 4 bytes
   JSR $283C         ; get max HP after equipment/relic boosts
   RTL
 
-warnpc $C2283D
-padbyte $FF
-pad $C2283C
+%free($C2283C)
 
 ; -------------------------------------------------------------------------
 
@@ -1861,7 +1833,7 @@ LongUpdate:
   RTL
   NOP #4
 GenjiSkip:
-warnpc $C2288E
+warnpc $C2288D
 
 ; -------------------------------------------------------------------------
 ; Hook to set Overcast for Ghost Ring
@@ -1976,16 +1948,13 @@ MuddleBrush:
 ; -------------------------------------------------------------------------
 ; Helper for byte mod long access
 
-org $C22A33
 LongByteMod:
   JSR $5217      ; X: byte index, A: bitmask for bit in byte
   RTL
-warnpc $C22A37+1
 
 ; -------------------------------------------------------------------------
 
-padbyte $FF
-pad $C22A37
+%free($C22A37)
 
 ; #########################################################################
 ; Load Item Properties
@@ -2035,9 +2004,6 @@ org $C22B1A
   dw ToolsRTS          ; Mana Battery - RTS (old Air Anchor)
   dw Autocrossbow      ; check event bit for levelled up ACB
 
-padbyte $FF            ; clear 5 unused bytes
-pad $C22B2F            ; TODO: Remove this padding
-
 ChainEffect2:          ; 6 bytes
   JSR $35BB            ; update animation queue
   JMP $3A85            ; add "death" to statuses to set TODO: Should this add to 11AA instead?
@@ -2069,10 +2035,8 @@ Autocrossbow:
   LDA #$FF             ; max hitrate (100%)
   STA $11A8            ; set ^
 .exit
+ToolsRTS:
   RTS
-
-org $C22B2F : ToolsRTS:
-
 
 ; #########################################################################
 ; Damage Formulas
@@ -2158,7 +2122,7 @@ Chainsaw2:
   JMP ChainEffect2   ; add "death" to statuses to set
 .rts
   RTS
-warnpc $C22C21+1
+warnpc $C22C21
 
 ; #########################################################################
 ; Get Sketcher Level
@@ -2227,9 +2191,7 @@ LaterBattleInit:
   CMP #$0E              ; is it Banon or higher?
   REP #$20              ; 16-bit A
   TAX                   ; move to X
-padbyte $EA
-pad $C230BC
-warnpc $C230BC+1
+%nop($C230BC)
 
 ; #########################################################################
 ; Entity Executes One Hit
@@ -2278,7 +2240,7 @@ org $C233E5                         ; overwrites unused Imp Critical code
   LDA $11A7                         ; special flags 4
   BIT #$20                          ; "never critical"
   BNE .none                         ; if ^, skip critical handling
-padbyte $EA : pad $C233F2
+%nop($C233F2)
 
 org $C23414 : .none
 
@@ -2296,7 +2258,7 @@ org $C2343C
   LDA $3018,Y          ; entity mask
   TRB $A4              ; remove from targets
   BEQ .next            ; branch if missed
-warnpc $C2344F
+warnpc $C2344E
 org $C2346C
 .next
   DEY #2               ; next entity
@@ -2389,9 +2351,7 @@ DisableCounter:
   STZ $11A6           ; vanilla code
   STZ $341A           ; disable counterattacks
   RTS
-
-padbyte $FF
-pad $C23733
+%free($C23733)
 
 ; #########################################################################
 ; Pick Random Esper
@@ -2436,7 +2396,7 @@ org $C238AB
   CMP #$06              ; "Mug" ID
   BEQ XKillAbort        ; abort if "Mug"
   NOP
-warnpc $C238B6+1
+warnpc $C238B6
 
 ; -------------------------------------------------------------------------
 org $C238D2 : JSR DisableCounter ; disable counters for X-Kill/Cleave
@@ -2546,7 +2506,6 @@ StealFunction:
   XBA             ; store acquired item in B
   JSR SetCantrip  ; hook to set "ATB Autofill" flag
   JSR SaveItem    ; save new item to buffer
-  NOP #2          ; [padding] TODO remove
   LDA #$FF        ; "null"
   STA $3308,Y     ; remove stealable item
   STA $3309,Y     ; in both slots
@@ -2558,6 +2517,8 @@ org $C23A09 : enemySteal:
 
 ; #########################################################################
 ; Metamorph Special Effect (now freespace)
+; Debilitator Effect (now freespace)
+; Control Effect (now mostly freespace)
 
 org $C23A3C
 RandomCast:
@@ -2604,21 +2565,6 @@ Wpn_Chk:
   RTS
 
 ; -------------------------------------------------------------------------
-; Immediately add Stolen items to inventory, preserving
-; any existing reserve item.
-; NOTE: Metamorph is unused in BNW, so this should be removed
-
-org $C23A7C
-Metamorph:
-  XBA               ; store acquired item in B
-  LDA $3018,X       ; character's unique bit
-  JSR SaveItem      ; save new item to buffer
-  NOP #2
-
-; #########################################################################
-; Debilitator Special Effect (now freespace)
-
-; -------------------------------------------------------------------------
 ;  Helper for Moogle Charm "fall like a stone" effect
 
 org $C23A9E
@@ -2654,14 +2600,31 @@ DanceChance:
   PLA              ; restore A
   RTS
 
-; #########################################################################
-; Control Effect (largely unused)
-
 ; -------------------------------------------------------------------------
 ; Control failure fork, reused by multiple special effects
-; Add hook to clear any status-to-set from missed special effect
+; We shifted it upward to add status-to-set clearing
 
-org $C23B1D : JSR Clear_Status
+EffectFail:
+  STA $3401        ; display text msg in A
+  REP #$20         ; 16-bit A
+  TYX              ; target index
+  STZ $3DD4,X      ; clear status-to-set bytes 1/2
+  STZ $3DE8,X      ; clear status-to-set bytes 3/4
+  LDA $3018,Y      ; target bit
+  STA $3A48        ; indicate target miss
+  TSB !miss        ; add to "missed" bitmask
+  TRB $A4          ; remove target from hit targets
+  RTS
+
+; -------------------------------------------------------------------------
+
+%free($C23B29)
+
+; #########################################################################
+; Sketch Effect (modified at end to use EffectFail better
+; Two bytes freespace at $C23B69
+
+org $C23B66 : JMP EffectFail
 
 ; #########################################################################
 ; Leap Effect (rewritten)
@@ -2681,7 +2644,7 @@ org $C23B71
   RTS
 .miss
   LDA #$05       ; "Cannot Leap" message ID
-  JMP $3B18      ; miss with messasge ^
+  JMP EffectFail ; miss with messasge ^
 
 checkLeap:
   LDA $2F4B      ; formation flags
@@ -2740,7 +2703,7 @@ StatusMiss:
   JSL StatusHelp
 .exit
   RTS             ; if Carry set, attack misses
-warnpc $C23C04+1
+warnpc $C23C04
 
 ; #########################################################################
 ; Rippler Effect (now freespace)
@@ -2757,14 +2720,7 @@ RiggedColosseum:
   STA $0205         ; clear wager item (so not billed)
 .rts
   RTS
-warnpc $C23C12+1
-
-; -------------------------------------------------------------------------
-; TODO: Remove this unused code snippet
-  PLA             ; restore A
-  ORA #$80        ; [displaced]
-  XBA             ; [displaced]
-  RTS 
+warnpc $C23C12
 
 ; -------------------------------------------------------------------------
 org $C23C22
@@ -2813,14 +2769,13 @@ ScanEffect:
   TYX           ; put target index in X
   LDA #$27      ; scan command id
   JMP $4E91     ; queue scan command in global action queue
-warnpc $C23C6E+1
-padbyte $FF
-pad $C23C6E
+%free($C23C6E)
 
 ; #########################################################################
 ; Suplex Effect (now fractional immunity) [informative miss]
 ; Clear old fractional routine
-padbyte $FF : org $C23C6E : pad $C23C75
+org $C23C6E
+%free($C23C75)
 
 ; #########################################################################
 ; Air Anchor Routine (now freespace)
@@ -2840,7 +2795,7 @@ PreDanceCmd:
   JMP DanceCmd     ; else, do full Dance cmd
 .exit
   JMP DanceCmd2    ; do Dance cmd w/o setting Dance status
-warnpc $C23C90+1
+warnpc $C23C90
 
 ; #########################################################################
 ; Pep Up Routine (now freespace)
@@ -2896,7 +2851,7 @@ SmartToot2:       ; 34 bytes
 .finish
   JSL TootHelp3
   RTS
-warnpc $C23DA9
+warnpc $C23DA8
 
 ; #########################################################################
 ; Metamorph Chance (unused in BNW, so now freespace)
@@ -2946,7 +2901,7 @@ SwitchBlade:
 LongSpecial:            ; 4 bytes
   JSR $387E             ; long access to special effect routine
   RTL
-warnpc $C23EA0+1
+warnpc $C23EA0
 
 ; #########################################################################
 ; Step Mine (unchanged)
@@ -2973,8 +2928,7 @@ Aero:
 .proc
   XBA           ; save spell #
   JSL ProcFix2  ; set spellcast proc, increment hits, handle no targets
-  RTS
-.exit           ; TODO: Remove duplicate RTS
+.exit
   RTS
 
 ; -------------------------------------------------------------------------
@@ -3012,9 +2966,7 @@ Shock:
   LSR $11B0      ; else, halve damage
 .exit
   RTS
-warnpc $C23F10
-padbyte $FF
-pad $C23F0F
+%free($C23F0F)
 
 ; -------------------------------------------------------------------------
 ; Helper for Net spellproc targeting exception
@@ -3056,8 +3008,7 @@ MPCrit:
   JMP $464C        ; Set bit on $3204,Y and return
 .exit
   RTS              ; Target of the branches in preceding code
-  NOP              ; Just dummying out this lone byte (TODO: Remove)
-warnpc $C23F54+1
+warnpc $C23F54
 
 ; #########################################################################
 ; Holy Wind Effect
@@ -3114,7 +3065,7 @@ Cleave:
 ; Old GP Toss Routine (now freespace)
 
 org $C23FB7
-warnpc $C23FFC+1
+warnpc $C23FFC
 
 ; #########################################################################
 ; Exploder Effect
@@ -3178,7 +3129,7 @@ PostCheckHelp:           ; replace 11 bytes
   LDA $A4                ; remaining targets
   JSR $522A              ; pick another target
   RTL
-warnpc $C24158+1
+warnpc $C24158
 
 ; #########################################################################
 ; Dice Effect
@@ -3245,25 +3196,14 @@ RollDie:              ; 19 bytes
   XBA                 ; move new multiplier to B
   PLA                 ; restore zero-based roll
   RTS
-warnpc $C241E6+1
+warnpc $C241E6
 
 
 ; #########################################################################
 ; Old Revenge Routine (now freespace)
-; TODO: This old "Imp Nerf" routine is no longer used, because it was
-; overwriting part of Palidor effect, and was moved elsewhere. It can
-; be removed. The overlapping portion has been removed.
 
 org $C241E6
-OldImpNerf:
-  LDA $B5        ; command ID
-  CMP #$01       ; "Item"
-  BEQ .exit      ; exit if ^
-  LDA $3EE4,X    ; Status byte 1
-  BIT #$20       ; "Imp"
-  BEQ .exit      ; branch if not ^
-  LSR $11B1      ; damage / 2 (hibyte)
-org $C241F9 : .exit ; TODO: This points to nowhere
+%free($C241F6)
 
 ; #########################################################################
 ; Rewrite Palidor once-per-strike handler. Now, remove dead targets.
@@ -3289,7 +3229,7 @@ PalidorStrike:
 PaliHide:              ; 6 bytes
   JSR $464C            ; sets "Palidor target" bit in $3204,Y (vanilla)
   JMP $1F00            ; sets "hide" status on target
-warnpc $C2421B+1
+warnpc $C2421B
 
 ; #########################################################################
 ; Spiraler (per-strike special effect)
@@ -3311,18 +3251,7 @@ Chakra:
   JMP ChakraHelp ; jump to helper
   NOP #2         ; [unused space]
   RTS            ; preserved in case it's branched to from elsewhere
-warnpc $C2424B+1
-
-; -------------------------------------------------------------------------
-; Helper for special effect misses
-
-org $C2428B
-Clear_Status:
-  TYX            ; target index
-  STZ $3DD4,X    ; clear status-to-set bytes 1/2
-  STZ $3DE8,X    ; clear status-to-set bytes 3/4
-  LDA $3018,Y    ; [displaced]
-  RTS
+warnpc $C2424B
 
 ; #########################################################################
 ; Mantra (per-strike special effect)
@@ -3342,11 +3271,17 @@ Mantra:
   LDA $3018,Y    ; attacker bitmask
   TRB $A4        ; miss caster
   RTS
+warnpc $C24280
 
 ; #########################################################################
-; End of Suplex + Reflect ??? (special effects) -- used as freespace
+; Suplex Random Targeting Effect (now freespace)
+; Reflect??? Effect (freespace)
+; Quick Effect (freespace)
 
-org $C242A4
+org $C2428B
+
+; -------------------------------------------------------------------------
+
 MantraHelp:
   LDA $3B40,Y    ; attacker stamina
   STA $E8        ; save multiplier
@@ -3364,7 +3299,10 @@ ChakraHelp:
   LSR            ; / 2
   STA $11B0      ; set MP heal amount
   RTS
-warnpc $C242C6+1
+
+; -------------------------------------------------------------------------
+
+%free($C242E1)
 
 ; #########################################################################
 ; Special Effect (per-strike) Jump Table [C242E1]
@@ -3456,7 +3394,7 @@ SmartToot:        ; (from 44D1)
 .pea
   PLY             ; restore Y to target's index
   RTS
-warnpc $C24480
+warnpc $C2447F
 
 ; -------------------------------------------------------------------------
 ; Initialize intermediate status-to-set bytes (partly rewritten)
@@ -3505,7 +3443,7 @@ MissType:
   XBA            ; transfer miss type to B
   JSR MissType2
   RTS
-warnpc $C244EB
+warnpc $C244EA
 
 ; -------------------------------------------------------------------------
 ; Hook "Toggle Status" helper into new handling
@@ -3549,8 +3487,6 @@ OvercastFix:
   TSB $F4            ; set "Doom" to-clear
   LDA $3EE4,Y        ; status-1/2
   STA $F8            ; save ^
-  BRA $03            ; remove petrify force-set TODO: Remove this BRA
-  NOP #3             ; remove petrify force-set TODO: Remove this NOP
   LDA $3C1C,Y        ; MaxHP
   LSR #3             ; MaxHP / 8
   CMP $3BF4,Y        ; compare to CurrHP
@@ -3574,10 +3510,6 @@ OvercastFix:
   LDA $32DF,Y        ; hit by attack
   BPL .finish        ; branch if not ^
   JSR $447F          ; get new status
-  BRA .finish        ; no longer set quasi status at all (was LDA $FC)
-  STA $3E60,Y        ; save quasi-status-1/2 ; TODO: Remove BRA-bypassed code
-  LDA $FE            ; new status-3/4
-  STA $3E74,Y        ; save quasi-status-3/4
 .finish
   PLA                ; restore status-to-set-3/4
   STA $FE            ; save ^
@@ -3616,7 +3548,7 @@ org $C2460E
   LDA #$4614           ; skip removing Dark, Mute, Sleep, Muddle, Berserk
 .clear
   JSR $4598            ; mark statuses in A to be cleared
-warnpc $C2461E
+warnpc $C2461D
 
 org $C2462F : ClearQueue: ; [label] clear queued actions
 
@@ -3761,9 +3693,7 @@ org $C24C68
 .react
   LDA $3269,X        ; top byte of reactive script pointer
   BMI .retort        ; branch if null ^
-warnpc $C24CA8
-padbyte $EA
-pad $C24CA7
+%nop($C24CA7)
 org $C24CB1
 .retort
 org $C24CBE
@@ -3829,19 +3759,40 @@ PoisonTicks:
   LDA #$1F        ; use max increment 31
 .valid
   STA $3E24,Y     ; save new increment value
-warnpc $C2504C+1
+warnpc $C2504C
 
 ; -------------------------------------------------------------------------
 org $C2505B : JSR Tick_Calc : NOP #2 ; Re-written formulas for periodic effects
 
 ; #########################################################################
 ; Scan Command ($C250DD)
-; TODO: Shift around so previous Scan command address can be restored
+;
+; Modified by dn's "Scan Status" patch to add support for Status messages.
+; Most "Scan Weakness" code is now displaced into C4 along with the new
+; "Scan Status" code.
+;
+; Rewritten for "Scan Restored" patch, which brings back HP/MP display and
+; condenses the routine for space savings
+
+org $C250DD
+FullScan:
+  PHP                 ; store flags
+  LDX $B6             ; get target of original casting
+  LDA #$FF            ; null (end of script marker)
+  STA $2D72           ; set end-of-script flag
+  LDA #$02            ; "Display Battle Msg" command ID
+  STA $2D6E           ; set battle command ID
+  STZ $2F37           ; clear message parameter
+  STZ $2F3A           ; clear message parameter
+  JSL ScanHPMP
+  JSL ScanWeak
+  JSL ScanStatus
+  PLP
+  RTS
 
 ; -------------------------------------------------------------------------
 ; Helpers for scan command parts
 
-org $C250DD
 LongMsgArg:
   STA $2F35           ; save param for message
 LongMsg:
@@ -3853,17 +3804,10 @@ LongMsg:
   PLP                 ; restore flags
   PLA                 ; restore A
   RTL
-warnpc $C250F4+1
-
-org $C250F2 : BRA $44 ; TODO: Remove this unused code fragment
-
-; -------------------------------------------------------------------------
-; Some portion of previous routine is now overwritten as freespace
 
 ; -------------------------------------------------------------------------
 ; Allow fractional damage to hurt bosses a little
 
-org $C250F4
 Fractional:
   LDA $3C80,Y     ; monster bits
   BIT #$04        ; "boss" flag
@@ -3872,11 +3816,9 @@ Fractional:
   TRB $11A4       ; remove from spell flags
 .exit
   RTS
-warnpc $C25105+1
-padbyte $FF
-pad $C25105          ; TODO: Can remove this padding and shift code up
 
-org $C25105
+; -------------------------------------------------------------------------
+
 GetTargeting:
   PHX
   PHP
@@ -3895,44 +3837,11 @@ GetTargeting:
   PLX
   RTS
 
-; TODO: Ops below are leftover from old code. Remove them
-  STA $0002,X
-  RTS
-warnpc $C25120+1
-
-; -------------------------------------------------------------------------
-; Modified by dn's "Scan Status" patch to add support for Status messages.
-; The "Scan Weakness" code is now displaced into C4 along with the new
-; "Scan Status" code.
-;
-; Rewritten for "Scan Restored" patch, which brings back HP/MP display and
-; condenses the routine for space savings
-
-org $C25120
-FullScan:
-  PHP                 ; store flags
-  LDX $B6             ; get target of original casting
-  LDA #$FF            ; null (end of script marker)
-  STA $2D72           ; set end-of-script flag
-  LDA #$02            ; "Display Battle Msg" command ID
-  STA $2D6E           ; set battle command ID
-  STZ $2F37           ; clear message parameter
-  STZ $2F3A           ; clear message parameter
-  JSL ScanHPMP
-  JSL ScanWeak
-  JSL ScanStatus
-  PLP
-  RTS
-warnpc $C25141+1
-padbyte $FF
-pad $C25141
-
 ; -------------------------------------------------------------------------
 ; Freespace used by "Stray Targeting" patch
 ; If special effect 0x4E is set on attack, allow targeting both dead
 ; and living allies at the same time.
 
-org $C25141
 TargetDead:       ; When we get here, A = 11A2 & #80
   PHP             ; store C flag (used later)
   LDX #$9C        ; load 0x4E * 2 (current X does not need saving)
@@ -3959,9 +3868,18 @@ PetrifyHelp:
   EOR #$FF           ; status-to-not-clear 1
   AND $3EE4,Y        ; current-status-keep 1
   RTS
-warnpc $C25161+1
-padbyte $FF
-pad $C25161
+
+; -------------------------------------------------------------------------
+; Helper for Half Turn ATB
+
+HalfTurn:
+  LDA #$7E       ; half-full ATB
+  STA $3219,X    ; set new ATB value
+  RTS
+
+; -------------------------------------------------------------------------
+
+%free($C25161)
 
 ; #########################################################################
 ; Probabilities for Umaro and Side/Pincer/Back/Normal attacks
@@ -3995,7 +3913,7 @@ DisableCommands:
   PHP                ; store flags
   REP #$30           ; 16-bit A,X/Y
   TXY                ; Y: character index
-  LDA MenuOffsets,X  ; character menu data offset
+  LDA.l MenuOffsets,X ; character menu data offset
   TAX                ; index it
   SEP #$20           ; 8-bit A
   LDA $3018,Y        ; character unique bit
@@ -4021,14 +3939,12 @@ DisableCommands:
   BEQ .skip_imp      ; branch if not ^
   CPX #$0006         ; "Morph" command
   BEQ .disable       ; branch if ^ (disable Morph when Imped)
-  BRA .skip_imp      ; skip unused code
-  db $19             ; previous branch to .disable sublabel TODO: remove ASAP
 .skip_imp
   TXA                ; command ID *2
   LSR                ; restore command ID (was ROR, causing CPX above to bug out)
   LDX #$0009         ; initialize command loop
 .loop
-  CMP ModifyCmds,X   ; current command matches special case
+  CMP.l ModifyCmds,X ; current command matches special case
   BNE .next          ; branch if not ^
   TXA                ; matched command index
   ASL                ; matched command index *2
@@ -4076,7 +3992,7 @@ CmdModify:
   dw UpdateFightCursor ; Fight
   dw LeapDis           ; Leap
   NOP
-warnpc $C25301+1
+warnpc $C25301
 
 ; #########################################################################
 ; Fight and Mug Command Targeting Setup
@@ -4093,10 +4009,6 @@ UpdateFightCursor:
   TAX                ; index to menu slot data
   PLA                ; get targeting byte again
   STA $2002,X        ; store targeting byte (fixed index high byte $20)
-  RTS
-
-; TODO: Below ops leftover from old code. Can be removed
-  PLP
   RTS
 
 ; #########################################################################
@@ -4126,7 +4038,7 @@ CommandConversions:
   PHP               ; store flags
   REP #$30          ; 16-bit A, X/Y
   LDY $3010,X       ; offset to character info data
-  LDA MenuOffsets,X ; offset to character menu data
+  LDA.l MenuOffsets,X ; offset to character menu data
   STA $002181       ; set WRAM destination address
   LDA $1616,Y       ; commands 1 and 2
   STA $FC           ; save ^
@@ -4185,7 +4097,7 @@ CommandConversions:
   LDX $E0           ; misc. scratch RAM
   PHX               ; store/backup
   REP #$10          ; 16-bit X/Y
-  JSL $C36128       ; convert menu slot based on relics, A: Cmd ID
+  JSL Long6172      ; convert menu slot based on relics, A: Cmd ID
   SEP #$10          ; 8-bit X/Y
   PLX               ; get backup scratch RAM
   STX $E0           ; restore scratch RAM
@@ -4193,7 +4105,7 @@ CommandConversions:
 
   LDX #$05          ; prep special command loop
 .cmd_loop
-  CMP CmdBlanks,X   ; matches blankable command
+  CMP.l CmdBlanks,X ; matches blankable command
   BNE .next         ; branch if not ^
   TXA               ; index to blankable command
   ASL               ; x2 for jump table
@@ -4298,7 +4210,7 @@ ChkMenu:
   TSB $F8           ; set ^ in scratch RAM
 .exit
   RTS
-warnpc $C2544A+1
+warnpc $C2544A
 
 ; #########################################################################
 ; Menu Offsets - unchanged from vanilla
@@ -4341,7 +4253,7 @@ CmdBlanks:
   db $02 ; Magic
   db $17 ; X-Magic
   db $0C ; Lore
-warnpc $C2546E+1
+warnpc $C2546E
 
 ; ########################################################################
 ; Copy Item Properties into Buffer
@@ -4572,7 +4484,7 @@ PrepRunLoop:
   STA $3A3B       ; else, set difficulty to 10
   NOP #2
 .reg
-warnpc $C25CDC
+warnpc $C25CDB
 org $C25D04 : .next
 org $C25D0A : BCC .loop
 
@@ -4614,11 +4526,6 @@ ParryCounter:
   BEQ .done      ; branch if not ^
   JSR $35E3      ; else, initialize counter variables
 .done
-  RTS
-
-; TODO: Remove this leftover code fragment
-  db $20
-  LDY #$12       ; [displaced] prep entity loop
   RTS
 
 ; -------------------------------------------------------------------------
@@ -4667,9 +4574,6 @@ org $C2600D
 ; #########################################################################
 ; Level-up Routine
 
-; Check for learning abilities in new displaced routine location
-org $C260BC : JSR LevelChk
-
 ; Re-arranging level up function to separate levels from esper bonuses
 org $C260DD
   REP #$21      ; Set 16-bit A, clear carry
@@ -4716,7 +4620,7 @@ Do_Esper_Lvl:
   REP #$20        ; 16-bit A
   JMP AddEL       ; handle esper levelups
   NOP #2          ; [padding]
-warnpc $C26133+1
+warnpc $C26133
 
 ; Esper bonus handling, completely rewritten
 
@@ -4741,7 +4645,7 @@ ELTable:
   db $00,$00 ; null - Raiden?
 
 AddEL:
-  LDA ELTable,X   ; A = full 2-byte boost
+  LDA.l ELTable,X ; A = full 2-byte boost
   SEP #$20        ; 8-bit A
 .doone
   TYX             ; X = index to character stats
@@ -4779,78 +4683,9 @@ AddEL:
   BRA .doone      ; loop for second bonus byte
 
 ; --------------------------------------------------------------------------
-; Img Damage Reduction Helper (in freespace)
+; Freespace
 
-ImpNerf:
-  LDA $B5           ; command id
-  CMP #$01          ; is command "Item"
-  BEQ .skip         ; exit if so
-  LDA $3EE4,X       ; status byte 1
-  BIT #$20          ; "imp"
-  BEQ .skip         ; exit if not imped
-  LSR $11B1         ; half damage (high byte)
-  ROR $11B0         ; half damage (low byte)
-.skip
-  JMP $14AD         ; continue to hitting back check
-  db $FF,$FF        ; TODO: remove this padding
-
-; --------------------------------------------------------------------------
-; Helpers for Petrify/Morph immunities
-
-Vulnerables2:
-  AND $3330,Y     ; mask fixed status vulnerables (3-4)
-  STA $E8         ; store vulnerable status-to-set
-  LDA #$9BFF      ; Dance,Regen,Slow,Haste,Stop,Shell,Safe,Reflect
-                  ; Rage,Frozen,Morph,Spell,Float
-FinishPet:
-  PHA             ; store petrify immunities
-  LDA $3EE3,Y     ; status bytes 1-2
-  ASL #2          ; Carry: "Petrify"
-  PLA             ; restore petrify immunities
-  BCC .done       ; branch if no "Petrify"
-  TRB $E8         ; remove vulnerables
-.done
-  LDA $E8         ; real vulnerables
-  RTS
-warnpc $C261D6+1
-
-; --------------------------------------------------------------------------
-
-padbyte $FF         ; TODO: freespace here
-pad $C261D6+1
-
-; --------------------------------------------------------------------------
-
-org $C261D6
-StatusFinish:
-  REP #$20             ; 16-bit A
-  LDA !died_flag       ; bitmask of entities needing status cleanup
-  BEQ .done            ; if none, exit
-  JSL StatusFinHelp    ; prepare status cleanup
-  JSR $4391            ; cleanup statuses
-.done
-  SEP #$20             ; 8-bit A
-  JMP $47ED            ; [displaced] vanilla code
-warnpc $C261E9+1
-
-; --------------------------------------------------------------------------
-
-padbyte $FF            ; TODO: freespace here
-pad $C261E9
-
-; #########################################################################
-; Sabin Learning Blitzes at Level-up (moved elsewhere by EL rewrite)
-; Now freespace
-
-org $C261E9
-StamSpecial:      ; helper for monster special status attacks
-  TXA             ; A = status byte index
-  BNE .end        ; exit if not status-1 (Death)
-  LDA #$02        ; "Miss if Death Immune"
-  TSB $11A2       ; set ^ flag
-.end
-  RTS
-warnpc $C261F3
+%free($C261B6)
 
 ; #########################################################################
 ; Add Experience after Battle
@@ -5024,10 +4859,6 @@ GetRowFlag:
   ORA $11A7       ; combine with 11A7's "respect row" bit
   RTS
 
-padbyte $FF       ; TODO: Remove this padding
-pad $C2652E
-
-org $C2652E
 SketchDis:
   LDA $EF         ; disabled commands
   LSR             ; C: Sketch Invalid
@@ -5050,9 +4881,6 @@ LeapDis:
   PLY             ; restore Y
   RTS
 
-padbyte $FF       ; TODO: Remove this padding
-pad $C2653A
-
 ; -------------------------------------------------------------------------
 ; Save Item helper(s)
 ;
@@ -5067,7 +4895,6 @@ pad $C2653A
 ; the character queues another Item, Weapon Swap, or Steal
 ; command executes prior to the end of battle.
 
-org $C2654B
 SaveItem:           ; 21 bytes
   TSB $3A8C         ; set character's reserve item to be added
   LDA $32F4,X       ; load current reserve item
@@ -5105,7 +4932,6 @@ ReturnReserve:      ; 10 bytes
 ; routine is called once again, with any "Death" or
 ; "Petrify" statuses marked to be set.
 
-org $C2656A
 DoubleStatusSet:         ; 38 bytes
   LDY #$06               ; prepare character loop
 .loop_1
@@ -5126,19 +4952,17 @@ DoubleStatusSet:         ; 38 bytes
   CPY #$08               ; past character range
   BCC .loop_2            ; process all 4 characters
   JMP $4391              ; update statuses (phase 2)
-warnpc $C26590+1
 
-org $C26590
+; -------------------------------------------------------------------------
+
 ClearImp:
   LDA #$0020      ; Imp
   JSR $4598       ; mark to be cleared
   JMP $4678       ; continue with normal morph handling
-warnpc $C2659D+1
 
 ; -------------------------------------------------------------------------
 ; Rage on-clear status removal helper
 
-org $C2659D
 RageClear:
   PHX             ; save X
   REP #$10        ; 16-bit X/Y
@@ -5159,7 +4983,6 @@ RageClear:
 ; -------------------------------------------------------------------------
 ; Field Item Usage Helper
 
-org $C265BE
 FieldLifeHelp:
   JSR $2966       ; [displaced] load spell data
   LDA $11A9       ; special effect x2
@@ -5175,7 +4998,6 @@ FieldLifeHelp:
 ; blank spots are at the end.
 ; TODO: Remove nested loops
 
-org $C265CE
 condenseSpellLists:
   PHX                 ; store character slot index
   PHP                 ; store flags
@@ -5230,18 +5052,14 @@ condenseSpellLists:
   JMP $532C           ; [displaced] modify commands
 
 ; --------------------------------------------------------------------------
-; Was a North Cross helper, but was removed in later update
-; Now helper for EP Gain bug
+; Helper for EP Gain bug
 
-org $C2661B
 FixItUp:
   BIT #$0008      ; "espers acquired" event bit
   BEQ .exit       ; exit if not ^
   JMP Calc_EP     ; $E8 = gained EP
 .exit
   RTS
-padbyte $FF       ; TODO: Remove this unnecessary padding
-pad $C26626
 
 ; --------------------------------------------------------------------------
 ; Ghost Ring helper
@@ -5250,7 +5068,6 @@ pad $C26626
 ; give undead characters the Overcast flag as well, so death
 ; sets Zombie instead (if not immune).
 
-org $C26626
 FullUndead:           ; 10 bytes
   STA $3C95,X         ; (vanilla code)
   BPL .skip           ; branch if not undead
@@ -5262,7 +5079,6 @@ FullUndead:           ; 10 bytes
 ; --------------------------------------------------------------------------
 ; Sketch Helpers
 
-org $C26631
 SketchMag:
   BMI .exit        ; exit if no sketcher
   TAX              ; else, index sketcher index
@@ -5294,54 +5110,67 @@ NoSketch2:
   RTS
 
 ; --------------------------------------------------------------------------
-; Displaced due to original esper boost rewrite
-; TODO: Look into moving back in-line after Bropedio change overwrites boosts
-org $C26659
-LevelChk:
-  LDX #$0000       ; Beginning of Terra's magic learned at level up block
-  CMP #$00
-  BEQ .learn_magic ; If Terra leveled, branch to see if she learns any spells
-  LDX #$0020       ; Beginning of Celes' magic learned at level up block
-  CMP #$06
-  BEQ .learn_magic ; If Celes leveled, branch to see if she learns any spells
-  LDX #$0000       ; Beginning of Cyan's SwdTech learned at level up block
-  CMP #$02         ; If Cyan leveled, check for any new SwdTechs
-  BNE .learn_blitz ; Else, check for any new Blitzes for Sabin
-.learn_bushido
-  JSR $6222        ; Are any SwdTechs learned at the current level?
-  BEQ .exit        ; If not, exit
-  TSB $1CF7        ; If so, enable the newly learnt SwdTech
-  BNE .exit        ; If it was already enabled (finished the nightmare), exit
-  LDA #$40
-  TSB $F0
-  BNE .exit
-  LDA #$42
-  JMP $5FD4
-.learn_blitz
-  LDX #$0008       ; Beginning of Sabin's Blitzes learned at level up block
-  CMP #$05         ; If Sabin leveled, check for any new Blitzes
-  BNE .exit        ; If not, exit
-  JSR $6222        ; Are any Blitzes learned at the current level?
-  BEQ .exit        ; If not, exit
-  TSB $1D28        ; If so, enable the newly learnt Blitz
-  BNE .exit        ; If it was already enabled (Bum Rush), exit
-  LDA #$80
-  TSB $F0
-  BNE .exit
-  LDA #$33
-  JMP $5FD4
-.learn_magic
-  JMP $61FC
-.exit
+
+StatusFinish:
+  REP #$20             ; 16-bit A
+  LDA !died_flag       ; bitmask of entities needing status cleanup
+  BEQ .done            ; if none, exit
+  JSL StatusFinHelp    ; prepare status cleanup
+  JSR $4391            ; cleanup statuses
+.done
+  SEP #$20             ; 8-bit A
+  JMP $47ED            ; [displaced] vanilla code
+
+; --------------------------------------------------------------------------
+
+StamSpecial:      ; helper for monster special status attacks
+  TXA             ; A = status byte index
+  BNE .end        ; exit if not status-1 (Death)
+  LDA #$02        ; "Miss if Death Immune"
+  TSB $11A2       ; set ^ flag
+.end
   RTS
+
+; --------------------------------------------------------------------------
+; Helpers for Petrify/Morph immunities
+
+Vulnerables2:
+  AND $3330,Y     ; mask fixed status vulnerables (3-4)
+  STA $E8         ; store vulnerable status-to-set
+  LDA #$9BFF      ; Dance,Regen,Slow,Haste,Stop,Shell,Safe,Reflect
+                  ; Rage,Frozen,Morph,Spell,Float
+FinishPet:
+  PHA             ; store petrify immunities
+  LDA $3EE3,Y     ; status bytes 1-2
+  ASL #2          ; Carry: "Petrify"
+  PLA             ; restore petrify immunities
+  BCC .done       ; branch if no "Petrify"
+  TRB $E8         ; remove vulnerables
+.done
+  LDA $E8         ; real vulnerables
+  RTS
+
+; --------------------------------------------------------------------------
+; Img Damage Reduction Helper (in freespace)
+
+ImpNerf:
+  LDA $B5           ; command id
+  CMP #$01          ; is command "Item"
+  BEQ .skip         ; exit if so
+  LDA $3EE4,X       ; status byte 1
+  BIT #$20          ; "imp"
+  BEQ .skip         ; exit if not imped
+  LSR $11B1         ; half damage (high byte)
+  ROR $11B0         ; half damage (low byte)
+.skip
+  JMP $14AD         ; continue to hitting back check
 
 ; -------------------------------------------------------------------------
 ; Zantetsuken Effect Helpers
 
-org $C266A3
 Zantetsuken:
   LDA #$EE      ; "Cleave" animation ID
-  XBA           ; store in B [TODO: overwritten below, remove this]
+  XBA           ; store in B
   JSR $4B5A     ; random(0..256)
   CMP #$40      ; C: 75% chance
 
@@ -5353,7 +5182,6 @@ Undead_Killer:
   AND #$04      ; "Immune to Instant Death"
   ORA $B5       ; or any non-Fight command
   BNE .crit     ; do critical damage if ^
-  NOP           ; TODO: Remove this padding
   JMP $38A6     ; execute cleave-kill.
 .crit
   LDA $BC       ; attack incremented damage (Critical Hit?) [TODO: confirm]
@@ -5366,11 +5194,10 @@ Undead_Killer:
   RTS
 
 ; -------------------------------------------------------------------------
-
-org $C266C7
 ; Coin Toss Formula
 ;   -> GP Rained = Stam * 10
 ;   -> Dmg = (GP Tossed * Lv) / (2 * (# of targets + 1))
+
 CoinToss:
   LDA $3B40,Y     ; attacker stamina.
   XBA             ; store in B
@@ -5443,7 +5270,6 @@ BlindHelp:
 ; -------------------------------------------------------------------------
 ; X-Magic Counter Helper (replaced to fix semi-broken original patch)
 
-org $C26744
 MayReset:
   LDA #$FF         ; "null"
   LDX $B0          ; loop flags
@@ -5453,22 +5279,9 @@ MayReset:
 .exit
   RTS
 
-; TODO: Remove this routine, as it is unused
-XMagCntr:
-  LDA $04,S         ; attacker index
-  TAY               ; index it
-  LDA $32CC,Y       ; entrypoint to linked list queue
-  INC               ; null check (always null unless X-Magic)
-  BNE .exit         ; branch if not null ^
-  ASL $32E0,X       ; shift out "counterattack check pending"
-  LSR $32E0,X       ; remove ^
-.exit
-  RTS
-
 ; -------------------------------------------------------------------------
 ; Helpers for Enemy Special status attacks
 
-org $C26761
 SpecialAttStam:
   STA $11AA,X     ; [displaced] store updated status byte
   BPL .finish     ; if possible death bit not set, branch
@@ -5477,7 +5290,6 @@ SpecialAttStam:
   LDA #$10        ; "Stamina Evasion"
   TSB $11A4       ; set ^ flag
   RTS
-  db $FF          ; [padding]
 
 ; -------------------------------------------------------------------------
 ; Helpers for condensed spell list hack
@@ -5529,7 +5341,6 @@ calcMPCost:
 ; -------------------------------------------------------------------------
 ; Helper for ATB Autofill (for Quicksteal)
 
-org $C267B0
 CheckCantrip:
   PHA               ; save A (new ATB value)
   LDA $3AA1,X       ; special state flags
@@ -5544,10 +5355,8 @@ CheckCantrip:
   RTS
 
 ; -------------------------------------------------------------------------
-; Helper for Stamina Evasion (moved by Informative Miss)
-; Now freespace for various Informative Miss helpers
+; Various Informative Miss helpers
 
-org $C267C5
 SecondMiss:
 .loop
   INY            ; assume status miss
@@ -5577,15 +5386,9 @@ ChooseAnim:
 MissExit:
   RTS
 
-; TODO: This code preserved for initial integration checksum, but unused
-  db $FA : CLC : RTS : SEC : RTS
-
-warnpc $C267F2+1
-
 ; -------------------------------------------------------------------------
 ; Helper for Blackbelt Counter chance
 
-org $C267F2
 StamCounter:
   LDA $3B40,X       ; Stamina
   CLC               ; clear carry
@@ -5594,6 +5397,11 @@ StamCounter:
   LDA #$81          ; 129
   JSR $4B65         ; random(0..128)
   RTS
+
+; -------------------------------------------------------------------------
+; Freespace
+
+%free($C26800)
 
 ; #########################################################################
 ; Upper C2 Condensed Graphics and Code
@@ -5613,10 +5421,11 @@ pad $C28A70
 ; #########################################################################
 ; Freespace
 
+org $C2A65A
+
 ; -------------------------------------------------------------------------
 ; Morph damage taken helper. Updated by Golem Restrictions patch
 
-org $C2A65A
 HandleMorph:
   LDA $3EF9,Y      ; status byte 4
   BIT #$08         ; "Morphed"
@@ -5631,17 +5440,13 @@ HandleMorph:
   JSR InvertMulti  ; invert stamina and multiply
 .exit
   RTS
-warnpc $C2A674+1
 
-  PLA : RTS         ; TODO: Remove this unused code fragment
-
-; #########################################################################
+; -------------------------------------------------------------------------
 ; Esper Level and Experience Messages
 ;
 ; dn's "Scan Status" patch modifies the message ID for one of
 ; the new battle messages.
 
-org $C2A674
 Calc_EP:
   PHP               ; store flags
   SEP #$20          ; 8-bit A
@@ -5765,10 +5570,8 @@ Show_EP:
 .exit
   RTS
 
-; #########################################################################
-; Helpers in Freespace
+; -------------------------------------------------------------------------
 
-org $C2A742
 GauRageStatuses:
   STA $3C6C,Y
   LDA $CF0014,X   ; blocked status bytes 1-2
@@ -5776,18 +5579,6 @@ GauRageStatuses:
   EOR #$FFFF      ; invert 'em to get statuses to clear
   AND $3EE4,Y     ; and with current status
   STA $3EE4,Y     ; update current status
-  RTS
-  
-GauRageStatuses2: ; TODO: Remove -- no longer used
-  STA $3C6C,X
-  AND $3EE5,X     ; equipment status byte 2 AND current status = status to actually have
-  STA $3EE5,X
-  LDA $D4
-  AND $3EF8,X     ; equip status byte 3 and current status 3
-  STA $3EF8,X
-  LDA $3EF9,X     ; load float byte
-  AND #$7F        ; no float
-  STA $3EF9,X
   RTS
 
 ; -------------------------------------------------------------------------
@@ -5798,7 +5589,6 @@ GauRageStatuses2: ; TODO: Remove -- no longer used
 ;
 ; Routine shifted and reorganized by Golem Restrictions patch
 
-org $C2A770
 Variance:
   LDA $11A4        ; attack flags
   LSR              ; carry: "Healing"
@@ -5856,13 +5646,9 @@ Variance:
   PLX              ; restore X
   PLP              ; restore flags
   RTS
-warnpc $C2A7D6+1
-
-; TODO: Remove this unused code fragment ASAP
-  db $0C : JSR $4B5A : JMP $0CB3 ; $BA
 
 ; -------------------------------------------------------------------------
-org $C2A7DD
+
 DmgCmdAlias:
   PHA                ; store target data
   SEP #$20           ; 8-bit A
@@ -5888,7 +5674,21 @@ DmgCmdAliasMass:
   PLA                ; restore battle dynamics command
 .exit
   JMP $629B          ; finish up
-warnpc $C2A800+1
+
+; -------------------------------------------------------------------------
+
+HelpExplode:
+  BCS .reg         ; skip increment if monster attacker
+  LDY $11A6        ; use battle power as increment
+  JSR IncByY       ; A = A + (A/2 * Y)
+.reg
+  STA $11B0        ; save [modified] HP-based dmg
+  RTS
+
+; -------------------------------------------------------------------------
+; Freespace
+
+%free($C2A800)
 
 ; #########################################################################
 ; Slot Reel Layout
@@ -5900,6 +5700,8 @@ warnpc $C2A800+1
 !slot_blackjack = $0003
 !slot_chocobo = $0004
 !slot_diamond = $0005
+
+org $C2A800
 
 ; Reel 1
 dw !slot_seven
@@ -5956,19 +5758,6 @@ dw !slot_chocobo
 dw !slot_bar
 
 ; #########################################################################
-; TODO: This is not freespace -- it is data. This helper should be
-; moved to actual freespace ASAP
-
-org $C2A8D2
-HelpExplode:
-  BCS .reg         ; skip increment if monster attacker
-  LDY $11A6        ; use battle power as increment
-  JSR IncByY       ; A = A + (A/2 * Y)
-.reg
-  STA $11B0        ; save [modified] HP-based dmg
-  RTS
-
-; #########################################################################
 ; Status Text Tile Data
 ; $20-$23 = Regen
 ; $24-$25 = Sap
@@ -5996,6 +5785,17 @@ org $C2B4AF : LDA #$07 : RTL
 
 org $C2BBEC : JSL Random
 org $C2BC9B : JSL Random
+
+; #########################################################################
+
+; ########################################################################
+; Song index table
+;
+; Add support for playing the Four Fiends song from FFIV
+; for designated formations. In BNW, this song is used
+; for all WoR dragon battles.
+
+org $C2BF41 : db $25 ; Add "four fiends" song index to song lookup
 
 ; #########################################################################
 ; Palette Data for Various Animations
@@ -6071,11 +5871,6 @@ SOSReset:           ; 13 bytes
   RTS
 
 ; -------------------------------------------------------------------------
-
-padbyte $FF       ; TODO: Remove this padbyte usage
-pad $C2FAB4
-
-; -------------------------------------------------------------------------
 ; Runic helper to ignore elemental effects and +25% magic dmg flag
 
 RunicHelper:
@@ -6095,12 +5890,10 @@ RunicCheck:
 .exit
   TDC            ; zero A/B (subcommand, to be safe)
   RTS 
-warnpc $C2FACD+1
 
 ; -------------------------------------------------------------------------
 ; Smart Cover and Tank 'n Spank Helpers
 
-org $C2FAD0
 SmartCover:
   BEQ .exit           ; exit if no intended targets (from $B8)
   LDY #$FF            ; null
@@ -6210,7 +6003,6 @@ SkipDogBlock:
 ; Zombie, Muddle, Clear, Imp, Petrify, Death, Sleep
 ; Condemned, Morph, Stop, Reflect, Freeze
 
-org $C2FB60
 EnterBattleState:        ; 29 bytes
   PHP                    ; store flags (8-bit)
   REP #$20               ; 16-bit A
@@ -6250,12 +6042,10 @@ ResetMimic:
   STA $3F28       ; remove "jump" command
   ASL             ; ensure A is > #$1E
   RTS
-warnpc $C2FB9F+1
 
 ; -------------------------------------------------------------------------
 ; Helper for Petrify immunity changes
 
-org $C2FBA0
 Vulnerables1:
   LDA $331C,Y     ; fixed status vulnerables (1-2)
   STA $E8         ; store them
@@ -6267,12 +6057,10 @@ Vulnerables1:
 .check_pet
   LDA #$FEB7      ; Dark,Poison,Clear,Wounded,Image,Mute
   JMP FinishPet   ; Berserk,Muddle,Sap,Sleep,Imp,Death,Zombie
-warnpc $C2FBB8+1
 
 ; -------------------------------------------------------------------------
 ; Poison status on-clear helper to reset damage incrementor
 
-org $C2FBC6
 Poison:
   PHP
   SEP #$20
@@ -6284,7 +6072,6 @@ Poison:
 ; -------------------------------------------------------------------------
 ; Helper for Throw weapon properties loading
 
-org $C2FBD0
 ThrowProps:
   PHP            ; store flags
   STA $11A1      ; [displaced] store element
@@ -6301,14 +6088,12 @@ ThrowProps:
 ; -------------------------------------------------------------------------
 ; Long access to random in range routine
 
-org $C2FBEA
 RandomRange:
   JSR $4B65
   RTL
 
 ; -------------------------------------------------------------------------
 
-org $C2FBEE
 AtmaStat:
   STA $11A9      ; [moved] Set special effect
   CMP #$04       ; "Atma Weapon"
@@ -6331,9 +6116,7 @@ Brushless:
   JSR BrushHand   ; C: Not a brush
 .exit
   RTS
-warnpc $C2FC10+1
 
-org $C2FC17
 EnemyAbort:
   LDA $11A4      ; attack flags
   ASL #2         ; C: "Abort on Enemies" (new BNW flag)
@@ -6358,7 +6141,6 @@ ItemAbortEnemy:
   LDA #$40       ; "Abort on Enemies" (replaces L? Spell flag)
   TSB $11A4      ; set ^
   RTS
-warnpc $C2FC3F+1
 
 ; -------------------------------------------------------------------------
 ; Quake Special Effect (per-strike)
@@ -6386,4 +6168,9 @@ GroundDmg:
   STA $B8         ; set filtered targets
   TYX             ; attacker index
   JMP $57C2       ; update targets [?]
+
+; -------------------------------------------------------------------------
+; Freespace
+
+%free($C2FC6D)
 
