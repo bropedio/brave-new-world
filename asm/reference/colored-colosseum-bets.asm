@@ -5,7 +5,6 @@
 ;  Created: 2023-08-07
 ;  Depends: Include after "shrinked_colosseum.asm"
 ;  Updated: 2023-11-02 by Bropedio
-;    * Change text from "Select an item" to "Wager an item"
 ;    * Remove palette change to yellow for closed loops
 ;    * Use new "trade" tile for closed loops instead
 ; -----------------------------------------------------------------------------
@@ -30,11 +29,6 @@ hirom
 !closed = $C7     ; trade
 
 ; -----------------------------------------------------------------------------
-; Text for colosseum menu "Select an item"
-; -----------------------------------------------------------------------------
-org $C3ADA8 : db "Wager an item",$00
-
-; -----------------------------------------------------------------------------
 ; draw prize item name (character select screen)
 ; -----------------------------------------------------------------------------
 org $C3B258 : db $D0    ; change BEQ to BNE
@@ -44,11 +38,11 @@ org $C3B258 : db $D0    ; change BEQ to BNE
 ; -----------------------------------------------------------------------------
 org $C3F233 : db $F0    ; change BNE to BEQ
 
-; C3F24E:
+; C3F24F:
 ; string_delimiter:
 ;   LDA $0205               ; bet item ID
 ;   CMP #$FF                ; null?
-org $C3F253
+org $C3F254
 SelectTile:
     BEQ .set_char           ; if ^, use ' ' tile ($FF)
     JSR TradeTileSplice     ; go get trade tile
