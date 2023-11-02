@@ -4,6 +4,10 @@
 ;   Author: Fëanor
 ;  Created: 2023-08-07
 ;  Depends: Include after "shrinked_colosseum.asm"
+;  Updated: 2023-11-02 by Bropedio
+;    * Change text from "Select an item" to "Wager an item"
+;    * Remove palette change to yellow for closed loops
+;    * Use new "trade" tile for closed loops instead
 ; -----------------------------------------------------------------------------
 hirom
 
@@ -19,8 +23,16 @@ hirom
 ; This change requires two BEQ/BNE branches to be switched.
 ; -----------------------------------------------------------------------------
 
-!free = $C3F6F6         ; requires  9 bytes
+!free = $C3F6F6         ; requires  8 bytes
 !warn = !free+10        ; provides 10 bytes
+
+!open   = $D5     ; arrow
+!closed = $C7     ; trade
+
+; -----------------------------------------------------------------------------
+; Text for colosseum menu "Select an item"
+; -----------------------------------------------------------------------------
+org $C3ADA8 : db "Wager an item",$00
 
 ; -----------------------------------------------------------------------------
 ; draw prize item name (character select screen)
@@ -32,28 +44,27 @@ org $C3B258 : db $D0    ; change BEQ to BNE
 ; -----------------------------------------------------------------------------
 org $C3F233 : db $F0    ; change BNE to BEQ
 
-; C3F263:
-; string_bet:
-;   LDA $0205
-;   CMP #$FF
-;   BEQ .case_empty
-; .case_default
-org $C3F26A
-    JSR ColorSplice     ; set text color
-;   JSR $C068
-;   RTS
-; .case_empty
-;   LDA #$FF
-;   JSR string_fill
+; C3F24E:
+; string_delimiter:
+;   LDA $0205               ; bet item ID
+;   CMP #$FF                ; null?
+org $C3F253
+    BEQ .set_char           ; if ^, use ' ' tile ($FF)
+    JSR TradeTileSplice     ; go get trade tile
+    NOP #3                  ; empty space
+.set_char
+;   STA $2180               ; write chosen delimiter
+;   STZ $2180               ; end of string
 ;   RTS
 ; -----------------------------------------------------------------------------
 
 ; set text color for each betting item
 org !free
-ColorSplice:    ; [9 bytes]
-  LDA $0209     ; load color palette
-  STA $29       ; store it
-  LDA $0205     ; [displaced]
+TradeTileSplice:    ; [8 bytes]
+  LDA $0209         ; trade type tile
+  BNE .done         ; branch if not hidden
+  LDA !open         ; else, use arrow (Kagenui)
+.done
   RTS
 warnpc !warn
 
@@ -61,8 +72,6 @@ warnpc !warn
 ; DFB600-DFB9FF: Colosseum Data (256 items, 4 bytes each) 
 ; -----------------------------------------------------------------------------
 
-!open   = $20     ; white text color
-!closed = $34     ; yellow text color
 !hidden = $00
 
 org $DFB603 : db !open      ; Healing Shiv
