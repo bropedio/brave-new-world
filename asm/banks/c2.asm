@@ -3084,17 +3084,14 @@ Cleave:
 org $C23FB7
 
 ; -------------------------------------------------------------------------
-; Helpers for setting Counterattack flag
+; Helpers for unsetting Counterattack flag
 
 CounterDone:
+  PEA $0018       ; [displaced] (return to battle loop at RTS)
+AllyCounter:
   LDA #$08        ; 'counterattack' flag
   TRB $B1         ; unset ^
-  JMP $0019       ; [displaced]
-
-AllyCounter:
-  LDA #$08        ; 'counterattack' flag 
-  TRB $B1         ; unset ^ for players
-  LDA $3AA0,X     ; [displaced]
+  LDA $3AA0,X     ; [displaced] (only needed for AllyCounter)
   RTS
 
 ; -------------------------------------------------------------------------

@@ -10,10 +10,10 @@
 ; -----------------------------------------------------------------------------
 hirom
 
-!free_a = $C13E03      ; 18 bytes of free space required
+!free_a = $C13E03      ; 17 bytes of free space required
 !warn_a = !free_a+28   ; 28 bytes available
 
-!free_b = $C2FBB9      ; 12 bytes of free space required
+!free_b = $C2FBB9      ; 11 bytes of free space required
 !warn_b = !free_b+13   ; 13 bytes available
 
 !textcolor = #$037F    ; custom text color = yellow
@@ -103,15 +103,13 @@ SpliceDrawText:
     RTS
 warnpc !warn_a
 
-; unset new "special action" flag after special action finishes
+; unset new "counterattack" flag after counterattack finishes
 org !free_b
 CounterDone:
+    PEA $0018       ; [displaced] (return to battle loop at RTS)
+AllyCounter:
     LDA #$08        ; 'counterattack' flag
     TRB $B1         ; unset ^
-    JMP $0019       ; [displaced]
-AllyCounter:
-    LDA #$08        ; 'counterattack' flag 
-    TRB $B1         ; unset ^ for players
-    LDA $3AA0,X     ; [displaced]
+    LDA $3AA0,X     ; [displaced] (only needed for AllyCounter)
     RTS
 warnpc !warn_b
