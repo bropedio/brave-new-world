@@ -49,6 +49,7 @@ org $C3F233 : db $F0    ; change BNE to BEQ
 ;   LDA $0205               ; bet item ID
 ;   CMP #$FF                ; null?
 org $C3F253
+SelectTile:
     BEQ .set_char           ; if ^, use ' ' tile ($FF)
     JSR TradeTileSplice     ; go get trade tile
     NOP #3                  ; empty space
