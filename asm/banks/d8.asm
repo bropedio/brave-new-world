@@ -15,7 +15,7 @@ MenuCGRAM:
   dw $0000,$0000,$39CE,$6F60 ; light blue font 
 .p1
   dw $0000,$0000,$39CE,$6F60 ; light blue font
-  dw $0000,$7FFF,$1084,$7FFF ; user editable color - vwf
+  dw $0000,$7FFF,$0000,$7FFF ; user editable color - vwf
   dw $0000,$0000,$39CE,$7FFF ; white font
   dw $0000,$0000,$39CE,$6F60 ; light blue font
 .p2
