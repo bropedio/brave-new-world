@@ -4532,60 +4532,132 @@ org $C25D0A : BCC .loop
 
 ; #########################################################################
 ; Victorious Combat (C25D91)
+;
+; Support turning off experience via config option
+; Double GP when experience is off
+; If experience is off, do not show "gained experience" messages
+;
+; Code largely rewritten by Feanor to remove unused bits and make
+; room for new double GP and skipped XP handling.
 
-; Make EP gains display after combat
-org $C25E0B : JSR Show_EP
+!XP_flag = $F4      ; custom flag to track if XP/EP is gained
 
-; Double GP when Experience is off
-org $C25E10
-DoubleGP:
-  LDA $1D4D           ; config byte
-  BIT #$08            ; "gain exp" flag
-  BNE .skip           ; branch if experience on
-  ASL $2F3E           ; else, double GP reward
+; -----------------------------------------------------------------------------
+; tallies up earned XP/GP and stores it
+; -----------------------------------------------------------------------------
+org $C25DAB
+Victory1:
+  STZ !XP_flag      ; clear custom flag
+  REP #$20          ; set 16-bit A
+  LDX #$000A        ; set initial X = $0A for iteration (last enemy)
+.enemy_loop
+  LDA $3EEC,X       ; check enemy's 1st status byte
+  BIT #$00C2        ; check if petrify, death, or zombie
+  BEQ .next_enemy   ; if not, skip this enemy
+  LDA $11E4         ; some event bits
+  BIT #$0002        ; check if party's on the Veldt
+  BNE .tally_gp     ; branch if true to skip tallying XP
+  LDA $1D4D         ; get config option byte
+  BIT #$0008        ; check "XP gain" flag
+  BEQ .tally_gp     ; branch if XP gain is off
+  INC !XP_flag      ; set custom flag
+  CLC               ; clear carry flag
+  LDA $3D8C,X       ; get enemy XP
+  ADC $2F35         ; add to XP tally
+  STA $2F35         ; store it in variable 0  (bottom 2 bytes)
+  BCC .tally_gp     ; branch if carry flag is clear
+  INC $2F37         ; set top byte of variable 0
+.tally_gp
+  CLC               ; clear carry flag
+  LDA $3DA0,X       ; get enemy GP
+  ADC $2F3E         ; add to GP tally
+  STA $2F3E         ; store it in variable 3 (bottom 2 bytes)
+  BCC .next_enemy   ; branch if carry flag is clear
+  INC $2F40         ; set top byte of variable 3
+.next_enemy
+  DEX #2            ; decrement X twice to get next enemy
+  BPL .enemy_loop   ; continue iteration until X < 0
+; -----------------------------------------------------------------------------
+; calculates XP earned per character and stores it [unchanged, shifted]
+; -----------------------------------------------------------------------------
+  LDA $2F35         ; get bottom 2 bytes of total XP
+  STA $E8           ; store it
+  LDA $2F36         ; get top 2 bytes of total XP
+  LDX $3A76         ; get number of active and alive characters in party
+  PHX
+  JSR $4792         ; divide +A / X
+  STA $EC           ; +$EC = experience per character
+  STX $E9           ;  $E9 = remainder
+  LDA $E8
+  PLX
+  JSR $4792         ; divide +A / X
+  STA $2F35
+  LDA $EC
+  STA $2F36         ; store in variable 0 (top 2 bytes)
+  ORA $2F35
+  BEQ .gp_bonus     ; branch if XP per character is zero
+  LDA #$0027        ; setup battle message $27 "Got <V0> Exp. point(s)"
+  JSR Show_EP       ; make EP gains display after combat
+.gp_bonus
+  SEP #$20          ; set 8-bit A
+; -----------------------------------------------------------------------------
+; doubles GP reward if no experience is gained
+; -----------------------------------------------------------------------------
+  LDA !XP_flag      ; load custom enableXP flag
+  BNE .handle_xp    ; branch if XP gain is on
+  ASL $2F3E         ; else, double GP reward
   ROL $2F3F
   ROL $2F40
-.skip
-  LDY #$0006          ; shifted vanilla code below
-.loop
-  LDA $3018,Y
-  BIT $3A74
-  BEQ NextVictoryLoop
-  BRA AfterMorph
-
-; The following branch bypasses the function that adjusts Terra's Morph supply.
-org $C25E2F : BRA AfterMorph
-
-; Use freespace from BRA above ($C25E31 - $C25E48)
+; -----------------------------------------------------------------------------
+; handles XP/EP gained in battle and spells taught by equipment [unchanged]
+; -----------------------------------------------------------------------------
+.handle_xp
+  LDY #$0006        ; set initial Y = $06 for iteration
+VictoryChars:
+.char_loop
+  LDA $3018,Y       ; get character mask
+  BIT $3A74         ; bitmask of characters/enemies that are alive
+  BEQ Victory2_next ; skip if character is dead or absent
+  BRA Victory2      ; always branch
+; -----------------------------------------------------------------------------
+; uses freespace from BRA above ($C25E31 - $C25E48)
+; -----------------------------------------------------------------------------
 SetTarget:
-  STY $C0        ; save target index in scratch RAM
-  JSR $220D      ; [displaced] miss determination
+  STY $C0           ; save target index in scratch RAM
+  JSR $220D         ; [displaced] miss determination
   RTS
 ParryCounter:
-  LDY $C0        ; get target index
-  LDA $3018,Y    ; target bitmask
-  BIT $3A5A      ; "Miss" tile flag set
-  BEQ .done      ; branch if not ^
-  JSR $35E3      ; else, initialize counter variables
+  LDY $C0           ; get target index
+  LDA $3018,Y       ; target bitmask
+  BIT $3A5A         ; "Miss" tile flag set
+  BEQ .done         ; branch if not ^
+  JSR $35E3         ; else, initialize counter variables
 .done
   RTS
-
-; -------------------------------------------------------------------------
-org $C25E49 : AfterMorph:
-
-org $C25E4C
-  LDA $1D4D      ; config option byte
-  BIT #$08       ; "Exp Gain"
-  BEQ .no_exp    ; branch if not ^
-  JSR $6235      ; else, add experience
-  NOP #3         ; excess instructions.
-.no_exp
-
-; Remove learning spells from post-combat routine
-org $C25E6A : BRA No_Spells
-org $C25E72 : No_Spells:
-org $C25E73 : NextVictoryLoop:
-org $C25E75 : BPL DoubleGP_loop
+; -----------------------------------------------------------------------------
+; continued from above [skip x2 experience check]
+; -----------------------------------------------------------------------------
+Victory2:
+  LDX $3010,Y       ; get offset to character slot data
+  JSR $6235         ; add XP/EP/SP for battle
+  LDA $3ED8,Y       ; get actor index
+  CMP #$0C
+  BCS .next         ; branch if Gogo or Umaro
+  JSR $6283         ; stores address for spells known by character in $F4
+  LDX $3010,Y       ; get offset to character slot data
+  PHY               ; preserve Y
+  JSR $5FEF         ; update spells taught by equipment
+; -----------------------------------------------------------------------------
+; skip esper spell learning with BRA
+; -----------------------------------------------------------------------------
+  BRA .skip
+  NOP #15           ; [unused]
+.skip
+  PLY               ; restore Y
+.next
+  DEY #2            ; decrement Y twice to get next character slot
+  BPL VictoryChars  ; continue iteration until Y < 0
+%nop($C25E77)
 
 ; Synchysi's note:
 ; The instruction here would seem to prevent the game from ever displaying
