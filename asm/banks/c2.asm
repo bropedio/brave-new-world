@@ -2536,6 +2536,22 @@ RandomCast:
   RTS
 
 ; -------------------------------------------------------------------------
+; New WallChange effect location
+; Modified to ensure each change always changes the immunity
+
+WallChange:
+  TDC
+  LDA $3BE0,Y         ; A = current weaknesses
+  EOR #$FF            ; Invert: A = all non-weak elements
+  JSR $522A           ; Pick one at random
+  STA $3BE0,Y         ; Set it as weakness
+  EOR #$FF            ; Invert: A = all elements other than weakness
+  STA $3BCD,Y         ; Nullify all other elements
+  JSR $522A           ; Pick one null element at random
+  STA $3BCC,Y         ; Absorb that element
+  RTS
+ 
+; -------------------------------------------------------------------------
 ; Helper for Magic Damage modification for Spellprocs (Windslash/Aero)
 ; No possibility for regular dmg; only Two-Handed or Dual-Wield
 
@@ -2567,7 +2583,6 @@ Wpn_Chk:
 ; -------------------------------------------------------------------------
 ;  Helper for Moogle Charm "fall like a stone" effect
 
-org $C23A9E
 Charm_Chk:
   XBA              ; command ID
   CMP #$16         ; "Jump"
@@ -2873,6 +2888,7 @@ org $C23DE7 : dw Zantetsuken ; Effect [?] - Zantetsuken [?]
 org $C23DEB : dw Cleave      ; Effect [?] - Cleave [?]
 org $C23E11 : dw NewLife     ; Effect $22 - Life (was Stone)
 org $C23E13 : dw NoCounter   ; Effect [?] - Instant Death
+org $C23E19 : dw WallChange  ; New WallChange effect location
 org $C23E1D : dw $388C       ; no per-target mind blast hook (now inline)
 org $C23E2D : dw Fractional  ; Effect [?] - Fractional damage
 org $C23E43 : dw $388C       ; no per-target evil toot hook (now inline)
