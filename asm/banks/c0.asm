@@ -3,6 +3,14 @@ hirom
 ; C0 Bank
 
 ; #########################################################################
+; $C0034E - Update music on map load
+;
+; Modified to bypass "song cannot change" behavior for the Beginner's
+; School at the beginning of the game, so "Prelude" can play.
+
+org $C0035F : JSR GetSong ; get song when not allowed to change music
+
+; #########################################################################
 ; Local access to RNG routine
 
 org $C0062E : JSL Random : RTS
@@ -955,6 +963,20 @@ EleModLoop:
   INC $EE
   DEC $EE          ; check if no remaining attack elems
   RTL
+
+; -------------------------------------------------------------------------
+; Helper to play "Prelude" in Beginner's School
+
+GetSong:
+  LDA $053C          ; map's song
+  CMP #$01           ; is it "Prelude"
+  BEQ .exit          ; if so, override "current song"
+  LDA $1F80          ; [displaced] get current song
+.exit
+  RTS
+
+; -------------------------------------------------------------------------
+
 %free($C0FD84)
 
 ; #########################################################################
