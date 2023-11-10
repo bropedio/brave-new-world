@@ -145,6 +145,28 @@ org $C180A6
 org $C180D7 : .r3_rig
 
 ; ########################################################################
+; Magic Battle Menu
+;
+; The game uses the address $7AE9 to track the number of queued up x-magic
+; spells. If x-magic is disabled then its value is always 0, otherwise it's
+; either 0 or 1 depending on if the queue is empty or not. (-Feanor)
+;
+; This hack replaces the default behavior which is to check if x-magic is
+; enabled/disabled for determing whether summoning is locked/unlocked with
+; checking $7AE9 instead (0=unlocked, 1=locked). Thus, summoning is unlocked
+; as long as the character has no spells queued up.
+
+org $C1818E : LDA $7AE9   ; load x-magic spell queue size
+
+; ########################################################################
+; Esper Battle Menu
+;
+; Increment x-magic spell queue size which disables the ability to select a
+; second spell in addition to summoning (-Feanor)
+
+org $C182E6 : JSR SpliceEsperSelect
+
+; ########################################################################
 ; Lore Battle Menu
 
 org $C18336 : CMP #$0C    ; lore menu length - 4 (x2)
@@ -189,7 +211,20 @@ org $C189E4      ; code determines if swap can execute
 org $C18A0C      ; skip setting status update flag (until command code)
   CLC            ; clear carry to indicate valid equipment
   RTS
+
+; ------------------------------------------------------------------------
+; Helper for xsummon in freespace
+
+SpliceEsperSelect:
+  INC $7AE9       ; increment x-magic spell queue size
+  STA $2BAF,Y     ; [displaced]
+  RTS
+
+; ------------------------------------------------------------------------
+
 %free($C18A18)
+
+; ------------------------------------------------------------------------
 
 org $C18A90
 ValidSwap:
