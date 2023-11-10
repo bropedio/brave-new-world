@@ -29,7 +29,7 @@ cp "$FF6_PATH" "$rom_path"
 ./assemble.sh "$rom_path"
 
 # Truncate end of assembled file to remove decompressed ASM in F0
-dd if="$rom_path" of="$temp_rom" ibs=1m count=3
+dd if="$rom_path" of="$temp_rom" ibs=1m count=3 status=none
 mv "$temp_rom" "$rom_path"
 
 node ./checksum.js "$rom_path"
