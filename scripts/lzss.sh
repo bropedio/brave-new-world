@@ -11,12 +11,16 @@ handle () {
   local decoded_offset="$3"
 
   if [ "$action" = "decode" ]; then
+    echo -n "Decompressing code..."
     # Generate both compressed and decompressed binary files
-    node ./lzss.js decode -v -o "${encoded_offset}" "$rom_path" "${decoded_path}"
-    node ./lzss.js encode -v "${decoded_path}" "${encoded_path}"
+    node ./lzss.js decode -v -o "${encoded_offset}" "$rom_path" "${decoded_path}" > /dev/null
+    node ./lzss.js encode -v "${decoded_path}" "${encoded_path}" > /dev/null
+    echo "done"
   else
+    echo -n "Compressing modified code..."
     # Generate fresh compressed files only
-    node ./lzss.js encode -v -o "${decoded_offset}" "$rom_path" "${encoded_path}"
+    node ./lzss.js encode -v -o "${decoded_offset}" "$rom_path" "${encoded_path}" > /dev/null
+    echo "done"
   fi
 }
 
