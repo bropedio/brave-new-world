@@ -90,6 +90,13 @@ org $CA4871 : db $66
 org $CA4F40 : db $D3,$E3,$FD
 
 ; ------------------------------------------------------------------------
+; Insert "Veldt Freebies" command into apocalypse cutscene event script
+
+org $CA51CD
+  db $95 ; Pause for 120 units (frees one byte)
+  db $68 ; Unlock Veldt formations
+
+; ------------------------------------------------------------------------
 ; Changes a caption called for Cid at the beginning of the WoR
 
 org $CA5284 : db $4B,$86,$06    ; Call caption $0686 (1671)
