@@ -2301,6 +2301,18 @@ org $C3ACF9
 
 org $C3AD65 : JSR load_item_desc ; Load description
 
+; -------------------------------------------------------------------------
+; Text for colosseum menu "Select an item"
+
+org $C3ADA8 : db "Wager an item",$00
+
+; #########################################################################
+; Colosseum Character Select Screen
+;
+; Flip assumption about $0209 ($00 now means "hide" instead of "show")
+
+org $C3B258 : BNE $03 ; change BEQ to BNE
+
 ; #########################################################################
 ; Sustain Main Shop Menu
 
@@ -2638,7 +2650,7 @@ position_advance:
 
 string_reward:
   LDA $0209               ; mask flag
-  BNE .case_mask          ; branch if hidden prize
+  BEQ .case_mask          ; branch if hidden prize ($00 now means "hidden")
   LDA $0205               ; bet item ID
   CMP #$FF                ; null?
   BEQ .case_empty         ; branch if empty item
@@ -2657,12 +2669,10 @@ string_reward:
 string_delimiter:
   LDA $0205               ; bet item ID
   CMP #$FF                ; null?
-  BEQ .case_empty         ; branch if ^
-.case_default
-  LDA #$D5                ; '>' character (right-facing arrow)
-  BRA .set_char           ; branch and write ^
-.case_empty
-  LDA #$FF                ; ' ' character
+  BEQ .set_char           ; if ^, use ' ' tile ($FF)
+  LDA $0209               ; trade type tile
+  BNE .set_char           ; branch if not hidden
+  LDA !tile_arrow         ; else, use arrow (Kagenui)
 .set_char
   STA $2180               ; write chosen delimiter
   STZ $2180               ; end of string
