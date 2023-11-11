@@ -1080,6 +1080,12 @@ org $C21592
   JSR CoinHelp ; Redirect Steal to helper used by GP Rain
 
 ; #########################################################################
+; Blitz Command
+; Modified to consume only 50% ATB on failure
+
+org $C215A7 : JSR BlitzSlice
+
+; #########################################################################
 ; Fight (command)
 
 org $C215D1 : NOP #2   ; Enable desperation attacks at any time (nATB)
@@ -3870,11 +3876,22 @@ PetrifyHelp:
   RTS
 
 ; -------------------------------------------------------------------------
-; Helper for Half Turn ATB
+; Helper for Blitz Halfturn
+
+BlitzSlice:
+  STA $3401      ; [displaced] set msg "Incorrect Blitz input!"
+  BRA HalfTurnY  ; set ATB to 50%
+
+; -------------------------------------------------------------------------
+; Helpers for Half Turn ATB (two versions based on index X vs. Y)
 
 HalfTurn:
   LDA #$7E       ; half-full ATB
   STA $3219,X    ; set new ATB value
+  RTS
+HalfTurnY:
+  LDA #$7E       ; half-full ATB
+  STA $3219,Y    ; set new ATB value
   RTS
 
 ; -------------------------------------------------------------------------
