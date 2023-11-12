@@ -3062,40 +3062,44 @@ Cleave:
   RTS
 
 ; #########################################################################
-; Old GP Toss Routine (now freespace)
+; GP Toss and Exploder Effects
+;
+; GP Toss routine has been moved elsewhere, and we shifted up Exploder
+; to take GP Toss's place to accommodate the following changes:
+;
+; - Add a multiplier for Exploder when used by a player character
+;   1 Spell Power = +50% damage
+; - Additionally, when used by player, reduce HP to 1, rather than
+;   0. To accommodate this change, the entire effect routine has been
+;   moved.
 
 org $C23FB7
-warnpc $C23FFC
-
-; #########################################################################
-; Exploder Effect
-; Add a multiplier for Exploder when used by a player character
-; 1 Spell Power = +50% damage
-; The entire hook is shifted to remove the now-unnecessary STZ $BC
-; This creates just enough space to fix the current patch in line
-
-org $C23FFC
+Exploder:
   TYX              ; copy attacker index (vanilla code)
-  LDA #$10
+  LDA #$10         ; "step forward animation"
   TSB $B0          ; use step-forward animation
   STZ $3414        ; fixed dmg
   REP #$20         ; 16-bit A
-  LDA $A4          ; targets
+  LDA $A4          ; target(s)
   PHA              ; store
   LDA $3018,X      ; attacker bit
   STA $B8          ; set as temp target
-  JSR $57C2        ; process animation
-  JSR $63DB        ; process animation
-  LDA $01,S        ; original targets
-  STA $B8          ; set as temp targets
-  JSR $57C2        ; process animation
-  PLA              ; original targets
-  ORA $3018,X      ; add caster
-  STA $A4          ; update targets
+  JSR $57C2        ; copy ^ to $A2/A3 and $A4/A5 for animation
+  JSR $63DB        ; queue "explode" animation for caster first
+  PLA              ; original target(s)
+  STA $B8          ; set as targets
+  JSR $57C2        ; copy ^ to $A2/A3 and $A4/A5 for animation
   LDA $3BF4,X      ; caster's current HP
+  STA $33D0,X      ; assign damage to Attacker damage taken
   CPX #$08         ; if monster attacker, carry set
-  JSR HelpExplode  ; increment dmg before saving
+  BCS .reg         ; skip increment if monster attacker
+  DEC $33D0,X      ; decrement Attacker damage taken
+  LDY $11A6        ; use battle power as increment
+  JSR IncByY       ; (IncByY routine) A = A + (A/2 * Y)
+.reg
+  STA $11B0        ; save [modified] HP-based dmg
   JMP $35AD
+%free($C2402C)
 
 ; #########################################################################
 ; Blowfish Effect
@@ -3310,6 +3314,7 @@ ChakraHelp:
 org $C242EB : dw SetIgnDef ; Defense Ignoring weapon
 org $C242EF : dw MPCrit    ; MP Criticals additional hook
 org $C242FF : dw $3E8A     ; Clear unused special effect $0F (MP crit)
+org $C24313 : dw Exploder  ; Effect $19 - Exploder
 org $C24315 : dw BlowFish  ; Effect $1A - Blow Fish
 org $C2432B : dw GroundDmg ; Effect $25 - Quake
 org $C24333 : dw $3E8A     ; Clear once-per-strike N.Cross hook
@@ -5666,16 +5671,6 @@ DmgCmdAliasMass:
   PLA                ; restore battle dynamics command
 .exit
   JMP $629B          ; finish up
-
-; -------------------------------------------------------------------------
-
-HelpExplode:
-  BCS .reg         ; skip increment if monster attacker
-  LDY $11A6        ; use battle power as increment
-  JSR IncByY       ; A = A + (A/2 * Y)
-.reg
-  STA $11B0        ; save [modified] HP-based dmg
-  RTS
 
 ; -------------------------------------------------------------------------
 ; Freespace
