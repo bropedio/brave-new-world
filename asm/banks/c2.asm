@@ -3050,9 +3050,16 @@ org $C23FA9
   JMP Aero_proc   ; set proc ^ (via Aero effect fork)
 
 ; #########################################################################
-; Magicite Effect (now Cleave effect)
+; Magicite, GP Toss, Exploder Effects (rearranged, now freespace)
+;
+; Magicite effect is no longer used, and GP Toss routine has been moved
+; elsewhere. Exploder got shifted up to make room for some changes.
 
 org $C23FAE
+
+; -------------------------------------------------------------------------
+; Cleave effect helper
+
 Cleave:
   LDA $3C95,Y     ; special byte 3
   BPL .exit       ; branch if not "Undead"
@@ -3061,19 +3068,14 @@ Cleave:
 .exit
   RTS
 
-; #########################################################################
-; GP Toss and Exploder Effects
+; -------------------------------------------------------------------------
+; Exploder Effect ($C23FFC, originally)
 ;
-; GP Toss routine has been moved elsewhere, and we shifted up Exploder
-; to take GP Toss's place to accommodate the following changes:
-;
-; - Add a multiplier for Exploder when used by a player character
-;   1 Spell Power = +50% damage
-; - Additionally, when used by player, reduce HP to 1, rather than
-;   0. To accommodate this change, the entire effect routine has been
-;   moved.
+; Add a multiplier for Exploder when used by a player character
+; (1 Spell Power = +50% damage)
+; Additionally, when used by player, reduce HP to 1, rather than 0.
+; To accommodate this change, the entire effect routine has been moved.
 
-org $C23FB7
 Exploder:
   TYX              ; copy attacker index (vanilla code)
   LDA #$10         ; "step forward animation"
@@ -3099,6 +3101,20 @@ Exploder:
 .reg
   STA $11B0        ; save [modified] HP-based dmg
   JMP $35AD
+
+; -------------------------------------------------------------------------
+; Helpers for unsetting Counterattack flag
+
+CounterDone:
+  PEA $0018       ; [displaced] (return to battle loop at RTS)
+AllyCounter:
+  LDA #$08        ; 'counterattack' flag
+  TRB $B1         ; unset ^
+  LDA $3AA0,X     ; [displaced] (only needed for AllyCounter)
+  RTS
+
+; -------------------------------------------------------------------------
+
 %free($C2402C)
 
 ; #########################################################################
@@ -3623,6 +3639,20 @@ org $C24903 : NOP #3 ; skip morph gauge reset/update
 
 org $C24B5F : JSL Random
 org $C24B6F : JSL Random
+
+; #########################################################################
+; Counterattack Turn Processing
+;
+; For counterattack turns, set an additional flag on $B1:bit3 to indicate
+; counerattacks, which must be distinguished from special actions to
+; properly handle counterattack flashing and colored messages.
+
+org $C24B7F
+  LDA #$09       ; 'Unconventional' and 'Counterattack' flags
+  TSB $B1        ; set both ^ [unchanged]
+  PEA CounterDone-1
+
+org $C24BCE : JSR AllyCounter
 
 ; #########################################################################
 ; Run Monster Script (C24BF4)
