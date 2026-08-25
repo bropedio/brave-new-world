@@ -13,10 +13,9 @@ will be incomplete*
 
 ## How to Build
 
-1. Copy `scripts/settings.local.sh` to `scripts/settings.sh`
-2. Open `scripts/settings.sh` and modify paths to `asar`, `flips`, and a legal, unheadered FF6 ROM
-3. Ensure `node` is installed (used for checksum)
-4. Execute the following in your terminal:
+1. Install `node` version 24.0.0 or later
+2. Run `npm run init -- path/to/your/ff6/rom` to generate `scripts/settings.sh`
+3. Execute the following in your terminal:
 
 ```
 cd scripts/
