@@ -3,9 +3,9 @@ const path = require('path');
 const os = require('os');
 
 // 1. Get the ROM path argument
-const romPath = process.argv[2];
+const rom_path = process.argv[2];
 
-if (!romPath) {
+if (!rom_path) {
   console.error('\x1b[31mError:\x1b[0m Please provide a path to your FF6 ROM.');
   console.error('\nUsage:\n  npm run init -- <path-to-rom>\n');
   console.error('Example:\n  npm run init -- roms/ff3-1.1-n.sfc');
@@ -13,10 +13,10 @@ if (!romPath) {
 }
 
 // 2. Validate ROM existence
-const resolvedRomPath = path.resolve(romPath);
+const resolved_rom_path = path.resolve(rom_path);
 
-if (!fs.existsSync(resolvedRomPath)) {
-  console.error(`\x1b[31mError:\x1b[0m ROM file not found at "${resolvedRomPath}"`);
+if (!fs.existsSync(resolved_rom_path)) {
+  console.error(`\x1b[31mError:\x1b[0m ROM file not found at "${resolved_rom_path}"`);
   process.exit(1);
 }
 
@@ -38,7 +38,7 @@ function getBinaryFolder () {
   const platform = os.platform();
   const arch = os.arch();
   return {
-    win32:  'win-x64', // Windows ARM64 handles win-x64 via native emulation
+    win32:  'win-x64',
     darwin: arch === 'arm64' ? 'mac-arm64' : 'mac-x64',
     linux:  arch === 'arm64' ? 'linux-arm64' : 'linux-x64'
   }[platform];
@@ -54,32 +54,22 @@ function getTool (tool, platform) {
 }
 
 const platform = getBinaryFolder();
-const asarBin = getTool('asar', platform);
-const ipsBin = getTool('flips', platform);
+const asar_bin = getTool('asar', platform);
+const ips_bin = getTool('flips', platform);
 
-// 4. Construct content for ./scripts/settings.sh
-const settingsContent = `#!/bin/bash
-
-# To update this settings file, run "npm run init" from the project root.
-# Or, you can manually set your ROM and tool binary paths below.
-
-SCRIPT_DIR="$(cd "$(dirname "\${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
-
-ASAR_PATH="$PROJECT_ROOT/${asarBin}"
-IPS_PATH="$PROJECT_ROOT/${ipsBin}"
-FF6_PATH="$PROJECT_ROOT/${romPath}"
-`;
+// 4. Construct content for ./scripts/settings.json
+const settings_content = {
+  asar_path: path.join(__dirname, '..', asar_bin),
+  ips_path: path.join(__dirname, '..', ips_bin),
+  ff6_path: resolved_rom_path
+};
 
 // 5. Ensure scripts directory exists and write output
-const targetDir = path.join(__dirname);
-if (!fs.existsSync(targetDir)) {
-  fs.mkdirSync(targetDir, { recursive: true });
-}
-const targetPath = path.join(targetDir, 'settings.sh');
-fs.writeFileSync(targetPath, settingsContent, { mode: 0o755 });
+const target_path = path.join(__dirname, 'settings.json');
+fs.writeFileSync(target_path, JSON.stringify(settings_content, null, 2));
 
-console.log(`\x1b[32mSuccessfully generated ${targetPath}\x1b[0m`);
-console.log(`- ASAR_PATH="${asarBin}"`);
-console.log(`- IPS_PATH="${ipsBin}"`);
-console.log(`- FF6_PATH="${romPath}"`);
+console.log(`\x1b[32mSuccessfully generated ${target_path}\x1b[0m`);
+console.log(`- ASAR_PATH="${settings_content.asar_path}"`);
+console.log(`- IPS_PATH="${settings_content.ips_path}"`);
+console.log(`- FF6_PATH="${settings_content.ff6_path}"`);
+

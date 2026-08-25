@@ -4,8 +4,11 @@
   "description": "This is the official repo for development of the Brave New World ROM Hack (BNW).",
   "scripts": {
     "init": "node scripts/init-settings.cjs",
-    "build": "cd scripts/ && ./build.sh",
+    "build": "node scripts/run.cjs build",
     "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "archiver": "^7.0.0"
   },
   "repository": {
     "type": "git",
