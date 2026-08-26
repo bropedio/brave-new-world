@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const { execFileSync } = require('child_process');
 
-const settings = require('./settings.json');
+const settings = require('../settings.json');
 
 function applyPatch (ips_file, target_rom) {
   const output_rom = target_rom;

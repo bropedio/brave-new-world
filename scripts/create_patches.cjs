@@ -3,7 +3,7 @@ const path = require('path');
 const { execFileSync } = require('child_process');
 const archiver = require('archiver');
 
-const settings = require('./settings.json');
+const settings = require('../settings.json');
 
 function createPatch (original, patched, output) {
   execFileSync(

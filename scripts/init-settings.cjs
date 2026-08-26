@@ -65,7 +65,7 @@ const settings_content = {
 };
 
 // 5. Ensure scripts directory exists and write output
-const target_path = path.join(__dirname, 'settings.json');
+const target_path = path.join(__dirname, '..', 'settings.json');
 fs.writeFileSync(target_path, JSON.stringify(settings_content, null, 2));
 
 console.log(`\x1b[32mSuccessfully generated ${target_path}\x1b[0m`);

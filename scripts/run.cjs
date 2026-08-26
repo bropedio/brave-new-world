@@ -1,6 +1,6 @@
 const fs = require('fs');
 
-const settings = require('./settings.json');
+const settings = require('../settings.json');
 
 const { applyAllPatches } = require('./patch.cjs');
 const { assembleAll } = require('./assemble.cjs');

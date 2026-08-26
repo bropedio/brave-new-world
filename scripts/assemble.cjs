@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const { execFileSync } = require('child_process');
 
-const settings = require('./settings.json');
+const settings = require('../settings.json');
 
 function assemble (asm_file, target_rom) {
   execFileSync(
