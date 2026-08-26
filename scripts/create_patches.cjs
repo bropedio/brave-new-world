@@ -1,16 +1,12 @@
 const fs = require('fs');
 const path = require('path');
-const { execFileSync } = require('child_process');
 const archiver = require('archiver');
 
+const { flips } = require('./tools.cjs');
 const settings = require('../settings.json');
 
 function createPatch (original, patched, output) {
-  execFileSync(
-    settings.ips_path,
-    ['--create', '--ips', original, patched, output],
-    { stdio: 'ignore' }
-  );
+  flips.create(original, patched, output);
 }
 
 function createPatches (bnw_path, version) {

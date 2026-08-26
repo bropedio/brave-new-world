@@ -1,16 +1,10 @@
 const fs = require('fs');
 const path = require('path');
-const { execFileSync } = require('child_process');
 
-const settings = require('../settings.json');
+const { flips } = require('./tools.cjs');
 
 function applyPatch (ips_file, target_rom) {
-  const output_rom = target_rom;
-  execFileSync(
-    settings.ips_path,
-    ['--apply', ips_file, target_rom, output_rom],
-    { stdio: 'ignore' }
-  );
+  flips.apply(ips_file, target_rom);
 }
 
 function applyAllPatches (target_rom) {

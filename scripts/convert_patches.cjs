@@ -1,7 +1,6 @@
 const fs = require('fs');
 const path = require('path');
-const { execFileSync } = require('child_process');
-const settings = require('../settings.json');
+const { flips } = require('./tools.cjs');
 
 /**
  * ORIGINAL BASH:
@@ -14,15 +13,11 @@ const settings = require('../settings.json');
  */
 
 function applyPatch (ips_file, base_ff6_h, patched_h) {
-  execFileSync(settings.ips_path, ['--apply', ips_file, base_ff6_h, patched_h], {
-    stdio: 'ignore'
-  });
+  flips.apply(ips_file, patched_h);
 }
 
 function createPatch (output_file, base_ff6_n, patched_n) {
-  execFileSync(settings.ips_path, ['--create', '--ips', base_ff6_n, patched_n, output_file], {
-    stdio: 'ignore'
-  });
+  flips.create(base_ff6_n, patched_n, output_file);
 }
 
 function convertAllPatches () {

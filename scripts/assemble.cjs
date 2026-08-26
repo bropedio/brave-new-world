@@ -1,15 +1,10 @@
 const fs = require('fs');
 const path = require('path');
-const { execFileSync } = require('child_process');
 
-const settings = require('../settings.json');
+const { asar } = require('./tools.cjs');
 
 function assemble (asm_file, target_rom) {
-  execFileSync(
-    settings.asar_path,
-    ['-wnoWfeature_deprecated', asm_file, target_rom],
-    { stdio: 'inherit' }
-  );
+  asar.assemble(asm_file, target_rom, { mute_deprecation_warnings: true });
 }
 
 function getAsmFiles (category) {
