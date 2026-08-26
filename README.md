@@ -35,7 +35,7 @@ The built ROM can be found at the path you specified, and the newly generated IP
 * `asm/banks/` - One `.asm` file for each modified FF6 bank, applied in the second step of the build
 * `asm/private/` - Empty directory where "hidden" patches must be added prior to official BNW builds
 * `asm/optional/` - Optional patches
-* `asm/reference/` - Storage for patches that have been integrated into the `banks` asm files
+* `reference/` - Development artifacts and patches that have been integrated into the `banks` asm files
 
 ## How to Contribute
 
@@ -44,11 +44,11 @@ basis.
 
 1. Fork the `brave-new-world` repo
 2. Create a new branch named after your feature, based on the `develop` branch
-3. Fully integrate your `.asm` into the `asm/banks/` files
+3. Add your complete `.asm` into `reference/{version}/`
+4. Fully integrate your `.asm` into the `asm/banks/` files
    * Please keep all `org` statements ordered by address
    * Use `; ---` and `; ###` line breaks to organize sections of code
    * Comment liberally, especially when altering existing code
-4. If you have pre-existing asm, please add it to `asm/banks/reference/`
 5. Open a pull request against `brave-new-world/develop` with a comprehensive
    description that describes the "what," "why," and "how" of the changes.
 
