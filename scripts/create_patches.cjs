@@ -18,7 +18,6 @@ function createPatches (bnw_path, version) {
     const tmp_dir = path.join(process.cwd(), 'tmp');
     const bnw_h_path = path.join(tmp_dir, 'bnw-h.sfc');
     const ff6_h_path = path.join(tmp_dir, 'ff6-h.sfc');
-    const header_path = path.join(tmp_dir, 'header');
     const n_ips_path = path.join(tmp_dir, `[n]BNW-${version}.ips`);
     const h_ips_path = path.join(tmp_dir, `[h]BNW-${version}.ips`);
     const zip_path = path.join(process.cwd(), 'releases', `BNW-${version}.zip`);
@@ -29,15 +28,15 @@ function createPatches (bnw_path, version) {
     fs.mkdirSync(tmp_dir);
 
     const header = Buffer.alloc(512, 0);
-    fs.writeFileSync(header_path, header);
 
-    function appendFile (source, target) {
-      fs.writeFileSync(target, fs.readFileSync(header_path));
-      fs.appendFileSync(target, fs.readFileSync(source));
+    function writeHeadered (source, target) {
+      const sourceData = fs.readFileSync(source);
+      const combined = Buffer.concat([header, sourceData]);
+      fs.writeFileSync(target, combined);
     }
 
-    appendFile(bnw_path, bnw_h_path);
-    appendFile(settings.ff6_path, ff6_h_path);
+    writeHeadered(bnw_path, bnw_h_path);
+    writeHeadered(settings.ff6_path, ff6_h_path);
 
     process.stdout.write('Creating IPS patches...');
     createPatch(settings.ff6_path, bnw_path, n_ips_path);
