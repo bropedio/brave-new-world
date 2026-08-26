@@ -14,22 +14,23 @@ will be incomplete*
 ## How to Build
 
 1. Install `node` version 24.0.0 or later
-2. Run `npm run init -- path/to/your/ff6/rom` to generate `scripts/settings.sh`
+2. Run `npm run init -- path/to/your/ff6/rom` to generate `settings.json` in the root directory
 3. Execute the following in your terminal:
 
 ```
-cd scripts/
-./build.sh output/rom/path.sfc output_patch_name
+npm run build -- <path/to/output/rom> <version_name>
 ```
 
 The built ROM can be found at the path you specified, and the newly generated IPS patches will be inside the `/releases` directory
 
 ## Structure of the Repo
 
-* `README.me` - You're reading it right now
+* `README.md` - You're reading it right now
 * `CHANGELOG.md` - Brief descriptions of each feature/hack, organized by version
 * `documentation.md` - Comprehensive descriptions of all BNW feature hacks
-* `scripts/` - Bash scripts for building the ROM
+* `settings.json` - Configuration file containing paths to your ROM and build tools
+* `scripts/` - Node.js scripts for building the ROM and IPS patches
+* `tools/` - Pre-compiled binaries for cross-platform compatibility
 * `ips/` - IPS patches that are applied in the first step of the build process
 * `asm/banks/` - One `.asm` file for each modified FF6 bank, applied in the second step of the build
 * `asm/private/` - Empty directory where "hidden" patches must be added prior to official BNW builds
