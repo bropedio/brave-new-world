@@ -1,6 +1,6 @@
 const fs = require('fs');
 const path = require('path');
-const archiver = require('archiver');
+const { zipSync } = require('fflate');
 
 const { flips } = require('./tools.cjs');
 const settings = require('../settings.json');
@@ -40,21 +40,16 @@ function createPatches (bnw_path, version) {
     console.log('done');
 
     process.stdout.write('Zipping patches for release...');
-    const output = fs.createWriteStream(zip_path);
-    const archive = archiver('zip', { zlib: { level: 9 } });
-
-    archive.pipe(output);
-    archive.file(n_ips_path, { name: path.basename(n_ips_path) });
-    archive.file(h_ips_path, { name: path.basename(h_ips_path) });
-    archive.finalize();
-
-    output.on('close', () => {
-      fs.rmSync(tmp_dir, { recursive: true });
-      console.log('done');
-      resolve();
+    const n_ips_data = fs.readFileSync(n_ips_path);
+    const h_ips_data = fs.readFileSync(h_ips_path);
+    const zipData = zipSync({
+      [path.basename(n_ips_path)]: n_ips_data,
+      [path.basename(h_ips_path)]: h_ips_data
     });
-
-    output.on('error', reject);
+    fs.writeFileSync(zip_path, Buffer.from(zipData));
+    fs.rmSync(tmp_dir, { recursive: true });
+    console.log('done');
+    resolve();
   });
 }
 
