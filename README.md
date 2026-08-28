@@ -14,12 +14,9 @@ will be incomplete*
 ## How to Build
 
 1. Install `node` version 24.0.0 or later
-2. Run `npm run init -- path/to/your/ff6/rom` to generate `settings.json` in the root directory
-3. Execute the following in your terminal:
-
-```
-npm run build -- <path/to/output/rom> <version_name>
-```
+2. Run `npm install` to install all dependencies
+3. Run `npm run init -- <path/to/your/ff6/rom>` to generate `settings.json` in the root directory
+4. Execute `npm run build -- <path/to/output/rom> <version_name>`
 
 The built ROM can be found at the path you specified, and the newly generated IPS patches will be inside the `/releases` directory
 
