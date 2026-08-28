@@ -1,0 +1,24 @@
+{
+  "name": "FF6: Brave New World",
+  "version": "1.0.0",
+  "description": "This is the official repo for development of the Brave New World ROM Hack (BNW).",
+  "scripts": {
+    "init": "node scripts/init-settings.cjs",
+    "build": "node scripts/run.cjs build",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "fflate": "^0.8.3"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bropedio/brave-new-world.git"
+  },
+  "author": "Bropedio",
+  "license": "GLP-3.0-or-later",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/bropedio/brave-new-world/issues"
+  },
+  "homepage": "https://github.com/bropedio/brave-new-world#readme"
+}

@@ -13,29 +13,26 @@ will be incomplete*
 
 ## How to Build
 
-1. Copy `scripts/settings.local.sh` to `scripts/settings.sh`
-2. Open `scripts/settings.sh` and modify paths to `asar`, `flips`, and a legal, unheadered FF6 ROM
-3. Ensure `node` is installed (used for checksum)
-4. Execute the following in your terminal:
-
-```
-cd scripts/
-./build.sh output/rom/path.sfc output_patch_name
-```
+1. Install `node` version 24.0.0 or later
+2. Run `npm install` to install all dependencies
+3. Run `npm run init -- <path/to/your/ff6/rom>` to generate `settings.json` in the root directory
+4. Execute `npm run build -- <path/to/output/rom> <version_name>`
 
 The built ROM can be found at the path you specified, and the newly generated IPS patches will be inside the `/releases` directory
 
 ## Structure of the Repo
 
-* `README.me` - You're reading it right now
+* `README.md` - You're reading it right now
 * `CHANGELOG.md` - Brief descriptions of each feature/hack, organized by version
 * `documentation.md` - Comprehensive descriptions of all BNW feature hacks
-* `scripts/` - Bash scripts for building the ROM
+* `settings.json` - Configuration file containing paths to your ROM and build tools
+* `scripts/` - Node.js scripts for building the ROM and IPS patches
+* `tools/` - Pre-compiled binaries for cross-platform compatibility
 * `ips/` - IPS patches that are applied in the first step of the build process
 * `asm/banks/` - One `.asm` file for each modified FF6 bank, applied in the second step of the build
 * `asm/private/` - Empty directory where "hidden" patches must be added prior to official BNW builds
 * `asm/optional/` - Optional patches
-* `asm/reference/` - Storage for patches that have been integrated into the `banks` asm files
+* `reference/` - Development artifacts and patches that have been integrated into the `banks` asm files
 
 ## How to Contribute
 
@@ -44,11 +41,11 @@ basis.
 
 1. Fork the `brave-new-world` repo
 2. Create a new branch named after your feature, based on the `develop` branch
-3. Fully integrate your `.asm` into the `asm/banks/` files
+3. Add your complete `.asm` into `reference/{version}/`
+4. Fully integrate your `.asm` into the `asm/banks/` files
    * Please keep all `org` statements ordered by address
    * Use `; ---` and `; ###` line breaks to organize sections of code
    * Comment liberally, especially when altering existing code
-4. If you have pre-existing asm, please add it to `asm/banks/reference/`
 5. Open a pull request against `brave-new-world/develop` with a comprehensive
    description that describes the "what," "why," and "how" of the changes.
 
