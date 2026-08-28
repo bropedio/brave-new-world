@@ -1,47 +1,6 @@
 "use strict";
 
-const fs = require('fs');
-const path = require('path');
-const { parseArgs } = require('util');
-
-const { positionals: args, values: options } = parseArgs({
-  allowPositionals: true,
-  options: {
-    offset: { type: 'string', short: 'o' },
-    verbose: { type: 'boolean', short: 'v' }
-  }
-});
-
-const [
-  action,
-  input_path,
-  output_path=String(Date.now())
-] = args;
-
-options.offset = options.offset && (parseInt(options.offset, 16) - 0xC00000);
-
-main(action, input_path, output_path, options);
-
-function main (action, input_path, output_path, options) {
-  const input_buffer = fs.readFileSync(input_path);
-
-  const func = {
-    encode: compress,
-    decode: decompress,
-    compress,
-    decompress
-  }[action];
-  
-  if (!func) {
-    throw new Error(`Action ${action} not supported`);
-  }
-  
-  const result = func(input_buffer, options);
-  const safe_path = path.resolve(process.cwd(), output_path);
-  fs.writeFileSync(safe_path, result);
-}
-
-function decompress (ff6, opts) {
+function decompress (ff6, opts={}) {
   let offset = opts.offset || 0;
   const length = ff6.readUint16LE(offset);
   const end_offset = offset + length;
@@ -85,112 +44,196 @@ function decompress (ff6, opts) {
     counter--;
   }
 
-  const data_length = data.length;
-  data.unshift(data_length & 0xFF, data_length >>> 8);
-
   return Buffer.from(data);
 }
 
-function compress (full_source_data, opts) {
-  const offset = opts.offset || 0;
-  const source_length = full_source_data.readUint16LE(offset);
-  const source_data = full_source_data.subarray(offset + 2, offset + 2 + source_length);
-  const buffer_size = 0x800;
-  const dictionary_length = buffer_size + source_length;
-  const min_length = 3;
-  const max_length = 34;
-  const buffer_offset = buffer_size - max_length;
+function compress (data) {
+  const len = data.length;
+  const state_count = (len + 1) * 8;
 
-  const compressed = [0, 0];
-  const dictionary = new Uint8Array(dictionary_length);
-  dictionary.set(source_data, buffer_size);
+  // Sliding window dictionary for fast lookup
+  const positions = Array.from({ length: 256 }, () => []);
+  const heads = new Uint32Array(256);
 
-  let index = buffer_size;
-  let control_offset, control, bitmask;
-
-  refresh_control(); 
-
-  function refresh_control () {
-    control_offset = compressed.length;
-    compressed.push(control);
-    control = 0x00;
-    bitmask = 0x01;
+  for (let i = len - 2, e = len - 0x801; i >= e; i--) {
+    // Zero-filled buffer used for dictionary before data
+    positions[data[i] || 0].push(i);
   }
 
-  function write_control () {
-    compressed[control_offset] = control;
+  // Dynamic Programming arrays
+  const costs = new Float64Array(state_count).fill(Infinity);
+  const token_lens = new Uint8Array(state_count);
+  const match_idx = new Int32Array(state_count).fill(-0x801);
+
+  // Final EOF cost based on whether Control byte is empty
+  for (let s = 0; s < 8; s++) {
+    costs[len * 8 + s] = s === 0 ? 0 : 1;
   }
 
-  function next_bit (on) {
-    if (on) {
-      control |= bitmask;
-    }
+  // Backward pass through each byte
+  for (let pos = len - 1; pos >= 0; pos--) {
+    const byte = data[pos];
+    const candidates = positions[byte];
+    const max_length = Math.min(34, len - pos);
 
-    if (bitmask === 0x80) {
-      write_control();
-      refresh_control();
-    } else {
-      bitmask <<= 1;
-    }
-  }
+    let match_len = 0;
+    let match_src = -0x801;
 
-  while (index < dictionary.length) {
-    let best_match_length = min_length - 1;
-    let best_match_index = null;
-    let max_match = Math.min(max_length, dictionary.length - index);
+    // Find longest match in sliding dictionary window
+    for (let i = heads[byte]; i < candidates.length; i++) {
+      const src = candidates[i];
+      if (src >= pos) continue;
 
-    // We loop through 0x800, instead of buffer offset, which improves
-    // compression somewhat. It appears that FF6 compression limited to
-    // 0x7DE under the assumption that a max-length (34) chunk might
-    // overflow into 0x800, which is outside the bounds of the dictionary.
-    // But since the native decompression algorithm in C2 handles wrapping
-    // the dictionary offset, this limitation is not necessary.
-    for (let source = index - 0x800; source < index; ++source) {
-      let match_length = 0;
-
-      while (match_length < max_match) {
-        const source_byte = dictionary[index + match_length];
-        const match_byte = dictionary[source + match_length];
-        if (source_byte !== match_byte) break;
-
-        match_length++;
+      let l = 0;
+      while (l < max_length && (data[src + l] || 0) === data[pos + l]) {
+        l++;
       }
 
-      if (match_length > best_match_length) {
-        best_match_length = match_length;
-        best_match_index = source;
+      if (l > match_len) {
+        match_len = l;
+        match_src = src;
+
+        if (l === max_length) {
+          break;
+        }
       }
     }
 
-    if (best_match_index != null) {
-      const stored_length = best_match_length - min_length;
-      const real_match_index = (best_match_index + buffer_offset) & 0x7FF;
-      const info = (stored_length << 11) | real_match_index;
-      compressed.push(info & 0xFF, info >> 8);
-      index += best_match_length;
-      next_bit(false);
-    } else {
-      compressed.push(dictionary[index]);
-      index += 1;
-      next_bit(true);
+    // Compute cost for each potential control bit position
+    for (let slot = 0; slot < 8; slot++) {
+      const cur_state = pos * 8 + slot;
+      const next_slot = (slot + 1) & 7;
+      const ctrl_cost = slot === 7 ? 1 : 0;
+
+      // Tiebreakers
+      const consider = (token_cost, token_len, src) => {
+        const future_cost = costs[(pos + token_len) * 8 + next_slot];
+        const this_cost = token_cost + ctrl_cost + future_cost;
+
+        const best_cost = costs[cur_state];
+        const best_len = token_lens[cur_state];
+        const best_src = match_idx[cur_state];
+
+        const tiebreak = () => (
+          // Only match tokens can win a tie
+          token_len > 1 && (
+            // Match always beats literal (fewer tokens)
+            best_len === 1 ||
+            // Longer matches win (fewer cycles)
+            token_len > best_len ||
+            // More recent sources win (CPU cache)
+            (token_len === best_len && src > best_src)
+          )
+        );
+
+        if (this_cost < best_cost || (this_cost === best_cost && tiebreak())) {
+          costs[cur_state] = this_cost;
+          token_lens[cur_state] = token_len;
+          match_idx[cur_state] = src;
+        }
+      };
+
+      // Literal byte cost, token length, null source
+      consider(1, 1, -0x801);
+
+      if (match_len >= 3) {
+        for (let l = 3; l <= match_len; l++) {
+          // Match byte cost, token length, source
+          consider(2, l, match_src);
+        }
+      }
+    }
+
+    // Keep sliding dictionary window up-to-date
+    if (pos > 0) {
+      if (candidates[heads[byte]] === pos) {
+        heads[byte]++;
+      }
+      const left_edge = pos - 0x800;
+      if (left_edge >= 0) {
+        positions[data[left_edge]].push(left_edge);
+      } else {
+        // Take advantage of zero-filled buffer
+        positions[0].push(left_edge);
+      }
     }
   }
 
-  // Clean up partial control byte
-  if (bitmask === 0x01) {
-    // Empty control, overwrite it
-    compressed.pop();
-  } else {
-    // Write partial control byte
-    write_control();
+  // Reconstruction
+  const total_size = costs[0] + 2;
+  const out = new Uint8Array(total_size);
+
+  let index = 0;
+  let pos = 0;
+
+  // Write 16-bit length
+  out[index++] = total_size & 0xFF;
+  out[index++] = (total_size >> 8) & 0xFF;
+
+  while (pos < len) {
+    const control_index = index++;
+    let control = 0;
+
+    for (let s = 0; s < 8 && pos < len; s++) {
+      const state_index = pos * 8 + s;
+      const token_len = token_lens[state_index];
+      const source_index = match_idx[state_index];
+
+      if (token_len === 1) { // Literal
+        control |= (1 << s);
+        out[index++] = data[pos];
+      } else { // Match
+        const idx = (0x800 + 0x7DE + source_index) & 0x7FF;
+        out[index++] = idx & 0xFF;
+        out[index++] = ((token_len - 3) << 3) | ((idx >>> 8) & 0x07);
+      }
+      pos += token_len;
+    }
+
+    // Write finalized control byte back to its reserved slot
+    out[control_index] = control;
   }
 
-  if (opts.verbose) {
-    console.log(`LZSS Compression: ${source_data.length} => ${compressed.length}`);
-  }
-
-  compressed[0] = compressed.length & 0xFF;
-  compressed[1] = compressed.length >> 8;
-
-  return Buffer.from(compressed);
+  return out;
 }
+
+/**
+ * Helpers for use with the perl script available at RomHacking.net
+ *
+
+const { execFileSync } = require('child_process');
+const perlScriptPath = path.join(process.cwd(), 'lzss.pl');
+
+function compressPerl (input, _opts={}) {
+  return execFileSync(
+    'perl',
+    [perlScriptPath, '-m', 'c', '-'],
+    {
+      input: input,               // Passes input Buffer directly to STDIN
+      encoding: 'buffer',         // Ensures stdout is returned as a raw Buffer
+      maxBuffer: 10 * 1024 * 1024 // 10 MB limit
+    }
+  );
+}
+
+function decompressPerl (romBuffer, opts={}) {
+  const offset = opts.offset || 0;
+  // Slice the buffer starting from the specified offset to the end
+  const compressedSlice = romBuffer.subarray(offset);
+
+  return execFileSync(
+    'perl',
+    [perlScriptPath, '-m', 'd', '-'],
+    {
+      input: compressedSlice,     // Passes compressed data to STDIN
+      encoding: 'buffer',         // Ensures stdout returns as a raw binary Buffer
+      maxBuffer: 10 * 1024 * 1024 // 10 MB buffer limit
+    }
+  );
+}
+*/
+
+module.exports = {
+  compress,
+  decompress
+};
