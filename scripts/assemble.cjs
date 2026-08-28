@@ -3,8 +3,11 @@ const path = require('path');
 
 const { asar } = require('./tools.cjs');
 
-function assemble (asm_file, target_rom) {
-  asar.assemble(asm_file, target_rom, { mute_deprecation_warnings: true });
+function assemble (asm_file, target_rom, opts={}) {
+  asar.assemble(asm_file, target_rom, {
+    ...opts,
+    mute_deprecation_warnings: true
+  });
 }
 
 function getAsmFiles (category) {
@@ -23,7 +26,7 @@ function assembleBatch (category, target_rom) {
   }
 }
 
-function assembleAll (target_rom) {
+function assembleAll (target_rom, symbol_map_path) {
   // Assemble asm by bank
   process.stdout.write('Assembling asm/banks...');
   const bank_files = getAsmFiles('banks');
@@ -34,7 +37,7 @@ function assembleAll (target_rom) {
   const all_banks_path = path.join(process.cwd(), 'asm', 'banks', '_all_banks.asm');
 
   fs.writeFileSync(all_banks_path, all_banks_content);
-  assemble(all_banks_path, target_rom);
+  assemble(all_banks_path, target_rom, { symbol_map_path });
   fs.rmSync(all_banks_path);
   console.log('done');
 

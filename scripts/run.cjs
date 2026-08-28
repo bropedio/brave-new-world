@@ -20,7 +20,7 @@ const commands = {
     }
     fs.copyFileSync(settings.ff6_path, rom_path);
     applyAllPatches(rom_path);
-    assembleAll(rom_path);
+    assembleAll(rom_path, rom_path + '.sym');
     updateChecksum(rom_path);
     await createPatches(rom_path, version);
   },
