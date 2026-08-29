@@ -2259,15 +2259,24 @@ org $C2343C
   TRB $A4              ; remove from targets
   BEQ .next            ; branch if missed
 warnpc $C2344E
+
+; -------------------------------------------------------------------------
+; Skip showing damage on Interceptor when he blocks
+
+org $C23451 : JSR ShouldSkipDog ; include Doggy in Zinger check
+
+; -------------------------------------------------------------------------
+; Run extra special effect if Mugging
+
+org $C2345C : JSL MugHelper : NOP #2
+
+; -------------------------------------------------------------------------
+; Branch destination for loop above
+
 org $C2346C
 .next
   DEY #2               ; next entity
   BPL .loop            ; loop through all entities
-
-
-; -------------------------------------------------------------------------
-; Run extra special effect if Mugging
-org $C2345C : JSL MugHelper : NOP #2
 
 ; #########################################################################
 ; Runic Function
@@ -6160,6 +6169,17 @@ GroundDmg:
   STA $B8         ; set filtered targets
   TYX             ; attacker index
   JMP $57C2       ; update targets [?]
+
+; -------------------------------------------------------------------------
+; Skip showing damage on Interceptor when he blocks
+
+ShouldSkipDog:
+  TDC             ; A=0000
+  BIT $3A82       ; Doggy block in hibyte ($3A83) - N: NoDog, Z: On
+  BPL .exit       ; skip hit if Doggy block (no dmg numbers)
+  CPY $33F8       ; [displaced] Check if target is Zingered
+.exit
+  RTS             ; if Z flag is set, will not be targeted
 
 ; -------------------------------------------------------------------------
 ; Freespace
