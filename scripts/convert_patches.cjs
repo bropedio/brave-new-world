@@ -12,7 +12,7 @@ const { flips } = require('./tools.cjs');
  * }
  */
 
-function applyPatch (ips_file, base_ff6_h, patched_h) {
+function applyPatch (ips_file, patched_h) {
   flips.apply(ips_file, patched_h);
 }
 
@@ -22,7 +22,6 @@ function createPatch (output_file, base_ff6_n, patched_n) {
 
 function convertAllPatches () {
   const base_ff6_n = path.join(process.cwd(), 'roms', 'ff3-1.1-n.sfc');
-  const base_ff6_h = path.join(process.cwd(), 'roms', 'ff3-1.1-h.sfc');
   const patched_h = path.join(process.cwd(), 'roms', 'temp-patched-h.sfc');
   const patched_n = path.join(process.cwd(), 'roms', 'temp-patched-n.sfc');
 
@@ -31,15 +30,14 @@ function convertAllPatches () {
 
   for (const file of ips_files) {
     const ips_file = path.join(h_ips_dir, file);
-    applyPatch(ips_file, base_ff6_h, patched_h);
-    
-    // tail -b +2 means skip 512 bytes
+    applyPatch(ips_file, patched_h);
+
     const patched_h_buffer = fs.readFileSync(patched_h);
     fs.writeFileSync(patched_n, patched_h_buffer.subarray(512));
-    
+
     const output_path = path.join(process.cwd(), 'ips', file);
     createPatch(output_path, base_ff6_n, patched_n);
-    
+
     fs.unlinkSync(patched_h);
     fs.unlinkSync(patched_n);
   }
