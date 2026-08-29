@@ -3065,7 +3065,19 @@ Cleave:
 ; Old GP Toss Routine (now freespace)
 
 org $C23FB7
-warnpc $C23FFC
+
+; -------------------------------------------------------------------------
+; Helpers for unsetting Counterattack flag
+
+CounterDone:
+  PEA $0018       ; [displaced] (return to battle loop at RTS)
+AllyCounter:
+  LDA #$08        ; 'counterattack' flag
+  TRB $B1         ; unset ^
+  LDA $3AA0,X     ; [displaced] (only needed for AllyCounter)
+  RTS
+
+%free($C23FFC)
 
 ; #########################################################################
 ; Exploder Effect
@@ -3618,6 +3630,20 @@ org $C24903 : NOP #3 ; skip morph gauge reset/update
 
 org $C24B5F : JSL Random
 org $C24B6F : JSL Random
+
+; #########################################################################
+; Counterattack Turn Processing
+;
+; For counterattack turns, set an additional flag on $B1:bit3 to indicate
+; counerattacks, which must be distinguished from special actions to
+; properly handle counterattack flashing and colored messages.
+
+org $C24B7F
+  LDA #$09       ; 'Unconventional' and 'Counterattack' flags
+  TSB $B1        ; set both ^ [unchanged]
+  PEA CounterDone-1
+
+org $C24BCE : JSR AllyCounter
 
 ; #########################################################################
 ; Run Monster Script (C24BF4)
