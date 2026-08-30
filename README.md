@@ -30,6 +30,7 @@ The built ROM can be found at the path you specified, and the newly generated IP
 * `tools/` - Pre-compiled binaries for cross-platform compatibility
 * `ips/` - IPS patches that are applied in the first step of the build process
 * `asm/banks/` - One `.asm` file for each modified FF6 bank, applied in the second step of the build
+* `asm/compressed/` - One `.asm` for each lzss-compressed block, applied in the third step of the build
 * `asm/private/` - Empty directory where "hidden" patches must be added prior to official BNW builds
 * `asm/optional/` - Optional patches
 * `reference/` - Development artifacts and patches that have been integrated into the `banks` asm files
@@ -50,9 +51,3 @@ basis.
    description that describes the "what," "why," and "how" of the changes.
 
 Accepted features will be squashed into a single commit when merging.
-
-## Beta Testing
-
-Each release candidate is tracked in a unique testing branch (eg. `v2.2.0-beta-18`).
-If you would like to help test the current beta version, ask for the Beta Tester
-role at our Discord (via ngplus.net).
