@@ -1,4 +1,3 @@
-const fs = require('fs');
 const path = require('path');
 const os = require('os');
 const { execFileSync } = require('child_process');
@@ -44,10 +43,14 @@ function getToolPath (tool, key) {
 
 module.exports = {
   asar: {
-    assemble: (asm_file, target_rom, options = {}) => {
+    assemble: (asm_file, target_rom, opts={}) => {
       const args = [];
-      if (options.mute_deprecation_warnings) {
+      if (opts.mute_deprecation_warnings) {
         args.push('-wnoWfeature_deprecated');
+      }
+      if (opts.symbol_map_path) {
+        args.push('--symbols=nocash');
+        args.push(`--symbols-path=${opts.symbol_map_path}`);
       }
       args.push(asm_file, target_rom);
       execFileSync(getToolPath('asar', 'asar_path'), args, { stdio: 'inherit' });

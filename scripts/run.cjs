@@ -20,7 +20,7 @@ const commands = {
     }
     fs.copyFileSync(settings.ff6_path, rom_path);
     applyAllPatches(rom_path);
-    assembleAll(rom_path);
+    assembleAll(rom_path, version);
     updateChecksum(rom_path);
     await createPatches(rom_path, version);
   },
@@ -38,7 +38,7 @@ const commands = {
       console.error('Usage: node scripts/run.cjs assemble <rom_path>');
       process.exit(1);
     }
-    assembleAll(rom_path);
+    assembleAll(rom_path, 'unknown_version');
   },
   checksum: () => {
     const [rom_path] = args;

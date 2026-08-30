@@ -7,3 +7,4 @@ settings.sh
 settings.json
 AGENTS.md
 node_modules
+symbols.autogen.asm
