@@ -3,6 +3,10 @@
 The `ips/` directory contains individual ips patches for
 several distinct categories of data modifications to FF6.
 
+All IPS patch filenames *must* be prefixed with a double-
+digit number to ensure consistent patching order. For
+example `01-btb-base.ips`
+
 We intentionally avoid tracking complete dumps of entire
 sections of the ROM, since this begins to enter murky
 copyright territory.
@@ -12,13 +16,13 @@ readme with detailed explanation of changes.
 
 ## Files
 
-### FF6 Version Reversion (0-reversion.ips)
+### FF6 Version Reversion (00-reversion.ips)
 Force converts any ff3v1.1 base rom into a ff3v1.0 rom.
 All changes are in banks $C1 and $C2, mostly related to
 reverting the "official" Sketch bug fix. This patch must
 be applied before anything else.
 
-### BTB Base (btb-base.ips)
+### BTB Base (01-btb-base.ips)
 Contains the majority of data changes that make up BNW.
 In the future, we may split this patch up into smaller chunks.
 
@@ -84,7 +88,7 @@ In the future, we may split this patch up into smaller chunks.
 - $EEB200:$EEB260 - Pointers to compressed world data (TODO?)
 - $EF4A46:$EF6A56 - World of Ruin graphics (TODO?)
 
-### Graphics (graphics.ips)
+### Graphics (02-graphics.ips)
 Contains `custom-uncensored.ips`, which reverts many graphics
 to their original Japanese form.
 
@@ -95,7 +99,7 @@ to their original Japanese form.
 - $E97000:$ECE3C0 - Monster graphics
 - $ED6300:$ED6400 - Character palettes
 
-### Maps (maps.ips)
+### Maps (03-maps.ips)
 Map-related changes, including map tiles and graphics, event
 triggers, chest locations, battle formations per map.
 
