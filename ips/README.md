@@ -14,7 +14,7 @@ copyright territory.
 When making changes to an ips file, please update this
 readme with detailed explanation of changes.
 
-## Files
+## Files (fully categorized)
 
 ### FF6 Version Reversion (00-reversion.ips)
 Force converts any ff3v1.1 base rom into a ff3v1.0 rom.
@@ -121,3 +121,25 @@ triggers, chest locations, battle formations per map.
 - $DFBB00:$DFDA00 - Short entrance triggers
 - $ED82F4:$ED8E5B - Treasure data
 - $ED8F00:$EDC480 - Map properties
+
+## Unintegrated Patches
+
+### Cinematic Program [C2686C] (04-cinematic-program.ips)
+Roll back entire $C2686C compressed cinematic program to japanese version,
+with some modifications/additions (TODO: needs details). For partial
+disassembly of 'new' decompressed code, see `ips/title-graphics-disasm.txt`
+
+#### Data
+- $C2686C:$C28A60 - Entire compressed cinematic program
+
+### Cinematic Title Isle GFX (05-title-isle-gfx.ips)
+
+#### Data
+- $D8F000:$D8F001 - Title/Intro graphics (compressed)
+- $D9372D:$D94E96 - Title/Intro graphics (compressed)
+- $D9568C:$D9568F - End of floating island graphics (compressed)
+- $D99A51:$D99D4B - Ending cinematics? (compressed)
+- $D9A4E4:$D9A4E5 - Ending cinematics? (compressed)
+- $D9A569:$D9A7FF - Ending cinematics? (compressed)
+- $D9CC4C:$D9CD10 - Map tile properties (compressed)
+- $D9CD66:$D9CD90 - Pointers to map tile properties

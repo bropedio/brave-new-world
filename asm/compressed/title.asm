@@ -9,12 +9,14 @@ incsrc macros.asm ; Handles norom and symbol map
 
 ; -------------------------------------------------------------------------
 ; Update some RNG uses of the C0FD00 routine
+; Offsets modified to align with replaced title graphics.
+; See: `ips/04-cinematic-program.ips`
 
-%baseOrg($7E5639)
+%baseOrg($7E55ED)
   JSL Random
 
-%baseOrg($7E6F89)
+%baseOrg($7E6F15)
   JSL Random
 
-%baseOrg($7E6F90)
+%baseOrg($7E6F1C)
   JSL Random
