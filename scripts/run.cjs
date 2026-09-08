@@ -1,4 +1,5 @@
 const fs = require('fs');
+const path = require('path');
 
 const settings = require('../settings.json');
 
@@ -11,6 +12,14 @@ const { convertAllPatches } = require('./convert_patches.cjs');
 const command = process.argv[2];
 const args = process.argv.slice(3);
 
+function validateTargetRom (rom_path) {
+  if (path.resolve(rom_path) === settings.ff6_path) {
+    console.error(`Cannot use source FF6 path as target rom path`);
+    process.exit(1);
+  }
+  return rom_path;
+}
+
 const commands = {
   build: async () => {
     const [rom_path, version] = args;
@@ -18,6 +27,7 @@ const commands = {
       console.error('Usage: npm run build -- <rom_path> <version>');
       process.exit(1);
     }
+    validateTargetRom(rom_path);
     fs.copyFileSync(settings.ff6_path, rom_path);
     applyAllPatches(rom_path);
     assembleAll(rom_path, version);
@@ -30,6 +40,7 @@ const commands = {
       console.error('Usage: node scripts/run.cjs patch <rom_path>');
       process.exit(1);
     }
+    validateTargetRom(rom_path);
     applyAllPatches(rom_path);
   },
   assemble: () => {
@@ -38,6 +49,7 @@ const commands = {
       console.error('Usage: node scripts/run.cjs assemble <rom_path>');
       process.exit(1);
     }
+    validateTargetRom(rom_path);
     assembleAll(rom_path, 'unknown_version');
   },
   checksum: () => {
@@ -46,6 +58,7 @@ const commands = {
       console.error('Usage: node scripts/run.cjs checksum <rom_path>');
       process.exit(1);
     }
+    validateTargetRom(rom_path);
     updateChecksum(rom_path);
   },
   convert: () => {
