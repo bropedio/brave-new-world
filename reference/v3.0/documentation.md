@@ -15,7 +15,7 @@ The following patches are in insertion order:
 ## Versioning
 
 **Files:** `reference/v3.0/version.asm`
-**Status:** Unmerged
+**Status:** Merged
 
 ### Why
 
@@ -23,7 +23,7 @@ The player should be able to identify the current hack version they are playing.
 
 ### Details
 
-- Writes the hack name and version to the Config menu.
+- Writes the hack name and version to the Config menu (3.0.0)
 
 ----------------------------------------------------------------------------
 
@@ -43,6 +43,6 @@ The japanese title screen is canon
 
 - Completely replaces the entire compressed data block at $C2686C
 - Completely replaces huge swaths of $D8/$D9 compressed graphics
-- Requires update to `asm/compressed/title.asm`
+- Requires update to RNG tweaks in `asm/compressed/title.asm`
 
 ----------------------------------------------------------------------------
