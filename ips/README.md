@@ -122,8 +122,6 @@ triggers, chest locations, battle formations per map.
 - $ED82F4:$ED8E5B - Treasure data
 - $ED8F00:$EDC480 - Map properties
 
-## Unintegrated Patches
-
 ### Cinematic Program [C2686C] (04-cinematic-program.ips)
 Roll back entire $C2686C compressed cinematic program to japanese version,
 with some modifications/additions (TODO: needs details). For partial
@@ -143,3 +141,4 @@ disassembly of 'new' decompressed code, see `ips/title-graphics-disasm.txt`
 - $D9A569:$D9A7FF - Ending cinematics? (compressed)
 - $D9CC4C:$D9CD10 - Map tile properties (compressed)
 - $D9CD66:$D9CD90 - Pointers to map tile properties
+
