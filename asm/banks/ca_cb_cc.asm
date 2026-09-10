@@ -365,6 +365,25 @@ org $CB1D97 : db $B2,$FC,$9A,$02   ; JSR $CC9AFC
 org $CB1FF9 : db $4B,$20,$05
 
 ; ------------------------------------------------------------------------
+; Setzer + Celes "wife" scene
+; Fix Celes blushing code to ensure Sabin/Edgar do not blush with her
+
+org $CB2069                  ; Blushing
+  db $60,$0E,$00             ; Background layer $0E -> Palette $00
+  db $43,$06,$06             ; Celes:06 <- Palette $06
+  db $B0,$0D                 ; Repeat 13 times:
+  db $53,$8F,$66,$66         ; - Modify object colors (06,06->66,66)
+  db $B1                     ; - END LOOP
+warnpc $CB2076
+org $CB2089                  ; Unblushing
+  db $B0,$0D                 ; Repeat 13 times: 
+  db $53,$2F,$66,$66         ; - Modify object colors (06,06->66,66)
+  db $B1                     ; - End LOOP
+  db $43,$06,$00             ; Celes:06 <- Palette $00
+  db $60,$0E,$06             ; Background layer $0E -> Palette $06
+warnpc $CB2096
+
+; ------------------------------------------------------------------------
 ; Makes Locke look at Celes instead of Setzer during their first meeting on the Blackjack
 
 org $CB2096
