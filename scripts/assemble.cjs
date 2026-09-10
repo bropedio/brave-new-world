@@ -41,8 +41,11 @@ function assembleAll (target_rom, version=Date.now()) {
   const symbol_asm_path = path.join(process.cwd(), symbol_asm_rel);
 
   fs.writeFileSync(all_banks_path, all_banks_content);
-  assemble(all_banks_path, target_rom, { symbol_map_path });
-  fs.rmSync(all_banks_path);
+  try {
+    assemble(all_banks_path, target_rom, { symbol_map_path });
+  } finally {
+    fs.rmSync(all_banks_path);
+  }
   console.log('done');
 
   // Generate symbols for compressed
