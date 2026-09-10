@@ -149,6 +149,12 @@ org $CA6AD3 : db $66
 org $CA6AE4 : db $B2,$78,$52,$01,$FD   ; JSR $CB5278, then NOP
 
 ; ------------------------------------------------------------------------
+; After Sabin/Edgar flashback at Figaro Castle
+; Modified by `figaro-guard-fix.asm` to fig bug of guards disappearing
+
+org $CA7584 : db $FC,$42,$01 ; JMP $CB42FC
+
+; ------------------------------------------------------------------------
 ; Dialogue Reassignment
 
 org $CA759C : db $4B,$63,$0B
@@ -505,6 +511,17 @@ org $CB3AA8
   db $FD,$FD              ; NOPs two unused bytes
 
 org $CB3ADE : db $3F      ; Re-enables swoosh sound on transition to battle
+
+; ------------------------------------------------------------------------
+; Unused Shadow diaglogues [?]
+; Overwritten for helper to fix guard disappearing bug `figaro-guard-fix.asm`
+
+org $CB42FC
+  db $D6,$0E,          ; set event bit to show guards again
+  db $B2,$96,$CF,$00   ; JSL $CACF96 (NOTE: Why not JML?)
+  db $FE               ; RTL
+
+%free($CB4314) ; Not totally confident these Shadow dialogues never run...
 
 ; ------------------------------------------------------------------------
 ; Dialogue Reassignment
