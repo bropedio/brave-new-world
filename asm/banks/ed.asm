@@ -70,3 +70,12 @@ EP_Chart:
   db $00,$95  ; Level 23 = 38144
   db $00,$A7  ; Level 24 = 42752
   db $00,$BB  ; Level 25 = 47872
+
+; #########################################################################
+; Tile palettes
+
+; -------------------------------------------------------------------------
+; Modified as part of `cafe-to-pub.asm` patch
+org $EDD480 : dw $0000 ; Modify tile palette (unsure why)
+
+
