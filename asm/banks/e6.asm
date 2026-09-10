@@ -3,6 +3,16 @@ hirom
 ; E6 Bank
 
 ; ########################################################################
+; Color Palette Data [?]
+
+; ------------------------------------------------------------------------
+; Modified as part of `eddie-bg.asm` patch
+
+org $E68000 : dw $0000 ; zero out some color palette bytes
+org $E68020 : dw $0000 ; zero out some color palette bytes
+org $E68080 : dw $0000 ; zero out some color palette bytes
+
+; ########################################################################
 ; Freespace (?)
 
 ; ------------------------------------------------------------------------

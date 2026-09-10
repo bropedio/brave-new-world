@@ -31,15 +31,15 @@ org $D7AB93 : db $0F,$08,$06,$00,$0E,$00,$06 ; field sprite gfx
 org $E68000 : dw $0000 ; zero out some color palette bytes
 org $E68020 : dw $0000 ; zero out some color palette bytes
 org $E68080 : dw $0000 ; zero out some color palette bytes
-org $E71862 : incsrc eddie-bg-tile-pointers.bin : warnpc $E718A9
+org $E71862 : incbin bin/eddie-bg-tile-pointers.bin : warnpc $E718A9
 org $E739CA : db $89 ; battle bg tile formations (compressed)
 org $E73A3A : db $18 ; battle bg tile formations (compressed)
 org $E73A61 : db $41 ; battle bg tile formations (compressed)
-org $E73A81 : incsrc eddie-bg-tile-formations.bin : warnpc $E7A9DE
+org $E73A81 : incbin bin/eddie-bg-tile-formations.bin : warnpc $E7A9DE
 org $E935D6 : dw $1048 ; battle bg gfx (compressed)
 org $E935E4 : db $E8 ; battle bg gfx (compressed)
 org $E93651 : db $FB ; battle bg gfx (compressed)
-org $E93678 : incsrc eddie-bg-gfx-1.bin : warnpc $E9454B
+org $E93678 : incbin bin/eddie-bg-gfx-1.bin : warnpc $E9454B
 org $E9461E : dw $0FCC ; battle bg gfx (compressed)
 org $E94752 : db $79 ; battle bg gfx (compressed)
-org $E94776 : incsrc eddie-bg-gfx-2.bin : warnpc $E955E9
+org $E94776 : incbin bin/eddie-bg-gfx-2.bin : warnpc $E955E9
