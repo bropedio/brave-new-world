@@ -17,6 +17,7 @@ hirom
 
 ; -------------------------------------------------------------------------
 ; Modify the contents of the Soul Train chest to 1000 GP
+; This change is different from the original ips.
 org $ED885C : dw $8039 : db $0A
 
 ; -------------------------------------------------------------------------
@@ -33,7 +34,12 @@ warnpc $CBA5D6
 ; -------------------------------------------------------------------------
 ; Update map formations to adjust chest visibility [?]
 org $D9CE5C : incbin phantom-train-chests-1.bin : warnpc $D9D1AB ; pointers
-org $DB247C : incbin phantom-train-chests-2.bin : warnpc $DB24A3
+
+org $DB247C : db $9F
+org $DB2486 : db $44
+org $DB2490 : db $5A
+org $DB24A2 : db $7A
+
 ; TODO: Can this be reduced!? Look into Leet Sketcher's much smaller version
 org $DB24C5 : incbin phantom-train-chests-3.bin : warnpc $DDFF20
 

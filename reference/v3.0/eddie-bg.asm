@@ -25,21 +25,21 @@ hirom
 ; into the Final Kefka battle background
 
 org $D744E8 : db $34 ; field sprite gfx
-org $D744F8 : db $38,$F8 ; field sprite gfx
+org $D744F8 : dw $F838 ; field sprite gfx
 org $D7AB83 : db $0F,$19,$0E,$1B,$0E,$1F,$06 ; field sprite gfx
 org $D7AB93 : db $0F,$08,$06,$00,$0E,$00,$06 ; field sprite gfx
 org $E68000 : dw $0000 ; zero out some color palette bytes
 org $E68020 : dw $0000 ; zero out some color palette bytes
 org $E68080 : dw $0000 ; zero out some color palette bytes
-org $E71862 : incsrc eddie-bg-tile-pointers.bin
+org $E71862 : incsrc eddie-bg-tile-pointers.bin : warnpc $E718A9
 org $E739CA : db $89 ; battle bg tile formations (compressed)
 org $E73A3A : db $18 ; battle bg tile formations (compressed)
 org $E73A61 : db $41 ; battle bg tile formations (compressed)
-org $E73A81 : incsrc eddie-bg-tile-formations.bin
-org $E935D6 ; battle bg gfx (compressed)
-  db $75,$0f,$ff,$00,$ff,$00,$ff,$01,$fe,$07,$f8,$f8,$de,$0f,$e8
-org $E93651 : db $FB
-org $E93678 : incsrc eddie-bg-gfx-1.bin
-org $E9461E : db $CC,$0F ; battle bg gfx (compressed)
+org $E73A81 : incsrc eddie-bg-tile-formations.bin : warnpc $E7A9DE
+org $E935D6 : dw $1048 ; battle bg gfx (compressed)
+org $E935E4 : db $E8 ; battle bg gfx (compressed)
+org $E93651 : db $FB ; battle bg gfx (compressed)
+org $E93678 : incsrc eddie-bg-gfx-1.bin : warnpc $E9454B
+org $E9461E : dw $0FCC ; battle bg gfx (compressed)
 org $E94752 : db $79 ; battle bg gfx (compressed)
-org $E94776 : incsrc eddie-bg-gfx-2.bin
+org $E94776 : incsrc eddie-bg-gfx-2.bin : warnpc $E955E9
