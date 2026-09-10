@@ -5,6 +5,9 @@ hirom
 ; ########################################################################
 ; Freespace (?)
 
+; ------------------------------------------------------------------------
+; Helpers for Ebot's Rock Coral event changes
+
 org $E6CD3D
 CoralHelper1:
   db $D3,$D8          ; clear event bit $1D8 (removes coral from rare items)
@@ -21,3 +24,14 @@ CoralHelper2:
   dw $7141 : db $11   ; more than: JSR $CB7141
   db $FE              ; RTS
 
+; ------------------------------------------------------------------------
+; Helper for `drained-pool-tile.asm` bugfix
+
+org $E6F1A0
+  db $74,$31,$6A,$01,$01 ; [x] Replace Layer 2 at (49, 106) with 1x1 chunk
+  db $01                 ; [>] The chunk for ^
+  db $74,$2D,$A7,$01,$02 ; [+] Replace Layer 2 at ($2D, $A7) with 1x2 chunk
+  db $00,$00             ; [+] The chunk for ^
+  db $75                 ; [+] Refresh map after alteration (TODO: needed?)
+  db $FE                 ; [+] RTL
+warnpc $E6F1AF

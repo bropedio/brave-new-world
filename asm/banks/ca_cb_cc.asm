@@ -159,6 +159,12 @@ org $CA759C : db $4B,$63,$0B
 org $CA81C3 : db $FD,$FD,$FD,$FD,$FD,$FD,$FD,$FD,$FD,$FD
 
 ; ------------------------------------------------------------------------
+; Serpent Trench pool draining event (partial)
+; Modified by `drained-pool-tile.asm` to fix visual glitch
+
+org $CA8AD5 : db $F7 ; background scroll speed reduced?
+
+; ------------------------------------------------------------------------
 ; Dialogue Reassignment
 
 org $CA8FB4 : db $4B,$8F,$0B
@@ -291,6 +297,15 @@ org $CAE3F1 : db $B2,$36,$B1,$24   ; JSR $EEB136
 
 ; If ($1E80($127) [$1EA4, bit 7] is clear), branch to $CAEBDA
 org $CAEBC7 : db $C0,$27,$01,$DA,$EB,$00
+
+; ------------------------------------------------------------------------
+; Serpent Trench pool draining event (partial)
+; Modified by `drained-pool-tile.asm` to fix visual glitch
+
+org $CAEE83
+  db $B2,$A0,$F1,$1C         ; JSL $E6F1A0
+  db $FE                     ; RTL
+  db $FF,$FF                 ; freespace
 
 ; ------------------------------------------------------------------------
 ; Event called when at the helm of either airship (Doom Gaze option)
