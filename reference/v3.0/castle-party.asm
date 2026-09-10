@@ -13,7 +13,7 @@ hirom
 ; all members in both parties is always maintained.
 
 ; We no longer "assign character to party 1" or "remove from party"
-; We now explicitly switch parties instead. Must be other code somewhere
+; We now explicitly switch parties instead.
 org $CB0BC4
   db $C0,$F3,$02,$CC,$0B,$01 ; [x] BRL target $CB0BCC
   db $3D,$03                 ; [=] Create Shadow:03
