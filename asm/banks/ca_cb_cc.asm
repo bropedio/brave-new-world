@@ -517,7 +517,7 @@ org $CB3ADE : db $3F      ; Re-enables swoosh sound on transition to battle
 ; Overwritten for helper to fix guard disappearing bug `figaro-guard-fix.asm`
 
 org $CB42FC
-  db $D6,$0E,          ; set event bit to show guards again
+  db $D6,$0E           ; set event bit to show guards again
   db $B2,$96,$CF,$00   ; JSL $CACF96 (NOTE: Why not JML?)
   db $FE               ; RTL
 
