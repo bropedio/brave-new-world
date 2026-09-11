@@ -42,6 +42,15 @@ org $ED82E4
   db $FF
 
 ; #########################################################################
+; Treasure Chest Data
+
+; -------------------------------------------------------------------------
+; Modify the contents of the Soul Train chest to 1000 GP
+; Part of `phantom-train-chests.asm`
+
+org $ED885C : dw $8039 : db $0A
+
+; #########################################################################
 ; Esper level experience chart
 org $ED8BCA
 EP_Chart:

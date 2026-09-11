@@ -20,3 +20,15 @@ org $D9CA93 : incbin bin/more-walkable-beach.bin : warnpc $D9CC4E
 
 ; This pointer code is maybe not compressed
 org $D9CD5E : dw $22D8,$233C,$23BA ; update map tile property pointers 
+
+; ###########################################################################
+; Map Formations Pointers
+
+; -------------------------------------------------------------------------
+; Update map formation pointer to allow adding chest tile in the caboose
+; Adjust pointer for map data *after* the modified map, to accommodate the
+; slightly larger compressed data for the caboose BG1 (+1 larger)
+; Note that this pointer in BNW is 3 bytes smaller than in FF3
+; Part of `phantom-train-chests.asm`
+
+org $D9CE5C : dw $536A ; $D9D1B0 + $01536A -> $DB251A [see $DB bank]

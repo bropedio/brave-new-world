@@ -1254,6 +1254,19 @@ org $CBA0EC
   db $FE,$FE,$FE        ; Freespace
 warnpc $CBA0FE
 
+; -------------------------------------------------------------------------
+; Removes explicit overwriting of the later small room chest tiles in WoB
+; TODO: Investigate ways to still hide the chests in the repeated room.
+; Part of `phantom-train-chests.asm`
+
+org $CBA5C2
+  db $B2,$D6,$A5,$01     ; JSL $CBA5D6 (NOTE: Could NOP instead)
+  db $FE                 ; RTL
+  db $FF,$FF,$FF,$FF,$FF ; Freespace
+  db $FF,$FF,$FF,$FF,$FF ; Freespace
+  db $FF,$FF,$FF,$FF,$FF ; Freespace
+warnpc $CBA5D6
+
 ; ------------------------------------------------------------------------
 ; Dialogue Reassignment
 
