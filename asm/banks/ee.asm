@@ -37,6 +37,20 @@ org $EE86A6 : JSL Random   ; novalia: sets Doomgaze's position
 org $EE86B4 : JSL Random   ; novalia: sets Doomgaze's position
 
 ; ------------------------------------------------------------------------
+; Modify Sealed Gate removal helper to remove Mountain color
+; Part of `minimap.asm`
+
+org $EE9B06
+SetSeaColors:
+  LDX #$0006
+.loop
+  STA.l $7EE1AC,X
+  DEX #2
+  BPL .loop
+  NOP
+warnpc $EE9B12
+
+; ------------------------------------------------------------------------
 ; Doom Gaze airship search option helper
 
 org $EEAF01
@@ -363,5 +377,11 @@ NormDraw:
   TDC
   RTL
 warnpc $EEB200
+
+; -------------------------------------------------------------------------
+; Adjust pointer for WoR minimap graphics
+; Part of `minimap.asm`
+
+org $EEB24E : dw $E90E : db $EF
 
 
