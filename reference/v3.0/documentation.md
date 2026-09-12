@@ -21,6 +21,7 @@ The following patches are in insertion order:
 - More Walkable Beach (Fish-catching QOL)
 - Cafe to Pub (Uncensor pub signs)
 - Eddie Background (Kefka battle special background)
+- Minimap (with mountains)
 
 The patches below are optional:
 
@@ -66,7 +67,7 @@ The japanese title screen is canon
 ## Figaro Guard Fix
 
 **Author:** DrakeyC
-**Status:** Unmerged
+**Status:** Merged
 **Files:** `reference/v3.0/figaro-guard-fix.asm`
 
 ### Why
@@ -83,7 +84,7 @@ There is an oversight with four guards in Figaro Castle (two by the doors to the
 ## Drained Pool Tile
 
 **Author:** Gi Nattak
-**Status:** Unmerged
+**Status:** Merged
 **Files:** `reference/v3.0/drained-pool-tile.asm`
 
 ### Why
@@ -100,7 +101,7 @@ There is a buggy map tile after the pool of water is drained from the Serpent Tr
 ## Castle Party
 
 **Author:** Leet Sketcher
-**Status:** Unmerged
+**Status:** Merged
 **Files:** `reference/v3.0/castle-party.asm`
 
 ### Why
@@ -116,7 +117,7 @@ During the scene where Sabin infiltrates the Imperial Camp near Doma Castle, the
 ## Blush Disease
 
 **Author:** Novalia Spirit
-**Status:** Unmerged
+**Status:** Merged
 **Files:** `reference/v3.0/blush-disease.asm`
 
 ### Why
@@ -132,7 +133,7 @@ During the scene where Setzer askes Celes to be his wife, she blushes. But due a
 ## Tube Job
 
 **Author:** Gi Nattak
-**Status:** Unmerged
+**Status:** Merged
 **Files:**
 - `reference/v3.0/tube-job.asm`
 - `reference/v3.0/tube-job.bin`
@@ -152,7 +153,7 @@ the tube would show this same color.
 ## Bridge Correction
 
 **Author:** Gi Nattak
-**Status:** Unmerged
+**Status:** Merged
 **Files:**
 - `reference/v3.0/bridge-correction.asm`
 - `reference/v3.0/bridge-correction.bin`
@@ -171,7 +172,7 @@ There are two small, rather hard to notice graphical issues with the Sealed Gate
 ## Phantom Train Chests
 
 **Author:** Dark Mage [?]
-**Status:** Unmerged
+**Status:** Merged
 **Files:**
 - `reference/v3.0/phantom-train-chests.asm`
 - `reference/v3.0/phantom-train-chests-1.bin`
@@ -193,7 +194,7 @@ There are two treasure chests on the Phantom (Soul) Train that are invisible.
 ## Solar Wind
 
 **Author:** Leet Sketcher
-**Status:** Unmerged
+**Status:** Merged
 **Files:**
 - `reference/v3.0/solar-wind.asm`
 - `reference/v3.0/solar-wind.bin`
@@ -213,7 +214,7 @@ The Lore Quasar has a glitch wherein if you cast it before using either W Wind o
 ## More Walkable Beach
 
 **Author:** Fëanor
-**Status:** Unmerged
+**Status:** Merged
 **Files:**
 - `reference/v3.0/more-walkable-beach.asm`
 - `reference/v3.0/more-walkable-beach.bin`
@@ -232,7 +233,7 @@ The fish catching sequence on Solitary Island is needlessly time consuming. Limi
 ## Cafe to Pub
 
 **Author:** Gens
-**Status:** Unmerged
+**Status:** Merged
 **Files:** `reference/v3.0/cafe-to-pub.asm`
 
 ### Why
@@ -249,7 +250,7 @@ The US localization censored "PUB" signs to "CAFE".
 ## Eddie Background
 
 **Author:** Gens
-**Status:** Unmerged
+**Status:** Merged
 **Files:**
 - `reference/v3.0/eddie-bg.asm`
 - `reference/v3.0/eddie-bg-tile-pointers.asm`
@@ -270,6 +271,27 @@ Final Kefka battle in BNW needs a little something...special.
   - Battle bg tile formations
   - Battle bg graphics
 
+----------------------------------------------------------------------------
+
+## Minimap
+
+**Author:** ?? & Bropedio
+**Status:** Merged
+**Files:**
+- `reference/v3.0/minimap.asm`
+- `asm/banks/bin/minimap-wob.bin`
+- `asm/banks/bin/minimap-wor.bin`
+
+### Why
+
+The minimap is lackluster and not terribly useful. If it showed more terrain, it would be better.
+
+### Details
+
+- Modify palette data for the minimap (WoB)
+- Replace minimap graphics to include mountains
+- Shift pointer to WoR graphics due to WoB graphics size change
+- Update SealedCave removal routine to hide new mountains color, too
 
 ----------------------------------------------------------------------------
 # Optional Patches
