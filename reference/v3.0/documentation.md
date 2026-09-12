@@ -22,6 +22,7 @@ The following patches are in insertion order:
 - Cafe to Pub (Uncensor pub signs)
 - Eddie Background (Kefka battle special background)
 - Minimap (with mountains)
+- Docile NPCs
 
 The patches below are optional:
 
@@ -293,6 +294,22 @@ The minimap is lackluster and not terribly useful. If it showed more terrain, it
 - Replace minimap graphics to include mountains
 - Shift pointer to WoR graphics due to WoB graphics size change
 - Update SealedCave removal routine to hide new mountains color, too
+
+----------------------------------------------------------------------------
+
+## Docile NPCs
+
+**Author:** SilentEnigma
+**Status:** Merged
+**Files:** `reference/v3.0/docile-npcs.asm`
+
+### Why
+
+Sometimes NPCs obstruct the player's movement, which is annoying.
+
+### Details
+
+- When an NPC is moving randomly, if the player is actively moving to the tile targeted by the NPC, the NPC will stay in place.
 
 ----------------------------------------------------------------------------
 # Optional Patches
