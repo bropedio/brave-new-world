@@ -382,6 +382,6 @@ warnpc $EEB200
 ; Adjust pointer for WoR minimap graphics
 ; Part of `minimap.asm`
 
-org $EEB24E : dw $E90E : db $EF
+org $EEB24E : dw $E910 : db $EF
 
 

@@ -15,6 +15,21 @@ incbin bin/battle-status-graphics.bin
 
 ; Modify some WoB minimap colors
 ; From `minimap.asm`
-org $D2EEA4
-  dw $294A,$35AD,$4E73,$7FFF,$294A,$35AD,$4E73,$7FFF,$5AD6
+
+!land_drk = $294A
+!land_med = $35AD
+!mtn_edge = $4E73
+!location = $7FFF
+
+org $D2EEA2
+  dw $1084     ; sea
+  dw !land_drk ; land, dark
+  dw !land_med ; land, medium
+  dw !mtn_edge ; mountain edge
+  dw !location ; location
+  dw !land_drk ; land, dark (sealed cave)
+  dw !land_med ; land, medium (sealed cave)
+  dw !mtn_edge ; mountain edge (sealed cave)
+  dw !location ; location (sealed cave)
+  dw $5AD6     ; mountain, light
 warnpc $D2EEB6

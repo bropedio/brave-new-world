@@ -9,8 +9,8 @@ hirom
 ; Note that the footprint is smaller, so Falcon graphics can stay
 ; Note we *could* shift and recompress them to free up more space
 ; From `minimap.asm`
-org $EFE49B : incbin bin/minimap-wob.bin ; 1139 length
-org $EFE90E : incbin bin/minimap-wor.bin ; 865 length
+org $EFE49B : incbin bin/minimap-wob.bin ; 1141 length
+org $EFE910 : incbin bin/minimap-wor.bin ; 865 length
 
 ; ------------------------------------------------------------------------
 
