@@ -22,6 +22,10 @@ The following patches are in insertion order:
 - Cafe to Pub (Uncensor pub signs)
 - Eddie Background (Kefka battle special background)
 
+The patches below are optional:
+
+- Phantom Train Chest Dedup
+
 ----------------------------------------------------------------------------
 
 ## Versioning
@@ -266,4 +270,24 @@ Final Kefka battle in BNW needs a little something...special.
   - Battle bg tile formations
   - Battle bg graphics
 
+
+----------------------------------------------------------------------------
+# Optional Patches
+----------------------------------------------------------------------------
+
+## Phantom Train Chests Dedup
+
+**Author:** Bropedio
+**Status:** Optional
+**Files:** `reference/v3.0/phantom-train-chests-dedup.asm`
+
+### Why
+
+With the later car chests now visible, they show up in two separate cars which both link to the same small room. This means opening the chests in one room will be reflected in the other room, which is odd.
+
+### Details
+
+- Rewrites two short events in the "small train cars" map
+- The chest masking is back, guarded by an event bit for which car we are in
+- A fake empty chest is placed in the second room instance to block examining
 
