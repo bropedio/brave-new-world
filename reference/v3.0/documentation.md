@@ -275,7 +275,8 @@ Final Kefka battle in BNW needs a little something...special.
 
 ## Minimap
 
-**Author:** ?? & Bropedio
+**Author:** Madsiur
+**Edited:** Bropedio
 **Status:** Merged
 **Files:**
 - `reference/v3.0/minimap.asm`
