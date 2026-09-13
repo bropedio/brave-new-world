@@ -294,6 +294,7 @@ The minimap is lackluster and not terribly useful. If it showed more terrain, it
 - Replace minimap graphics to include mountains
 - Shift pointer to WoR graphics due to WoB graphics size change
 - Update SealedCave removal routine to hide new mountains color, too
+- Fixed a bug in the original ips: a stray pixel showing in Sealed Cave area after Floating Continent rises
 
 ----------------------------------------------------------------------------
 
