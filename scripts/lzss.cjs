@@ -149,7 +149,7 @@ function compress (data) {
       if (candidates[heads[byte]] === pos) {
         heads[byte]++;
       }
-      const left_edge = pos - 0x800;
+      const left_edge = pos - 0x801;
       if (left_edge >= 0) {
         positions[data[left_edge]].push(left_edge);
       } else {
