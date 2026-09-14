@@ -23,6 +23,7 @@ The following patches are in insertion order:
 - Eddie Background (Kefka battle special background)
 - Minimap (with mountains)
 - Docile NPCs
+- New Narshe (WoB tiles)
 
 The patches below are optional:
 
@@ -311,6 +312,35 @@ Sometimes NPCs obstruct the player's movement, which is annoying.
 ### Details
 
 - When an NPC is moving randomly, if the player is actively moving to the tile targeted by the NPC, the NPC will stay in place.
+
+----------------------------------------------------------------------------
+
+## New Narshe
+
+**Author:** Gi Nattak & Gens
+**Status:** Merged
+**Files:** `reference/v3.0/new-narshe.asm`
+
+### Why
+
+Narshe is a major city and should look like more than a plain mountain trail. The FF6 Pixel Remaster added proper map tiles, and we should too.
+
+### Details
+
+- Modify tile properties of Narshe for airship shadow size and no chocobo
+- Shift location of WoB tile gfx data earlier to make room for new tiles
+- Define two meta-tiles for Narshe
+- Add eight new 8x8 tile graphics for Narshe
+- Set color palettes for these new tiles
+
+----------------------------------------------------------------------------
+# Optional Patches
+----------------------------------------------------------------------------
+
+## Phantom Train Chests Dedup
+
+
+
 
 ----------------------------------------------------------------------------
 # Optional Patches
