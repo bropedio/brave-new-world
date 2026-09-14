@@ -103,6 +103,8 @@ Fenrir: db "Sets `Image^ - party",$00
 Starlet: db "Cures HP to max - party|Lifts all bad statuses",$00
 Phoenix: db "Revives fallen allies - party|(HP ",$D2," max)",$00
 
+warnpc $C487C0
+
 ; #########################################################################
 ; Alphabetical Rage List (also in freespace)
 
