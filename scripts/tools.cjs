@@ -48,6 +48,9 @@ module.exports = {
       if (opts.mute_deprecation_warnings) {
         args.push('-wnoWfeature_deprecated');
       }
+      if (opts.norom) {
+        args.push('--no-title-check');
+      }
       if (opts.symbol_map_path) {
         args.push('--symbols=nocash');
         args.push(`--symbols-path=${opts.symbol_map_path}`);
