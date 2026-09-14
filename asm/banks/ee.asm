@@ -50,6 +50,25 @@ SetSeaColors:
   NOP
 warnpc $EE9B12
 
+; ========================================================================
+; Tile Properties (data)
+
+; -----------------------------------------------------------------------
+; Change tile properties for new Narshe
+; Part of `new-narshe.asm`
+
+org $EE9BF2 : dw $001B ; Top tile of New Narshe (was $0004)
+                       ; Battle background: 1 (TODO: Why?)
+                       ; Airship shadow: large (was small)
+                       ; No chocobo travel
+                       ; No airship landing
+org $EE9C12 : dw $0007 ; Bottom tile of New Narshe (was $0004)
+                       ; Airship shadow: small (unchanged)
+                       ; No chocobo travel
+                       ; No airship landing
+
+; ========================================================================
+
 ; ------------------------------------------------------------------------
 ; Doom Gaze airship search option helper
 
@@ -378,10 +397,19 @@ NormDraw:
   RTL
 warnpc $EEB200
 
+; =========================================================================
+; Compressed Map Data Pointers
+
+; -------------------------------------------------------------------------
+; Adjust pointer for WoB tile graphics
+; Moved earlier to make room for new Narshe tiles. Tilemap compression
+; was optimized so this downward shift is possible.
+; Part of `new-narshe.asm`
+
+org $EEB212 : dw $1000 : db $EF ; Shift WoB tile graphics offset
+
 ; -------------------------------------------------------------------------
 ; Adjust pointer for WoR minimap graphics
 ; Part of `minimap.asm`
 
 org $EEB24E : dw $E910 : db $EF
-
-
