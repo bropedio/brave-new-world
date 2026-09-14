@@ -142,3 +142,10 @@ disassembly of 'new' decompressed code, see `ips/title-graphics-disasm.txt`
 - $D9CC4C:$D9CD10 - Map tile properties (compressed)
 - $D9CD66:$D9CD90 - Pointers to map tile properties
 
+### Improved Portraits (06-improved-portraits.ips)
+Completely replaces all character portraits (and palettes) with the pixel
+remaster versions.
+
+#### Data
+- $ED1D00:$ED5860 - Character Portrait Graphics
+- $ED5860:$ED5AC0 - Character Portrait Palettes

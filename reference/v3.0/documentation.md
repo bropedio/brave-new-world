@@ -24,6 +24,7 @@ The following patches are in insertion order:
 - Minimap (with mountains)
 - Docile NPCs
 - New Narshe (WoB tiles)
+- Improved Portraits
 
 The patches below are optional:
 
@@ -334,13 +335,20 @@ Narshe is a major city and should look like more than a plain mountain trail. Th
 - Set color palettes for these new tiles
 
 ----------------------------------------------------------------------------
-# Optional Patches
-----------------------------------------------------------------------------
 
-## Phantom Train Chests Dedup
+## Improved Portraits
 
+**Author:** Gens
+**Status:** Merged
+**Files:** `ips/06-improved-portraits.ips`
 
+### Why
 
+The FF6 Pixel Remaster character portraits are vastly improved.
+
+### Details
+
+- Overwrite the portrait graphics and palettes with the pixel remaster versions
 
 ----------------------------------------------------------------------------
 # Optional Patches
