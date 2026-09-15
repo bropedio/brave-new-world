@@ -25,6 +25,7 @@ The following patches are in insertion order:
 - Docile NPCs
 - New Narshe (WoB tiles)
 - Improved Portraits
+- Kaiser Fixes
 
 The patches below are optional:
 
@@ -349,6 +350,32 @@ The FF6 Pixel Remaster character portraits are vastly improved.
 ### Details
 
 - Overwrite the portrait graphics and palettes with the pixel remaster versions
+
+----------------------------------------------------------------------------
+
+## Kaiser Fixes
+
+**Author:** Gens
+**Status:** Merged
+**Files:** `ips/07-kaiser.ips`
+
+### Why
+
+Kaiser sprite graphics were incomplete
+
+### Details
+
+- Change Kaiser's tilemap from "large 45" to "large 47" to add missing tile
+- New tile GFX inserted for Kaiser shift GFX for many others
+- Graphics pointers/indexes for many monsters/espers are therefore nudged upward +4
+- And the graphics themselves are also nudged upward +32 bytes
+- Kaiser's palette data is improved $D29A00-$D29A20
+- Modifies all unused small monster tilemaps for some reason -- TODO: revert?
+- Modifies large tilemaps 45, 46, and 47. Unsure why
+- Insert Kaiser tile and modify other portions of Kaiser tile GFX
+- Shift all remaining GFX down 32 bytes (starting at $EC0C80)
+- Make about a dozen additional pixel adjustments to Kaiser GFX
+- NOTE: If we need space, the extra tile added here can be removed
 
 ----------------------------------------------------------------------------
 # Optional Patches

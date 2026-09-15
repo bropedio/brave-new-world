@@ -87,6 +87,9 @@ In the future, we may split this patch up into smaller chunks.
 - $EDFE00:$EE0000 - Esper bonus descriptions
 - $EEB200:$EEB260 - Pointers to compressed world data (TODO?)
 - $EF4A46:$EF6A56 - World of Ruin graphics (TODO?)
+  - The only change here is that the tilemap is flipped with the tile gfx
+  - There is no functional difference
+  - It's just how FF3usME and FF3LE save the data after map edits
 
 ### Graphics (02-graphics.ips)
 Contains `custom-uncensored.ips`, which reverts many graphics
@@ -149,3 +152,16 @@ remaster versions.
 #### Data
 - $ED1D00:$ED5860 - Character Portrait Graphics
 - $ED5860:$ED5AC0 - Character Portrait Palettes
+
+
+### Kaiser (07-kaiser.ips)
+Fixes incomplete Kaiser sprite graphics, including adding a missing tile.
+
+#### Data
+- $D27000:$D27780 - Monster Graphics Data
+- $D27780:$D2781F - Esper Graphics Data
+- $D29A00:$D29A20 - Monster Palette Data (Kaiser's Only)
+- $D2A824:$D2AC23 - Small Monster Graphics Maps (only unused ones)
+- $D2AC24:$D2B223 - Large Monster Graphics Maps (45, 46, 47)
+- $EC05E8:$EC336F - Monster Graphics (shifted down due to new Kaiser tile)
+- $EC3370:$ECE3A8 - Esper Graphics (shifted down due to new Kaiser tile)
