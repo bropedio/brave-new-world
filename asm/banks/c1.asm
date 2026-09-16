@@ -504,7 +504,30 @@ DetermineRight:
   LSR            ; carry: Facing right
   PLY            ; restore offset to character target
   RTS
-warnpc $C19102
+
+; -------------------------------------------------------------------------
+; Helper for colored counterattack messages
+;
+; Enable custom text color usage for counterattacks only (requires excluding
+; any textboxes that are loaded without screen designation $12). This screen
+; designation is only active for drawing textbox tiles via battle dynamics
+; commands $01 and $11, which are command messages and special attack names.
+; I'm unsure why battle quips, preemptive, gained GP, etc revert the screen
+; designation back to $17 prior to writing the text tiles, but they do.
+
+SpliceDrawText:
+  LDX $88D7       ; [displaced] battle message script address
+  LDA $898D       ; current screen designation
+  CMP #$12        ; "drawing textbox" (used for attack names)
+  BNE .nope       ; branch if not ^
+  LDA $B1         ; check attack flags
+  AND #$08        ; isolate "Counterattack" flag
+  RTS
+.nope
+  TDC             ; else, use zero
+  RTS
+
+%free($C19104)
 
 ; ########################################################################
 ; Damage number color palette routine
@@ -585,6 +608,18 @@ org $C15618 : JMP OpenSlotsHelp
 ; -----------------------------------------------------------------------
 ; When Closing Slots, Re-enable Pausing
 org $C156B1 : JSR CloseSlotsHelp
+
+; #######################################################################
+; Draw Dialogue Box
+;
+; Automatically set "alternate" color flag for counterattacks.
+
+org $C15DDA
+  JSR SpliceDrawText ; get $4B flag (use custom color or not)
+  STA $4B            ; save ^
+  LDA $88D9          ; battle message script bank
+  STA $4A            ; save ^
+  STX $48            ; save battle message script address
 
 ; #######################################################################
 ; Spell Name Message Display
@@ -671,6 +706,37 @@ org $C191A6 : dw $9609  ; battle dynamics $08, alias to $03 (mass)
 
 org $C1953B : JSL MagicFunction1 ; hook for nATB [$C3](before animation)
 org $C19544 : JSL MagicFunction2 ; hook for nATB [$C3](after animation)
+
+; ######################################################################
+; Setting Default Window Colors
+;
+; Modify the alternate text color to yellow, for use with counterattack
+; messages.
+
+org $C199B2 : LDX #$037F ; set yellow "special" text color
+
+; ######################################################################
+; Enemy Sprite Flashing Animation
+;
+; Rearrange code to optimize space, then add handling to skip second
+; enemy flash for counterattacks. We also extend the flash duration
+; from 4 to 6 frames to make the flash count more noticeable.
+
+org $C19B8A
+  JSR FlashOnce      ; flash once
+  LDA $B1            ; attack flags
+  BIT #$08           ; 'counterattack'
+  BEQ FlashOnce      ; branch if not ^
+  RTS                ; else, return after only one flash
+FlashOnce:
+  LDA #$06           ; flash B&W palette index x2
+  JSR $9BA1          ; set monster palette index ^
+  LDA $7AF0          ; default palette index
+  JMP $9BA1          ; set monster palette index ^
+
+%free($C19BA0)
+
+org $C19BAD : LDA #$06 ; longer flash duration (was $04)
 
 ; ######################################################################
 ; Damage Numbers Animation Handler(s)
