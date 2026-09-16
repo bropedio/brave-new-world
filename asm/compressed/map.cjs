@@ -4,6 +4,10 @@ module.exports = {
     offset: 0xC2686C,
     warn: 0xC28A60
   }, {
+    file: 'tilemap-315-kefka-tower.asm',
+    offset: 0xDDCFEB, // Note, this is a different offset than FF3
+    warn: 0xDDDAA1
+  }, {
     file: 'wob-tilemap.asm',
     offset: 0xEED434,
     warn: 0xEF1000

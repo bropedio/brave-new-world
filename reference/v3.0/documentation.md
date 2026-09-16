@@ -26,6 +26,7 @@ The following patches are in insertion order:
 - New Narshe (WoB tiles)
 - Improved Portraits
 - Kaiser Fixes
+- Visible Magitek Doors
 
 The patches below are optional:
 
@@ -376,6 +377,23 @@ Kaiser sprite graphics were incomplete
 - Shift all remaining GFX down 32 bytes (starting at $EC0C80)
 - Make about a dozen additional pixel adjustments to Kaiser GFX
 - NOTE: If we need space, the extra tile added here can be removed
+
+----------------------------------------------------------------------------
+
+## Visible Magitek Doors
+
+**Author:** Khaos
+**Status:** Merged
+**Files:** `reference/v3.0/visible-magitek-doors.asm`
+
+### Why
+
+The doors in certain Magitek factory inspired Kefka's Tower rooms are very difficult to see.
+
+### Details
+- Lighten the color used for the door edges, making them more visible
+- Modify door tile graphics directly, swapping in lighter colors for dark ones
+- Replace one random lower door metatile in map 315. See compressed asm.
 
 ----------------------------------------------------------------------------
 # Optional Patches
